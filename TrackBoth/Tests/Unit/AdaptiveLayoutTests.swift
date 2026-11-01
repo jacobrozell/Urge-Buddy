@@ -39,6 +39,8 @@ final class AdaptiveLayoutTests: XCTestCase {
         XCTAssertFalse(AdaptiveLayout.usesTwoColumns(width: 699, dynamicType: .large))
         XCTAssertTrue(AdaptiveLayout.usesTwoColumns(width: 700, dynamicType: .large))
         XCTAssertFalse(AdaptiveLayout.usesTwoColumns(width: 1_200, dynamicType: .accessibility1))
+        XCTAssertTrue(AdaptiveLayout.usesTwoColumns(width: 520, dynamicType: .large, minimumWidth: AdaptiveLayout.shortHeightColumnMinWidth))
+        XCTAssertFalse(AdaptiveLayout.usesTwoColumns(width: 519, dynamicType: .large, minimumWidth: AdaptiveLayout.shortHeightColumnMinWidth))
     }
 
     func testBreathingDiameter() {

@@ -26,8 +26,15 @@ enum AdaptiveLayout {
     }
 
     /// Measured width, not size class: sheets and resizable windows misreport width.
-    static func usesTwoColumns(width: CGFloat, dynamicType: DynamicTypeSize) -> Bool {
-        width >= twoColumnMinWidth && !dynamicType.isAccessibilitySize
+    /// Landscape phones are shorter than 700pt wide once padding is removed. Detail uses this.
+    static let shortHeightColumnMinWidth: CGFloat = 520
+
+    static func usesTwoColumns(
+        width: CGFloat,
+        dynamicType: DynamicTypeSize,
+        minimumWidth: CGFloat = twoColumnMinWidth
+    ) -> Bool {
+        width >= minimumWidth && !dynamicType.isAccessibilitySize
     }
 
     static func breathingDiameter(vertical: UserInterfaceSizeClass?) -> CGFloat {

@@ -503,6 +503,8 @@ enum TriggerTag: String, CaseIterable, Codable, Identifiable {
 - `TimeOfDay`: `.morning` 05:00–11:59, `.afternoon` 12:00–16:59, `.evening` 17:00–21:59, `.night` 22:00–04:59.
 - `hardestTime(from timestamps: [Date]) -> TimeOfDay?`: the bucket with the most slips + non-resisted urges. `nil` if fewer than 3 data points or a tie for first place.
 - `urgeSummary(_ outcomes: [UrgeOutcome]) -> (beaten: Int, total: Int)`: total excludes `.inProgress`.
+- `urgeBreakdown(_ samples: [UrgeSample]) -> UrgeBreakdown`: beaten, slipped, unsure, total, and mean intensity. In-progress samples are left out of every field, including the average.
+- `hardestWeekday(from timestamps: [Date]) -> Int?`: the `Calendar` weekday with the most slips + non-resisted urges. `nil` if fewer than 3 timestamps or a tie for first. Same timestamps as `hardestTime`.
 
 ### 6.9 Milestones (`Domain/Milestones/MilestonePolicy.swift` + `Services/MilestoneLedger.swift`)
 

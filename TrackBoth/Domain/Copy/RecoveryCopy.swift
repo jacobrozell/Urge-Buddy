@@ -154,12 +154,47 @@ enum RecoveryCopy {
     static let pickSomethingTitle = "Pick something to see its progress"
     static let archived = "Archived"
     static let yourReasons = "Your reasons"
+    static let reasonOrderHint = "The first one is what you see when you slip."
+    static let reasonsEmpty = "Add one you can read when an urge hits."
+    static let primaryReason = "Primary"
     static let yourPlan = "Your plan"
     static let patterns = "Patterns"
     static let hardestTime = "Hardest time"
+    static let hardestDay = "Hardest day"
     static let addReason = "Add a reason"
+    static let editReason = "Edit reason"
+    static let moveUp = "Move up"
+    static let moveDown = "Move down"
+    static let urges = "Urges"
+    static let slippedStat = "Slipped"
+    static let averageStrengthLabel = "Average strength"
+    static let noUrgesYet = "Urges you ride out show up here."
+    static let recent = "Recent"
+    static let rodeItOut = "Rode it out"
+    static let slipEvent = "Slip"
+    static let notSureOutcome = "Not sure"
+    static let addDailyCost = "Add a daily cost"
+    static let legendCheckedFree = "Checked in free"
+    static let legendCountedFree = "Counted as free"
+    static let legendSlip = "Slip"
+    static let legendToday = "Not checked in"
+    static let legendDone = "Done"
+    static let legendMissed = "Not done"
+    static let freeLast30Tile = "Free, last 30"
+    static let doneLast30Tile = "Done, last 30"
+
+    static func perDay(_ amount: Decimal, locale: Locale = .current) -> String {
+        "\(money(amount, locale: locale)) a day"
+    }
+    static func strength(_ level: Int) -> String { "Strength \(level)" }
+    static func averageStrength(_ average: Double) -> String {
+        let tenths = (average * 10).rounded() / 10
+        if tenths == tenths.rounded() { return String(Int(tenths)) }
+        return String(format: "%.1f", tenths)
+    }
     static let edit = "Edit"
     static let quitDate = "Quit date"
+    static let startedLabel = "Started"
     static let nameField = "Name"
     static let nameRequired = "Add a name."
     static let nameTooLong = "Keep the name under 40 characters."

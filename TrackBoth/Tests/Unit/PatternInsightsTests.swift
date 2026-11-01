@@ -65,4 +65,29 @@ final class PatternInsightsTests: XCTestCase {
         XCTAssertEqual(summary.beaten, 2)
         XCTAssertEqual(summary.total, 4)
     }
+
+    func testUrgeBreakdownAveragesFinishedIntensity() {
+        let breakdown = PatternInsights.urgeBreakdown([
+            UrgeSample(outcome: .resisted, intensity: 4),
+            UrgeSample(outcome: .slipped, intensity: 5),
+            UrgeSample(outcome: .unknown, intensity: 2),
+            UrgeSample(outcome: .inProgress, intensity: 1)
+        ])
+        XCTAssertEqual(breakdown.beaten, 1)
+        XCTAssertEqual(breakdown.slipped, 1)
+        XCTAssertEqual(breakdown.unsure, 1)
+        XCTAssertEqual(breakdown.total, 3)
+        XCTAssertEqual(breakdown.averageIntensity, 11.0 / 3.0)
+        XCTAssertEqual(RecoveryCopy.averageStrength(11.0 / 3.0), "3.7")
+        XCTAssertEqual(RecoveryCopy.averageStrength(4), "4")
+    }
+
+    func testHardestWeekdayNeedsAClearLeader() {
+        let fridays = [date(2026, 10, 2, 20), date(2026, 10, 9, 21), date(2026, 10, 16, 18)]
+        XCTAssertEqual(calendar.component(.weekday, from: fridays[0]), 6)
+        XCTAssertEqual(PatternInsights.hardestWeekday(from: fridays, calendar: calendar), 6)
+        XCTAssertNil(PatternInsights.hardestWeekday(from: Array(fridays.prefix(2)), calendar: calendar))
+        let tie = fridays + [date(2026, 10, 3, 20), date(2026, 10, 10, 20), date(2026, 10, 17, 20)]
+        XCTAssertNil(PatternInsights.hardestWeekday(from: tie, calendar: calendar))
+    }
 }

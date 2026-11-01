@@ -244,15 +244,14 @@ Notification copy is never guilt-based. In **discreet mode** it never names the 
 - Then one `ProgressMetricCard` per active metric (vices first). For a vice: "12 days free · longest 40 · 27/30 days". For a habit: "5-day run · best 14 · 22/30 days". A chevron leads to **Metric Detail**.
 - An "Archived" disclosure at the bottom lists archived metrics (they can be restored).
 
-**Metric Detail** (`MetricDetailScreen`), top to bottom:
-1. Header: icon, name, live free clock (vice) or run count (habit).
-2. `StatTile` grid (2×2). Vice: Current run, Longest run, Free days (last 30), Saved. Habit: Current run, Best run, Done (last 30), Done (all time).
-3. **Calendar:** month grid with month paging back to `startedAt`. Day cell states: confirmed free (solid brand), presumed free (outlined brand), slip (amber dot), habit done (solid indigo), before start or future (dimmed). Tap a past day → **Day editor** sheet: vice = [Free] [Slipped] [Clear]; habit = [Done] [Not done]. Changing to "Slipped" opens the Slip flow for that day.
-4. **Your reasons:** a list with add, edit, swipe-to-delete, and drag to reorder. The first one is the "primary" reason.
-5. **Your plan:** the if-then text with an Edit button.
-6. **Patterns** (vices only, shown once there are ≥3 slips + urges combined): top 3 triggers as horizontal bars with counts; "Hardest time: Evenings" (§6.8).
-7. **Urges:** "Beaten 9 of 11" (resisted / total, excluding in-progress).
-8. Toolbar → **Edit** (MetricForm: name, icon, start date, cost per day, archive, delete).
+**Metric Detail** (`MetricDetailScreen`) uses one summary panel and, on a wide or short screen, a second column. Facts are label-and-value rows inside the panel (they stack only at accessibility text sizes). Landscape phones split the columns from 520pt wide.
+
+1. **Summary panel:** icon, live free clock (vice) or run count (habit), then rows for the four stats, the next milestone, and the quit date or start date. Saved shows the daily cost as a caption, or "—" plus **Add a daily cost** when no cost is set. Habits show "Don't miss twice" in this panel when yesterday was missed and today is still open. Vice rows: Current run, Longest run, Free last 30 (`free/counted`), Saved. Habit rows: Current run, Best run, Done last 30, Done all time.
+2. **Calendar:** month grid with month paging back to `startedAt`, plus a legend for the marks on screen. On a wide or short screen this sits under the summary, beside the record. Day cell states: confirmed free (solid brand), presumed free (outlined brand), slip (amber mark), habit done (solid indigo), missed (hollow), before start or future (dimmed). Tap a past day → **Day editor** sheet: vice = [Free] [Slipped] [Clear]; habit = [Done] [Not done]. Changing to "Slipped" opens the Slip flow for that day.
+3. **Record panel** (vices, one card, only once there is something to show): urge rows for beaten, slipped, not sure, and average strength. In-progress urges are left out. Until the first finished urge, that empty line stays in the summary panel. **Patterns** (once there are ≥3 slips + urges combined): top 3 triggers as horizontal bars with counts; hardest time and, when it isn't a tie, hardest weekday (§6.8). Hardest time and day count slips and non-resisted urges. **Recent:** the latest slips, ridden-out urges, and "not sure" urges (up to 8). Each row shows when, trigger names, strength, and any note. A slip picks up the strength of a slipped urge on that same day.
+4. **Your reasons:** a list with add, tap-to-edit, and a row menu to edit, move up, move down, or delete. The first one is marked Primary, with a line that it is what you see when you slip.
+5. **Your plan:** the if-then prefix and the plan text. **Save** appears when the text differs from what's stored.
+6. Toolbar → **Edit** (MetricForm: name, icon, start date, cost per day, archive, delete). The name is the navigation title.
 
 ### 4.8 Onboarding (8 short steps, all skippable except step 2)
 

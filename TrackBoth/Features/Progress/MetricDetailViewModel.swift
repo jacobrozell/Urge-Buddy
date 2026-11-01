@@ -1,20 +1,49 @@
 import Foundation
 import Observation
 
+struct DetailTile: Equatable {
+    var label: String
+    var value: String
+    var caption: String?
+}
+
+struct DetailTrigger: Equatable {
+    var title: String
+    var systemImage: String
+    var count: Int
+}
+
+struct DetailUrgeSummary: Equatable {
+    var beaten: String
+    var slipped: String
+    var unsure: String
+    var average: String?
+    var total: Int
+}
+
+struct DetailEvent: Equatable, Identifiable {
+    var id: String
+    var title: String
+    var when: String
+    var detail: String?
+    var systemImage: String
+    var usesSlipTint: Bool
+}
+
 struct DetailStats: Equatable {
     var primary: String
-    var tiles: [(String, String)]
+    var tiles: [DetailTile]
     var plan: String
-    var urgeLine: String?
-    var triggers: [(String, Int)]
-    var hardest: String?
+    var nextMilestone: String?
+    var startedLine: String
+    var atRisk: Bool
+    var needsCost: Bool
+    var urges: DetailUrgeSummary?
+    var triggers: [DetailTrigger]
+    var hardestTime: String?
+    var hardestDay: String?
+    var recent: [DetailEvent]
     var month: Date
-
-    static func == (lhs: DetailStats, rhs: DetailStats) -> Bool {
-        lhs.primary == rhs.primary && lhs.plan == rhs.plan && lhs.urgeLine == rhs.urgeLine && lhs.hardest == rhs.hardest && lhs.month == rhs.month
-            && lhs.tiles.map(\.0) == rhs.tiles.map(\.0) && lhs.tiles.map(\.1) == rhs.tiles.map(\.1)
-            && lhs.triggers.map(\.0) == rhs.triggers.map(\.0) && lhs.triggers.map(\.1) == rhs.triggers.map(\.1)
-    }
 }
 
 @MainActor
@@ -22,7 +51,21 @@ struct DetailStats: Equatable {
 final class MetricDetailViewModel {
     var calendar: Calendar
     var locale: Locale
-    private(set) var stats = DetailStats(primary: "", tiles: [], plan: "", urgeLine: nil, triggers: [], hardest: nil, month: Date())
+    private(set) var stats = DetailStats(
+        primary: "",
+        tiles: [],
+        plan: "",
+        nextMilestone: nil,
+        startedLine: "",
+        atRisk: false,
+        needsCost: false,
+        urges: nil,
+        triggers: [],
+        hardestTime: nil,
+        hardestDay: nil,
+        recent: [],
+        month: Date()
+    )
     var month: Date
 
     init(calendar: Calendar = .current, locale: Locale = .current, now: Date = Date()) {
@@ -32,40 +75,61 @@ final class MetricDetailViewModel {
     }
 
     func update(metric: Metric, entries: [MetricEntry], urges: [UrgeEvent], now: Date) {
+        let started = formattedDay(metric.startedAt)
         if metric.habitType == .vice {
             let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: calendar)
             let days = RecoveryMath.currentRunDays(history, now: now, calendar: calendar)
             let window = RecoveryMath.freeDays(inLast: 30, history, now: now, calendar: calendar)
-            let saved = RecoveryMath.moneySaved(totalFreeDays: RecoveryMath.totalFreeDays(history, now: now, calendar: calendar), costPerDay: metric.costPerDay)
+            let freeDays = RecoveryMath.totalFreeDays(history, now: now, calendar: calendar)
+            let savedAmount = RecoveryMath.moneySaved(totalFreeDays: freeDays, costPerDay: metric.costPerDay)
+            let next = MilestonePolicy.next(after: days, isVice: true)
+            let mine = urges.filter { $0.metricID == metric.id }
+            let slips = entries.filter { $0.metricID == metric.id && $0.status == .slipped }
+            let hardMoments = slips.map(\.occurredAt) + mine.filter { $0.outcome != .resisted }.map(\.startedAt)
             stats = DetailStats(
                 primary: RecoveryCopy.daysFree(days),
                 tiles: [
-                    (RecoveryCopy.currentRun, "\(days)"),
-                    (RecoveryCopy.longestRun, "\(RecoveryMath.longestRunDays(history, now: now, calendar: calendar))"),
-                    (RecoveryCopy.freeLast30, "\(window.free)/\(window.counted)"),
-                    (RecoveryCopy.savedStat, saved.map { RecoveryCopy.money($0, locale: locale) } ?? "—")
+                    DetailTile(label: RecoveryCopy.currentRun, value: "\(days)", caption: nil),
+                    DetailTile(label: RecoveryCopy.longestRun, value: "\(RecoveryMath.longestRunDays(history, now: now, calendar: calendar))", caption: nil),
+                    DetailTile(label: RecoveryCopy.freeLast30Tile, value: "\(window.free)/\(window.counted)", caption: nil),
+                    savedTile(amount: savedAmount, cost: metric.costPerDay)
                 ],
                 plan: metric.ifThenPlan ?? "",
-                urgeLine: urgeLine(urges.filter { $0.metricID == metric.id }),
-                triggers: patternTriggers(metric: metric, entries: entries, urges: urges),
-                hardest: hardest(metric: metric, entries: entries, urges: urges),
+                nextMilestone: RecoveryCopy.nextMilestone(next, inDays: next - days),
+                startedLine: started,
+                atRisk: false,
+                needsCost: metric.costPerDay == nil,
+                urges: urgeSummary(mine),
+                triggers: patternTriggers(slips: slips, urges: mine),
+                hardestTime: PatternInsights.hardestTime(from: hardMoments, calendar: calendar)?.title,
+                hardestDay: PatternInsights.hardestWeekday(from: hardMoments, calendar: calendar).map {
+                    weekdayName($0)
+                },
+                recent: recentEvents(slips: slips, urges: mine),
                 month: month
             )
         } else {
             let history = Snapshots.habitHistory(for: metric, entries: entries, calendar: calendar)
             let run = HabitMath.currentRun(history, now: now, calendar: calendar)
+            let next = MilestonePolicy.next(after: run, isVice: false)
             stats = DetailStats(
                 primary: RecoveryCopy.habitRun(run),
                 tiles: [
-                    (RecoveryCopy.currentRun, "\(run)"),
-                    (RecoveryCopy.bestRun, "\(HabitMath.bestRun(history, now: now, calendar: calendar))"),
-                    (RecoveryCopy.doneLast30, "\(HabitMath.doneCount(inLast: 30, history, now: now, calendar: calendar))"),
-                    (RecoveryCopy.doneAllTime, "\(history.doneDays.count)")
+                    DetailTile(label: RecoveryCopy.currentRun, value: "\(run)", caption: nil),
+                    DetailTile(label: RecoveryCopy.bestRun, value: "\(HabitMath.bestRun(history, now: now, calendar: calendar))", caption: nil),
+                    DetailTile(label: RecoveryCopy.doneLast30Tile, value: "\(HabitMath.doneCount(inLast: 30, history, now: now, calendar: calendar))", caption: nil),
+                    DetailTile(label: RecoveryCopy.doneAllTime, value: "\(history.doneDays.count)", caption: nil)
                 ],
                 plan: "",
-                urgeLine: nil,
+                nextMilestone: RecoveryCopy.nextMilestone(next, inDays: next - run),
+                startedLine: started,
+                atRisk: HabitMath.isAtRisk(history, now: now, calendar: calendar),
+                needsCost: false,
+                urges: nil,
                 triggers: [],
-                hardest: nil,
+                hardestTime: nil,
+                hardestDay: nil,
+                recent: [],
                 month: month
             )
         }
@@ -98,22 +162,93 @@ final class MetricDetailViewModel {
         month = next
     }
 
-    private func urgeLine(_ urges: [UrgeEvent]) -> String {
-        let summary = PatternInsights.urgeSummary(urges.map(\.outcome))
-        return "\(RecoveryCopy.beatenOf) \(summary.beaten) of \(summary.total)"
+    private func savedTile(amount: Decimal?, cost: Decimal?) -> DetailTile {
+        let value = cost == nil ? "—" : RecoveryCopy.money(amount ?? 0, locale: locale)
+        return DetailTile(label: RecoveryCopy.savedStat, value: value, caption: cost.map { RecoveryCopy.perDay($0, locale: locale) })
     }
 
-    private func patternTriggers(metric: Metric, entries: [MetricEntry], urges: [UrgeEvent]) -> [(String, Int)] {
-        let slips = entries.filter { $0.metricID == metric.id && $0.status == .slipped }
-        let mine = urges.filter { $0.metricID == metric.id }
-        guard slips.count + mine.count >= 3 else { return [] }
-        let groups = slips.map(\.triggers) + mine.map(\.triggers)
-        return PatternInsights.topTriggers(from: groups).map { ($0.0.title, $0.1) }
+    private func urgeSummary(_ urges: [UrgeEvent]) -> DetailUrgeSummary {
+        let breakdown = PatternInsights.urgeBreakdown(urges.map { UrgeSample(outcome: $0.outcome, intensity: $0.intensity) })
+        return DetailUrgeSummary(
+            beaten: "\(breakdown.beaten) of \(breakdown.total)",
+            slipped: "\(breakdown.slipped)",
+            unsure: "\(breakdown.unsure)",
+            average: breakdown.averageIntensity.map { RecoveryCopy.averageStrength($0) },
+            total: breakdown.total
+        )
     }
 
-    private func hardest(metric: Metric, entries: [MetricEntry], urges: [UrgeEvent]) -> String? {
-        let slips = entries.filter { $0.metricID == metric.id && $0.status == .slipped }.map(\.occurredAt)
-        let urgesTimes = urges.filter { $0.metricID == metric.id && $0.outcome != .resisted }.map(\.startedAt)
-        return PatternInsights.hardestTime(from: slips + urgesTimes, calendar: calendar).map { "\(RecoveryCopy.hardestTime): \($0.title)" }
+    private func patternTriggers(slips: [MetricEntry], urges: [UrgeEvent]) -> [DetailTrigger] {
+        guard slips.count + urges.count >= 3 else { return [] }
+        let groups = slips.map(\.triggers) + urges.map(\.triggers)
+        return PatternInsights.topTriggers(from: groups).map {
+            DetailTrigger(title: $0.0.title, systemImage: $0.0.systemImage, count: $0.1)
+        }
+    }
+
+    private func recentEvents(slips: [MetricEntry], urges: [UrgeEvent]) -> [DetailEvent] {
+        var events: [(Date, DetailEvent)] = []
+        for slip in slips {
+            let strength = slippedStrength(near: slip, urges: urges)
+            events.append((slip.occurredAt, DetailEvent(
+                id: "slip-\(slip.id.uuidString)",
+                title: RecoveryCopy.slipEvent,
+                when: formattedWhen(slip.occurredAt),
+                detail: detailLine(triggers: slip.triggers, strength: strength, note: slip.note),
+                systemImage: "arrow.uturn.backward",
+                usesSlipTint: true
+            )))
+        }
+        for urge in urges where urge.outcome == .resisted || urge.outcome == .unknown {
+            let rodeItOut = urge.outcome == .resisted
+            events.append((urge.startedAt, DetailEvent(
+                id: "urge-\(urge.id.uuidString)",
+                title: rodeItOut ? RecoveryCopy.rodeItOut : RecoveryCopy.notSureOutcome,
+                when: formattedWhen(urge.startedAt),
+                detail: detailLine(triggers: urge.triggers, strength: urge.intensity, note: urge.note),
+                systemImage: rodeItOut ? "wind" : "questionmark.circle",
+                usesSlipTint: false
+            )))
+        }
+        return events
+            .sorted { $0.0 > $1.0 }
+            .prefix(8)
+            .map(\.1)
+    }
+
+    /// Strength from the slipped urge closest to this slip, on the same day.
+    private func slippedStrength(near slip: MetricEntry, urges: [UrgeEvent]) -> Int? {
+        let matches = urges.filter { urge in
+            urge.outcome == .slipped && calendar.isDate(urge.startedAt, inSameDayAs: slip.occurredAt)
+        }
+        return matches.min {
+            abs($0.startedAt.timeIntervalSince(slip.occurredAt)) < abs($1.startedAt.timeIntervalSince(slip.occurredAt))
+        }?.intensity
+    }
+
+    private func detailLine(triggers: [TriggerTag], strength: Int?, note: String?) -> String? {
+        var parts: [String] = []
+        if let strength { parts.append(RecoveryCopy.strength(strength)) }
+        let tags = triggers.map(\.title)
+        if !tags.isEmpty { parts.append(tags.joined(separator: ", ")) }
+        if let note = note?.trimmingCharacters(in: .whitespacesAndNewlines), !note.isEmpty {
+            parts.append(note)
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    private func formattedDay(_ date: Date) -> String {
+        date.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(locale))
+    }
+
+    private func formattedWhen(_ date: Date) -> String {
+        date.formatted(Date.FormatStyle(date: .abbreviated, time: .shortened).locale(locale))
+    }
+
+    private func weekdayName(_ weekday: Int) -> String {
+        let symbols = calendar.weekdaySymbols
+        let index = weekday - 1
+        guard symbols.indices.contains(index) else { return "" }
+        return symbols[index]
     }
 }

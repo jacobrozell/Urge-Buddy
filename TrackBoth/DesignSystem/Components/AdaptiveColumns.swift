@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AdaptiveColumns<Leading: View, Trailing: View>: View {
     var spacing: CGFloat = Spacing.l
+    var minimumWidth: CGFloat = AdaptiveLayout.twoColumnMinWidth
     @ViewBuilder var leading: () -> Leading
     @ViewBuilder var trailing: () -> Trailing
 
@@ -10,7 +11,7 @@ struct AdaptiveColumns<Leading: View, Trailing: View>: View {
 
     var body: some View {
         Group {
-            if AdaptiveLayout.usesTwoColumns(width: width, dynamicType: dynamicTypeSize) {
+            if AdaptiveLayout.usesTwoColumns(width: width, dynamicType: dynamicTypeSize, minimumWidth: minimumWidth) {
                 HStack(alignment: .top, spacing: spacing) {
                     VStack(alignment: .leading, spacing: spacing) { leading() }
                         .frame(maxWidth: .infinity, alignment: .topLeading)

@@ -4,6 +4,7 @@ struct StatTile: View {
     var value: String
     var label: String
     var systemImage: String
+    var caption: String? = nil
 
     var body: some View {
         Card {
@@ -21,10 +22,21 @@ struct StatTile: View {
                     .font(.footnote)
                     .foregroundStyle(Color.tbTextSecondary)
                     .fixedSize(horizontal: false, vertical: true)
+                if let caption {
+                    Text(caption)
+                        .font(.caption)
+                        .foregroundStyle(Color.tbTextSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(label), \(value)")
+        .accessibilityLabel(spoken)
+    }
+
+    private var spoken: String {
+        if let caption { return "\(label), \(value), \(caption)" }
+        return "\(label), \(value)"
     }
 }
 

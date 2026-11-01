@@ -76,7 +76,7 @@ Three layout signals (see `DesignSystem/AdaptiveLayout.swift`):
 
 1. **Navigation split** — `usesSplitNavigation`: regular width **and** regular height, or regular height with measured container width ≥ 744pt (TabView on iPad). Progress uses one `NavigationSplitView` with forced `.compact` horizontal size class when not split (Pro Max landscape stays stack push).
 2. **Short height** — `isShortHeight` (`verticalSizeClass == .compact`): inline nav titles, primary actions in the toolbar (check-in Done, slip Save), side-by-side urge ride and onboarding controls, landscape celebration split.
-3. **Two content columns** — `AdaptiveColumns` when measured width ≥ 700pt and Dynamic Type is not accessibility-sized. Today (Quitting | Building), metric detail (vice/habit columns).
+3. **Two content columns** — `AdaptiveColumns` when measured width ≥ 700pt and Dynamic Type is not accessibility-sized. Today (Quitting | Building), metric detail (summary | record). Metric detail lowers that to 520pt when the height is compact, so landscape phones put the calendar beside the record.
 
 **Components:** `ReadableColumn(width: .text | .wide)`, `AdaptiveColumns`, `View.adaptiveFormSheet()`, `View.adaptivePageSheet()`, `View.readableListMargins()`.
 
