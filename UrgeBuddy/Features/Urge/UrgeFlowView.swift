@@ -326,12 +326,7 @@ struct UrgeFlowView: View {
                     progress: model.progress(at: context.date)
                 )
                 VStack(spacing: Spacing.s) {
-                    Text(clock(remaining))
-                        .font(.system(.largeTitle, design: .rounded).weight(.bold))
-                        .monospacedDigit()
-                        .foregroundStyle(Color.tbOnCalm)
-                        .contentTransition(.numericText(countsDown: true))
-                        .urgeBuddyAnimation(UrgeBuddyMotion.quick, value: Int(remaining), reduceMotion: reduceMotion)
+                    countdownLabel(remaining, font: .system(.largeTitle, design: .rounded).weight(.bold))
                         .onScrollVisibilityChange(threshold: 0.5) { visible in
                             timerPinned = !visible
                         }
@@ -355,12 +350,7 @@ struct UrgeFlowView: View {
     private var pinnedTimer: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
             let remaining = model?.remaining(at: context.date) ?? 0
-            Text(clock(remaining))
-                .font(.system(.title3, design: .rounded).weight(.bold))
-                .monospacedDigit()
-                .foregroundStyle(Color.tbOnCalm)
-                .contentTransition(.numericText(countsDown: true))
-                .urgeBuddyAnimation(UrgeBuddyMotion.quick, value: Int(remaining), reduceMotion: reduceMotion)
+            countdownLabel(remaining, font: .system(.title3, design: .rounded).weight(.bold))
                 .padding(.horizontal, Spacing.m)
                 .frame(minHeight: 44)
                 .accessibilityLabel(clock(remaining))
@@ -928,6 +918,21 @@ struct UrgeFlowView: View {
             model = UrgeViewModel(store: RecoveryStore(context: modelContext))
         }
         model?.start(metrics: metrics, preferredID: preferredID, now: Date())
+    }
+
+    @ViewBuilder
+    private func countdownLabel(_ remaining: TimeInterval, font: Font) -> some View {
+        let label = Text(clock(remaining))
+            .font(font)
+            .monospacedDigit()
+            .foregroundStyle(Color.tbOnCalm)
+        if LaunchConfiguration.capturesStillFrames {
+            label
+        } else {
+            label
+                .contentTransition(.numericText(countsDown: true))
+                .urgeBuddyAnimation(UrgeBuddyMotion.quick, value: Int(remaining), reduceMotion: reduceMotion)
+        }
     }
 
     private func clock(_ remaining: TimeInterval) -> String {

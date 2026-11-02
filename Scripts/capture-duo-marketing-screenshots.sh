@@ -101,6 +101,16 @@ verify_size() {
   fi
 }
 
+# The ride clock changes every second. Shoot a quarter-second after a tick so the digits are still.
+wait_for_settled_second() {
+  python3 - <<'PY'
+import time
+frac = time.time() % 1.0
+wait = 0.25 - frac if frac < 0.25 else (1.0 - frac) + 0.25
+time.sleep(wait)
+PY
+}
+
 capture_one() {
   local display="$1"
   local slug="$2"
@@ -128,6 +138,9 @@ capture_one() {
   xcrun simctl launch "$SIM_UDID" "$BUNDLE_ID" \
     "${args[@]}" -snapshot_orientation "$orientation" >/dev/null
   sleep "$LAUNCH_DELAY"
+  if printf '%s\n' "${args[@]}" | grep -qx -- '-urge_ride'; then
+    wait_for_settled_second
+  fi
   local out="$out_dir/$filename"
   xcrun simctl io "$SIM_UDID" screenshot --display="$display_flag" --mask=ignored "$out"
   flatten_png "$out"

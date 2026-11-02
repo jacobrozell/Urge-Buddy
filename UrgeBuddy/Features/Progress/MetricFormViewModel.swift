@@ -18,10 +18,10 @@ final class MetricFormViewModel {
     let isNew: Bool
     private let originalMode: ViceMode?
 
-    init(metric: Metric?) {
+    init(metric: Metric?, habitType: HabitType = .vice) {
         if let metric {
             name = metric.name
-            habitType = metric.habitType
+            self.habitType = metric.habitType
             iconName = metric.iconName
             startedAt = metric.startedAt
             costText = metric.costPerDay.map { NSDecimalNumber(decimal: $0).stringValue } ?? ""
@@ -35,8 +35,8 @@ final class MetricFormViewModel {
             originalMode = metric.habitType == .vice ? metric.viceMode : nil
         } else {
             name = ""
-            habitType = .vice
-            iconName = Presets.vices.first?.iconName ?? Presets.fallbackIcon
+            self.habitType = habitType
+            iconName = (habitType == .positive ? Presets.habits.first : Presets.vices.first)?.iconName ?? Presets.fallbackIcon
             startedAt = Date()
             costText = ""
             isArchived = false

@@ -48,6 +48,11 @@ enum LaunchConfiguration {
         ProcessInfo.processInfo.arguments.contains("-present_slip")
     }
 
+    /// Screenshot launches. The countdown must not animate, or a capture mid-tick ghosts a digit.
+    static var capturesStillFrames: Bool {
+        ProcessInfo.processInfo.arguments.contains("-snapshot_orientation")
+    }
+
     static var startsOnVices: Bool {
         ProcessInfo.processInfo.arguments.contains("-onboarding_vices")
     }
@@ -190,8 +195,9 @@ enum DemoData {
     private static func seedMarketing(context: ModelContext, now: Date, calendar: Calendar) throws {
         let store = RecoveryStore(context: context, calendar: calendar)
         let alcoholStart = calendar.date(byAdding: .day, value: -23, to: now) ?? now
-        let slipDay = calendar.date(byAdding: .day, value: -9, to: now) ?? now
-        let slipAt = calendar.date(bySettingHour: 20, minute: 0, second: 0, of: slipDay) ?? slipDay
+        // Exactly 9 days ago, so "9 days free" matches a 9-day check-in run.
+        // Today stays open. Counting today as well would make the streak one day longer than the clock.
+        let slipAt = calendar.date(byAdding: .day, value: -9, to: now) ?? now
         let alcohol = try store.addMetric(
             name: "Alcohol",
             habitType: .vice,
@@ -203,7 +209,7 @@ enum DemoData {
         try store.setPlan(alcohol, plan: "When I feel the urge, I will go for a walk.")
         try store.addReason("For my family", to: alcohol)
         try store.logSlip(alcohol, occurredAt: slipAt, triggers: [.tired], note: nil)
-        for offset in [-8, -7, -6, -5, -4, -3, -2, -1, 0] {
+        for offset in -8 ... -1 {
             if let day = calendar.date(byAdding: .day, value: offset, to: now) {
                 try store.markFree(alcohol, on: day, now: day)
             }

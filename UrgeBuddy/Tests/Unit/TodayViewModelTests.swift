@@ -44,6 +44,8 @@ final class TodayViewModelTests: XCTestCase {
         XCTAssertTrue(card.week.dropLast().allSatisfy { $0 == .presumedFree })
         XCTAssertEqual(card.nextMilestone, RecoveryCopy.nextMilestone(14, inDays: 7))
         XCTAssertEqual(model.checkInRemaining, 1)
+        XCTAssertEqual(model.checkInStreak, 0)
+        XCTAssertFalse(model.checkInDoneToday)
         XCTAssertEqual(model.yesterdayPrompt?.name, "Alcohol")
         XCTAssertTrue(model.showsSOS)
 
@@ -69,5 +71,7 @@ final class TodayViewModelTests: XCTestCase {
         model.update(metrics: [alcohol], entries: entries, now: date(2026, 10, 13, 9), dismissedYesterday: nil)
         XCTAssertNil(model.yesterdayPrompt)
         XCTAssertEqual(model.checkInRemaining, 1)
+        XCTAssertEqual(model.checkInStreak, 1)
+        XCTAssertFalse(model.checkInDoneToday)
     }
 }

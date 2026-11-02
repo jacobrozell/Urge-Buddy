@@ -2,37 +2,91 @@ import SwiftUI
 
 struct CheckInBanner: View {
     var remaining: Int
+    var streak: Int
     var action: () -> Void
+
+    private var subtitle: String {
+        remaining > 0 ? RecoveryCopy.checkInBanner(left: remaining) : RecoveryCopy.checkInAbout
+    }
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: Spacing.m) {
-                Image(systemName: "checkmark.circle")
-                    .font(.title2)
-                    .foregroundStyle(Color.tbBrand)
-                    .accessibilityHidden(true)
+            HStack(alignment: .center, spacing: Spacing.m) {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(RecoveryCopy.checkInTitle)
-                        .font(.headline)
-                        .foregroundStyle(Color.tbTextPrimary)
-                    Text(RecoveryCopy.checkInBanner(left: remaining))
+                    if streak > 0 {
+                        HStack(alignment: .firstTextBaseline, spacing: Spacing.s) {
+                            Text("\(streak)")
+                                .bigNumberStyle()
+                            Text(RecoveryCopy.checkInStreakUnit(streak))
+                                .font(.title3.weight(.semibold))
+                        }
+                    } else {
+                        Text(RecoveryCopy.checkInTitle)
+                            .font(.title2.weight(.semibold))
+                    }
+                    Text(subtitle)
                         .font(.subheadline)
-                        .foregroundStyle(Color.tbTextSecondary)
+                        .opacity(0.85)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Image(systemName: "chevron.right")
-                    .foregroundStyle(Color.tbTextSecondary)
+                    .font(.title3.weight(.semibold))
                     .accessibilityHidden(true)
             }
+            .foregroundStyle(Color.tbOnBrand)
             .padding(Spacing.l)
             .frame(minHeight: 44)
-            .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+            .background(Color.tbBrand, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(RecoveryCopy.checkInTitle), \(RecoveryCopy.checkInBanner(left: remaining))")
+        .accessibilityLabel(accessibilityText)
         .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier(AccessibilityIdentifiers.todayCheckInBanner)
+    }
+
+    private var accessibilityText: String {
+        if streak > 0 {
+            return "\(RecoveryCopy.checkInTitle), \(RecoveryCopy.checkInStreak(streak)), \(subtitle)"
+        }
+        return "\(RecoveryCopy.checkInTitle), \(subtitle)"
+    }
+}
+
+struct CheckInStreakCard: View {
+    var streak: Int
+
+    var body: some View {
+        HStack(alignment: .center, spacing: Spacing.m) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.largeTitle)
+                .foregroundStyle(Color.tbBrand)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                if streak > 0 {
+                    HStack(alignment: .firstTextBaseline, spacing: Spacing.s) {
+                        Text("\(streak)")
+                            .bigNumberStyle()
+                            .foregroundStyle(Color.tbBrand)
+                        Text(RecoveryCopy.checkInStreakUnit(streak))
+                            .font(.title3.weight(.semibold))
+                            .foregroundStyle(Color.tbTextPrimary)
+                    }
+                }
+                Text(RecoveryCopy.checkedInToday)
+                    .font(.subheadline)
+                    .foregroundStyle(Color.tbTextSecondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(Spacing.l)
+        .frame(minHeight: 44)
+        .background(Color.tbBrandSoft, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(streak > 0
+            ? "\(RecoveryCopy.checkInStreak(streak)). \(RecoveryCopy.checkedInToday)"
+            : RecoveryCopy.checkedInToday)
+        .accessibilityIdentifier(AccessibilityIdentifiers.todayCheckInStreak)
     }
 }
 

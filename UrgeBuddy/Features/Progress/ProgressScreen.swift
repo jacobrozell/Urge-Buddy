@@ -31,21 +31,13 @@ struct ProgressScreen: View {
         NavigationSplitView {
             List(selection: $selection) {
                 Section {
-                    LazyVGrid(
-                        columns: [GridItem(.adaptive(minimum: dynamicTypeSize.usesAccessibilityLayout ? 280 : 150), spacing: Spacing.s)],
-                        alignment: .leading,
-                        spacing: Spacing.s
-                    ) {
-                        if let saved = model.summary.savedValue {
-                            StatTile(value: saved, label: RecoveryCopy.totalSaved, systemImage: "dollarsign.circle")
-                        }
-                        StatTile(value: "\(model.summary.urgesBeaten)", label: RecoveryCopy.urgesBeaten, systemImage: "wind")
-                        StatTile(value: "\(model.summary.daysCheckedIn)", label: RecoveryCopy.daysCheckedIn, systemImage: "checkmark.circle")
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.vertical, Spacing.s)
+                    ProgressSummaryCard(
+                        summary: model.summary,
+                        stacksStats: dynamicTypeSize.usesAccessibilityLayout
+                    )
                     .listRowBackground(Color.tbBackground)
                     .listRowSeparator(.hidden)
+                    .selectionDisabled()
                 }
                 Section {
                     ForEach(model.active) { card in
@@ -59,8 +51,8 @@ struct ProgressScreen: View {
                     }
                 }
                 if !model.recentDays.isEmpty {
-                    Section(RecoveryCopy.recentDays) {
-                        ForEach(model.recentDays) { row in
+                    Section {
+                        ForEach(model.recentDays, id: \.day) { row in
                             HStack(alignment: .firstTextBaseline, spacing: Spacing.m) {
                                 Image(systemName: row.systemImage)
                                     .foregroundStyle(Color.tbBrand)
@@ -77,8 +69,13 @@ struct ProgressScreen: View {
                                 }
                             }
                             .accessibilityElement(children: .combine)
+                            .accessibilityIdentifier(AccessibilityIdentifiers.progressRecentDay)
                             .listRowBackground(Color.tbSurface)
+                            .selectionDisabled()
                         }
+                    } header: {
+                        Text(RecoveryCopy.recentDays)
+                            .selectionDisabled()
                     }
                 }
                 if !model.journal.isEmpty {
@@ -107,6 +104,7 @@ struct ProgressScreen: View {
                         }
                         .accessibilityIdentifier(AccessibilityIdentifiers.progressJournal)
                         .listRowBackground(Color.tbSurface)
+                        .selectionDisabled()
                     }
                 }
                 if !model.archived.isEmpty {
@@ -193,15 +191,22 @@ struct ProgressScreen: View {
     @ViewBuilder
     private func cardContents(_ card: ProgressCardModel) -> some View {
         IconBadge(systemImage: card.iconName, tint: card.habitType == .vice ? .tbBrand : .tbHabit)
-        VStack(alignment: .leading, spacing: Spacing.s) {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
             Text(card.name)
                 .font(.headline)
                 .foregroundStyle(Color.tbTextPrimary)
                 .fixedSize(horizontal: false, vertical: true)
-            Text(card.line)
-                .font(.subheadline)
-                .foregroundStyle(Color.tbTextSecondary)
+            let parts = card.line.split(separator: "\n", maxSplits: 1, omittingEmptySubsequences: false)
+            Text(String(parts.first ?? ""))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.tbTextPrimary)
                 .fixedSize(horizontal: false, vertical: true)
+            if parts.count > 1 {
+                Text(String(parts[1]))
+                    .font(.footnote)
+                    .foregroundStyle(Color.tbTextSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 
@@ -238,6 +243,88 @@ struct ProgressScreen: View {
         guard LaunchConfiguration.opensFirstDetail, !didOpenDetail, let id = model.active.first?.id else { return }
         didOpenDetail = true
         selection = id
+    }
+}
+
+private struct ProgressSummaryCard: View {
+    var summary: ProgressSummary
+    var stacksStats: Bool
+
+    private struct Stat: Identifiable {
+        var id: String
+        var value: String
+        var label: String
+        var spoken: String
+    }
+
+    private var heroValue: String {
+        summary.savedValue ?? "\(summary.checkInStreak)"
+    }
+
+    private var heroLabel: String {
+        summary.savedValue == nil ? RecoveryCopy.checkInStreakLabel : RecoveryCopy.totalSaved
+    }
+
+    private var stats: [Stat] {
+        var row = [
+            Stat(id: "urges", value: "\(summary.urgesBeaten)", label: RecoveryCopy.urgesBeaten, spoken: "\(RecoveryCopy.urgesBeaten), \(summary.urgesBeaten)"),
+            Stat(id: "days", value: "\(summary.daysCheckedIn)", label: RecoveryCopy.checkedIn, spoken: "\(RecoveryCopy.daysCheckedIn), \(summary.daysCheckedIn)")
+        ]
+        if summary.savedValue != nil {
+            row.append(Stat(
+                id: "streak",
+                value: "\(summary.checkInStreak)",
+                label: RecoveryCopy.inARow,
+                spoken: "\(RecoveryCopy.checkInStreakLabel), \(summary.checkInStreak)"
+            ))
+        }
+        return row
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(heroValue)
+                    .bigNumberStyle()
+                    .foregroundStyle(Color.tbTextPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                Text(heroLabel)
+                    .font(.subheadline)
+                    .foregroundStyle(Color.tbTextSecondary)
+            }
+            if stacksStats {
+                VStack(alignment: .leading, spacing: Spacing.s) { statRow }
+            } else {
+                HStack(alignment: .firstTextBaseline, spacing: Spacing.m) { statRow }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.l)
+        .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spoken)
+    }
+
+    @ViewBuilder
+    private var statRow: some View {
+        ForEach(stats) { stat in
+            VStack(alignment: .leading, spacing: 2) {
+                Text(stat.value)
+                    .font(.title3.weight(.semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(Color.tbTextPrimary)
+                Text(stat.label)
+                    .font(.caption)
+                    .foregroundStyle(Color.tbTextSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: stacksStats ? nil : .infinity, alignment: .leading)
+        }
+    }
+
+    private var spoken: String {
+        ([ "\(heroLabel), \(heroValue)" ] + stats.map(\.spoken)).joined(separator: ". ")
     }
 }
 

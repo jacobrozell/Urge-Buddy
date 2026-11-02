@@ -17,6 +17,7 @@ final class ProgressViewModelTests: XCTestCase {
         XCTAssertEqual(model.summary.savedValue, "$88.00")
         XCTAssertEqual(model.summary.urgesBeaten, 0)
         XCTAssertEqual(model.summary.daysCheckedIn, ProgressMath.daysCheckedIn(loggedDays: entries.map(\.day), now: date(2026, 10, 13, 10), calendar: .testNY))
+        XCTAssertEqual(model.summary.checkInStreak, 0)
     }
 
     func testACostWithNothingSavedYetStillShowsZero() throws {
@@ -204,5 +205,79 @@ final class MetricFormViewModelTests: XCTestCase {
         let saved = try model.save(metric: nil, store: harness.store, now: now)
         XCTAssertEqual(saved.startedAt, now)
         XCTAssertNil(saved.costPerDay)
+    }
+}
+
+@MainActor
+final class CheckInStreakTests: XCTestCase {
+    func testStreakCountsAnsweredDaysAndStopsAtAGap() throws {
+        let harness = try TestHarness()
+        let store = harness.store
+        let alcohol = try store.addMetric(
+            name: "Alcohol",
+            habitType: .vice,
+            iconName: "wineglass",
+            startedAt: date(2026, 10, 1, 9),
+            costPerDay: nil,
+            firstReason: nil
+        )
+        let now = date(2026, 10, 13, 10)
+        for day in [10, 12, 13] {
+            try store.markFree(alcohol, on: date(2026, 10, day), now: date(2026, 10, day, 9))
+        }
+        try store.logSlip(alcohol, occurredAt: date(2026, 10, 9, 20), triggers: [], note: nil)
+        let entries = try store.context.fetch(FetchDescriptor<MetricEntry>())
+
+        XCTAssertEqual(ProgressMath.checkInStreak(metrics: [alcohol], entries: entries, now: now, calendar: .testNY), 2)
+        XCTAssertTrue(ProgressMath.isCheckedIn(on: now, metrics: [alcohol], entries: entries, now: now, calendar: .testNY))
+
+        let openToday = entries.filter { !Calendar.testNY.isDate($0.day, inSameDayAs: now) }
+        XCTAssertEqual(ProgressMath.checkInStreak(metrics: [alcohol], entries: openToday, now: now, calendar: .testNY), 1)
+        XCTAssertFalse(ProgressMath.isCheckedIn(on: now, metrics: [alcohol], entries: openToday, now: now, calendar: .testNY))
+    }
+
+    func testPresumedFreeDaysDoNotCount() throws {
+        let harness = try TestHarness()
+        let alcohol = try harness.store.addMetric(
+            name: "Alcohol",
+            habitType: .vice,
+            iconName: "wineglass",
+            startedAt: date(2026, 10, 1, 9),
+            costPerDay: nil,
+            firstReason: nil
+        )
+        let now = date(2026, 10, 13, 10)
+        XCTAssertEqual(ProgressMath.checkInStreak(metrics: [alcohol], entries: [], now: now, calendar: .testNY), 0)
+    }
+
+    func testHabitOnlyStreakUsesDoneDays() throws {
+        let harness = try TestHarness()
+        let store = harness.store
+        let walk = try store.addMetric(
+            name: "Walk",
+            habitType: .positive,
+            iconName: "figure.walk",
+            startedAt: date(2026, 10, 1, 9),
+            costPerDay: nil,
+            firstReason: nil
+        )
+        try store.setHabitDone(walk, on: date(2026, 10, 12), done: true, now: date(2026, 10, 12, 8))
+        try store.setHabitDone(walk, on: date(2026, 10, 11), done: true, now: date(2026, 10, 11, 8))
+        let entries = try store.context.fetch(FetchDescriptor<MetricEntry>())
+        let now = date(2026, 10, 13, 10)
+        XCTAssertEqual(ProgressMath.checkInStreak(metrics: [walk], entries: entries, now: now, calendar: .testNY), 2)
+        XCTAssertFalse(ProgressMath.isCheckedIn(on: now, metrics: [walk], entries: entries, now: now, calendar: .testNY))
+    }
+
+    func testEveryViceHasToBeAnswered() throws {
+        let harness = try TestHarness()
+        let store = harness.store
+        let alcohol = try store.addMetric(name: "Alcohol", habitType: .vice, iconName: "wineglass", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil)
+        let smoking = try store.addMetric(name: "Smoking", habitType: .vice, iconName: "smoke", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil)
+        try store.markFree(alcohol, on: date(2026, 10, 13), now: date(2026, 10, 13, 9))
+        try store.markFree(alcohol, on: date(2026, 10, 12), now: date(2026, 10, 12, 9))
+        let entries = try store.context.fetch(FetchDescriptor<MetricEntry>())
+        let now = date(2026, 10, 13, 10)
+        XCTAssertEqual(ProgressMath.checkInStreak(metrics: [alcohol, smoking], entries: entries, now: now, calendar: .testNY), 0)
     }
 }

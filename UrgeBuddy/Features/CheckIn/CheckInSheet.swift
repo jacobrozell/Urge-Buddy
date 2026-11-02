@@ -3,6 +3,7 @@ import SwiftUI
 
 struct CheckInCompleteView: View {
     var lines: [CheckInSummaryLine]
+    var streak: Int
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
 
@@ -14,10 +15,25 @@ struct CheckInCompleteView: View {
                 .frame(maxWidth: .infinity)
                 .symbolEffect(.bounce, value: reduceMotion ? false : appeared)
                 .accessibilityHidden(true)
-            Text(RecoveryCopy.checkInTitle)
-                .font(.title2)
-                .foregroundStyle(Color.tbTextPrimary)
-                .frame(maxWidth: .infinity, alignment: .center)
+            if streak > 0 {
+                Text("\(streak)")
+                    .bigNumberStyle()
+                    .foregroundStyle(Color.tbBrand)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                Text(RecoveryCopy.checkInStreak(streak))
+                    .font(.title2.weight(.semibold))
+                    .foregroundStyle(Color.tbTextPrimary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                Text(RecoveryCopy.checkedInToday)
+                    .font(.body)
+                    .foregroundStyle(Color.tbTextSecondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            } else {
+                Text(RecoveryCopy.checkInTitle)
+                    .font(.title2)
+                    .foregroundStyle(Color.tbTextPrimary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            }
             ForEach(lines) { line in
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(line.name)
@@ -64,7 +80,7 @@ struct CheckInSheet: View {
                     ReadableColumn {
                         VStack(alignment: .leading, spacing: Spacing.m) {
                             if let model, model.showComplete {
-                                CheckInCompleteView(lines: model.lines)
+                                CheckInCompleteView(lines: model.lines, streak: model.checkInStreak)
                             } else if let model {
                                 form(model)
                             }

@@ -7,6 +7,7 @@ struct ProgressSummary: Equatable {
     var savedText: String?
     var urgesBeaten: Int
     var daysCheckedIn: Int
+    var checkInStreak: Int
 }
 
 struct ProgressCardModel: Identifiable, Equatable {
@@ -34,7 +35,7 @@ struct DayNoteRow: Identifiable, Equatable {
 final class ProgressViewModel {
     var calendar: Calendar
     var locale: Locale
-    private(set) var summary = ProgressSummary(savedValue: nil, savedText: nil, urgesBeaten: 0, daysCheckedIn: 0)
+    private(set) var summary = ProgressSummary(savedValue: nil, savedText: nil, urgesBeaten: 0, daysCheckedIn: 0, checkInStreak: 0)
     private(set) var active: [ProgressCardModel] = []
     private(set) var archived: [ProgressCardModel] = []
     private(set) var recentDays: [DayNoteRow] = []
@@ -70,7 +71,8 @@ final class ProgressViewModel {
             savedValue: withSavings.isEmpty ? nil : RecoveryCopy.money(saved, locale: locale),
             savedText: withSavings.isEmpty ? nil : RecoveryCopy.saved(saved, locale: locale),
             urgesBeaten: PatternInsights.urgeSummary(urges.map(\.outcome)).beaten,
-            daysCheckedIn: ProgressMath.daysCheckedIn(loggedDays: entries.map(\.day), now: now, calendar: calendar)
+            daysCheckedIn: ProgressMath.daysCheckedIn(loggedDays: entries.map(\.day), now: now, calendar: calendar),
+            checkInStreak: ProgressMath.checkInStreak(metrics: metrics, entries: entries, now: now, calendar: calendar)
         )
     }
 

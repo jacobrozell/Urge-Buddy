@@ -70,6 +70,19 @@ final class UrgeBuddyUITests: UrgeBuddyUITestCase {
         XCTAssertTrue(greatRow.waitForExistence(timeout: 6))
     }
 
+    func testRecentDayStaysOnTheProgressList() {
+        launchApp(extraArguments: ["-tab_progress"])
+        let row = app.descendants(matching: .any)["progress.recentDay"].firstMatch
+        for _ in 0..<6 where !row.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(row.waitForExistence(timeout: 8))
+        row.tap()
+        app.staticTexts["Recent days"].firstMatch.tap()
+        XCTAssertFalse(app.staticTexts["Pick something to see its progress"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.navigationBars["Progress"].exists)
+    }
+
     func testUrgeAddWhyDuringRide() {
         launchApp()
         app.buttons["today.sosButton"].tap()

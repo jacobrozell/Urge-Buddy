@@ -49,6 +49,18 @@ enum RecoveryCopy {
         "\(left) to go · about 10 seconds"
     }
 
+    static let checkInAbout = "About 10 seconds"
+    static let checkedInToday = "You checked in today."
+    static let checkInStreakLabel = "Check-in streak"
+
+    static func checkInStreak(_ count: Int) -> String {
+        count == 1 ? "1 day in a row" : "\(count) days in a row"
+    }
+
+    static func checkInStreakUnit(_ count: Int) -> String {
+        count == 1 ? "day in a row" : "days in a row"
+    }
+
     static let sosButton = "I'm having an urge"
     static let urgeSurfingTitle = "Urge surfing"
     static let whatIsUrgeSurfing = "What is urge surfing?"
@@ -104,6 +116,8 @@ enum RecoveryCopy {
     static let startWithOneThing = "Start with one thing"
     static let startWithOneThingMessage = "Add a vice or a habit and today gets simpler."
     static let addSomething = "Add something"
+    static let addQuitting = "Add something you're quitting"
+    static let addBuilding = "Add a habit"
     static let yesterdayYes = "Yes"
     static let dismiss = "Dismiss"
     static let slipLoggedThanks = "Slip logged · thanks for being honest"
@@ -202,6 +216,8 @@ enum RecoveryCopy {
 
     static let totalSaved = "Total saved"
     static let daysCheckedIn = "Days checked in"
+    static let checkedIn = "Checked in"
+    static let inARow = "In a row"
     static let pickSomethingTitle = "Pick something to see its progress"
     static let archived = "Archived"
     static let previousMonth = "Previous month"

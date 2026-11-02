@@ -10,7 +10,7 @@ Related: [Specs/DesignSystemSpec.md](../Specs/DesignSystemSpec.md) §8.7, [ongoi
 
 - iPhone 17 Pro Max, 1320×2868: Today, urge ride, slip summary, progress detail, cut back.
 - iPad Pro 13-inch (M5), 2064×2752: the same five scenes.
-- iPhone Duo (2026-11-02): outer 1398×2034 portrait and inner 2853×2007 landscape, same five scenes. Uploaded to Connect. Folding mid-flow is still open below.
+- iPhone Duo (2026-11-02): outer 1398×2034 portrait and inner 2853×2007 landscape, same five scenes. Recaptured after the check-in and progress polish and uploaded to Connect. Folding mid-flow is still open below.
 
 Files are in `marketing-screenshots/` and are not committed. Dark mode, AX3, Stage Manager, and folding mid-urge are still open below.
 

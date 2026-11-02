@@ -3,6 +3,7 @@ import SwiftUI
 
 struct MetricFormView: View {
     var metric: Metric?
+    var habitType: HabitType = .vice
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -76,7 +77,7 @@ struct MetricFormView: View {
         }
         .adaptiveFormSheet()
         .onAppear {
-            if model == nil { model = MetricFormViewModel(metric: metric) }
+            if model == nil { model = MetricFormViewModel(metric: metric, habitType: habitType) }
         }
         .onChange(of: model?.viceMode) { old, new in
             if old == .cutBack, new == .quit { model?.startedAt = Date() }

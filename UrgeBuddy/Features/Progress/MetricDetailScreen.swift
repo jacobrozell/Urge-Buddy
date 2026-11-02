@@ -157,7 +157,17 @@ struct MetricDetailScreen: View {
                     )
                 }
                 if metric.habitType == .vice, (model.stats.urges?.total ?? 0) == 0 {
-                    detailRow(label: RecoveryCopy.urges, value: RecoveryCopy.noUrgesYet)
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(RecoveryCopy.urges)
+                            .font(.subheadline)
+                            .foregroundStyle(Color.tbTextSecondary)
+                        Text(RecoveryCopy.noUrgesYet)
+                            .font(.subheadline)
+                            .foregroundStyle(Color.tbTextPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .accessibilityElement(children: .combine)
                 }
                 if model.stats.needsCost {
                     Button { sheet = .form } label: {

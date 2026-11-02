@@ -18,9 +18,10 @@ struct TodayScreen: View {
 
     var body: some View {
         NavigationStack {
+            VStack(spacing: 0) {
             ScrollView {
                 ReadableColumn(width: .wide) {
-                    VStack(alignment: .leading, spacing: Spacing.m) {
+                    VStack(alignment: .leading, spacing: Spacing.s) {
                         if dynamicTypeSize.usesAccessibilityLayout {
                             dateLabel
                         }
@@ -34,9 +35,16 @@ struct TodayScreen: View {
                             }
                             .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
                         }
-                        if model.checkInRemaining > 0 {
-                            CheckInBanner(remaining: model.checkInRemaining) { router.present(.checkIn) }
+                        if !model.isEmpty {
+                            if model.checkInDoneToday {
+                                CheckInStreakCard(streak: model.checkInStreak)
+                                    .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
+                            } else {
+                                CheckInBanner(remaining: model.checkInRemaining, streak: model.checkInStreak) {
+                                    router.present(.checkIn)
+                                }
                                 .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
+                            }
                         }
                         if model.showsSOS {
                             UrgeSurfingRow { sheet = .surfing }
@@ -48,39 +56,42 @@ struct TodayScreen: View {
                                 title: RecoveryCopy.startWithOneThing,
                                 message: RecoveryCopy.startWithOneThingMessage,
                                 actionTitle: RecoveryCopy.addSomething
-                            ) { sheet = .add }
+                            ) { sheet = .add(.vice) }
                             .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
                         }
-                        if model.hasViceSection && !model.habits.isEmpty {
-                            AdaptiveColumns {
+                        if !model.isEmpty {
+                            if model.hasViceSection && !model.habits.isEmpty {
+                                AdaptiveColumns {
+                                    viceSections
+                                } trailing: {
+                                    buildingSection
+                                }
+                            } else {
                                 viceSections
-                            } trailing: {
                                 buildingSection
                             }
-                        } else {
-                            if model.hasViceSection { viceSections }
-                            if !model.habits.isEmpty { buildingSection }
                         }
                     }
                     .padding(.top, Spacing.s)
                     .padding(.bottom, Spacing.m)
                 }
             }
-            .safeAreaInset(edge: .bottom, spacing: 0) {
-                if model.showsSOS {
-                    VerticalBarFloatingBar {
-                        SOSButton {
-                            let sheetWasUp = sheet != nil
-                            sheet = nil
-                            let present = { router.present(.urge(nil)) }
-                            if sheetWasUp {
-                                PresentationSequence.afterDismiss(present)
-                            } else {
-                                PresentationSequence.resignKeyboardThen(present)
-                            }
+            if model.showsSOS {
+                VerticalBarFloatingBar {
+                    SOSButton {
+                        let sheetWasUp = sheet != nil
+                        sheet = nil
+                        let present = { router.present(.urge(nil)) }
+                        if sheetWasUp {
+                            PresentationSequence.afterDismiss(present)
+                        } else {
+                            PresentationSequence.resignKeyboardThen(present)
                         }
                     }
                 }
+                .padding(.top, Spacing.s)
+                .background(Color.tbBackground)
+            }
             }
             .background(Color.tbBackground.ignoresSafeArea())
             .tbNavigationBarBackground()
@@ -115,8 +126,8 @@ struct TodayScreen: View {
                             showSummary: LaunchConfiguration.showsSlipSummary
                         ) { self.sheet = nil }
                     }
-                case .add:
-                    MetricFormView(metric: nil)
+                case .add(let habitType):
+                    MetricFormView(metric: nil, habitType: habitType)
                 case .detail(let id):
                     if let metric = metrics.first(where: { $0.id == id }) {
                         NavigationStack { MetricDetailScreen(metric: metric) }
@@ -130,7 +141,7 @@ struct TodayScreen: View {
 
     private var viceSections: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            if !model.vices.isEmpty { quittingSection }
+            quittingSection
             if !model.cutBacks.isEmpty { cuttingBackSection }
         }
     }
@@ -138,10 +149,16 @@ struct TodayScreen: View {
     @ViewBuilder
     private var quittingSection: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            SectionHeader(RecoveryCopy.quitting)
-            VStack(spacing: Spacing.m) {
-                ForEach(model.vices) { card in
-                    ViceCard(model: card, calendar: model.calendar) { sheet = .detail(card.id) }
+            SectionHeader(
+                RecoveryCopy.quitting,
+                addLabel: RecoveryCopy.addQuitting,
+                addID: AccessibilityIdentifiers.todayAddQuitting
+            ) { sheet = .add(.vice) }
+            if !model.vices.isEmpty {
+                VStack(spacing: Spacing.m) {
+                    ForEach(model.vices) { card in
+                        ViceCard(model: card, calendar: model.calendar) { sheet = .detail(card.id) }
+                    }
                 }
             }
         }
@@ -161,15 +178,21 @@ struct TodayScreen: View {
     @ViewBuilder
     private var buildingSection: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            SectionHeader(RecoveryCopy.building)
-            VStack(spacing: Spacing.s) {
-                ForEach(model.habits) { row in
-                    HabitCheckRow(
-                        model: row,
-                        onToggle: { toggleHabit(row.id) },
-                        onSetAmount: { setAmount(row.id, $0) },
-                        onOpen: { sheet = .detail(row.id) }
-                    )
+            SectionHeader(
+                RecoveryCopy.building,
+                addLabel: RecoveryCopy.addBuilding,
+                addID: AccessibilityIdentifiers.todayAddBuilding
+            ) { sheet = .add(.positive) }
+            if !model.habits.isEmpty {
+                VStack(spacing: Spacing.s) {
+                    ForEach(model.habits) { row in
+                        HabitCheckRow(
+                            model: row,
+                            onToggle: { toggleHabit(row.id) },
+                            onSetAmount: { setAmount(row.id, $0) },
+                            onOpen: { sheet = .detail(row.id) }
+                        )
+                    }
                 }
             }
         }
@@ -230,14 +253,14 @@ struct TodayScreen: View {
 
 private enum TodaySheet: Identifiable {
     case slip(UUID)
-    case add
+    case add(HabitType)
     case detail(UUID)
     case surfing
 
     var id: String {
         switch self {
         case .slip(let id): "slip-\(id.uuidString)"
-        case .add: "add"
+        case .add(let type): "add-\(type.rawValue)"
         case .detail(let id): id.uuidString
         case .surfing: "surfing"
         }

@@ -69,6 +69,8 @@ final class TodayViewModel {
     private(set) var cutBacks: [CutBackCardModel] = []
     private(set) var habits: [HabitRowModel] = []
     private(set) var checkInRemaining = 0
+    private(set) var checkInStreak = 0
+    private(set) var checkInDoneToday = false
     private(set) var yesterdayPrompt: YesterdayPromptModel?
 
     init(calendar: Calendar = .current, locale: Locale = .current) {
@@ -150,6 +152,9 @@ final class TodayViewModel {
             let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: calendar)
             return RecoveryMath.state(of: today, in: history, now: now, calendar: calendar) == .todayPending
         }.count
+
+        checkInStreak = ProgressMath.checkInStreak(metrics: active, entries: entries, now: now, calendar: calendar)
+        checkInDoneToday = ProgressMath.isCheckedIn(on: today, metrics: active, entries: entries, now: now, calendar: calendar)
 
         yesterdayPrompt = makeYesterdayPrompt(vices: active.filter(\.isQuitting), entries: entries, now: now, dismissedYesterday: dismissedYesterday)
     }

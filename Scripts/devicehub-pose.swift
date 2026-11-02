@@ -70,10 +70,16 @@ guard let pid = deviceHubPID() else {
     exit(1)
 }
 
-if let app = NSRunningApplication(processIdentifier: pid) {
-    app.activate(options: [.activateIgnoringOtherApps])
-    Thread.sleep(forTimeInterval: 0.4)
-}
+// Device Hub hides its device window from Accessibility until it is the front app.
+// NSRunningApplication.activate is ignored for this process, so ask System Events.
+let activate = Process()
+activate.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+activate.arguments = ["-e", "tell application \"DeviceHub\" to activate"]
+activate.standardOutput = FileHandle.nullDevice
+activate.standardError = FileHandle.nullDevice
+try? activate.run()
+activate.waitUntilExit()
+Thread.sleep(forTimeInterval: 0.6)
 
 let axApp = AXUIElementCreateApplication(pid)
 guard let windows = attr(axApp, kAXWindowsAttribute) as? [AXUIElement] else {

@@ -48,7 +48,7 @@ Use Dynamic Type text styles only (`.largeTitle`, `.title2`, `.headline`, `.body
 | `BreathingCircle` | `BreathingCircle(inhale: 4, exhale: 6)` | Orb, glow, and ripples ease across the full inhale and exhale. `RideAtmosphere` is the slow wash behind the ride screen. The top edge stays solid `Calm` so Close and the status area are not tinted. Reduce Motion → text-only cue, no wash motion |
 | `DayDots` | `DayDots(states: [DayVisualState])` | 7 dots. Each dot has a VoiceOver label ("Monday, free"). Shape and color both encode state (solid, ring, triangle for slip) so it works without color. |
 | `MonthCalendar` | `MonthCalendar(month:, stateFor: (Date) -> DayVisualState, onSelect:)` | `firstWeekday` from `Calendar.current`. Cells ≥44pt. |
-| `SectionHeader` | `SectionHeader("Quitting")` | Adds the `.isHeader` accessibility trait |
+| `SectionHeader` | `SectionHeader("Quitting", addLabel:, onAdd:)` | Title gets `.isHeader`. Optional trailing + is its own 44pt button. |
 | `IconBadge` | `IconBadge(systemImage:, tint:)` | 36pt rounded square |
 | `ReadableColumn` | `ReadableColumn { content }` | Max width 640, centered, `Spacing.l` side padding. Wraps every screen (§8.7) |
 

@@ -113,15 +113,16 @@ Entry points into the **Urge** flow: the Today button, the home-screen quick act
 │ Today                    Tue, Oct 28 │  large title + date
 │                                      │
 │ ┌──────────────────────────────────┐ │
-│ │ ◉  Daily check-in             ›  │ │  CheckInBanner — only while today
-│ │    3 to go · about 10 seconds    │ │  isn't fully checked in
+│ │  4                               │ │  Check-in card, brand fill, while
+│ │  days in a row                   │ │  today is still open. Afterward:
+│ │  Daily check-in · 3 to go · …  › │ │  "5 days in a row" on brand soft.
 │ └──────────────────────────────────┘ │
 │ ┌──────────────────────────────────┐ │
 │ │ [wind]  Urge surfing          ›  │ │  opens the urge-surfing explainer
 │ │ An urge rises and passes…        │ │  while a vice is active
 │ └──────────────────────────────────┘ │
 │                                      │
-│ QUITTING                             │  section header
+│ QUITTING                          +  │  section header; + adds a vice
 │ ┌──────────────────────────────────┐ │
 │ │ [wineglass]  Alcohol             │ │  ViceCard
 │ │ 12 days free                     │ │  big rounded number
@@ -130,7 +131,7 @@ Entry points into the **Urge** flow: the Today button, the home-screen quick act
 │ │ Next milestone: 14 days (2 days) │ │
 │ └──────────────────────────────────┘ │
 │                                      │
-│ BUILDING                             │
+│ BUILDING                          +  │  + adds a habit
 │ ┌──────────────────────────────────┐ │
 │ │ ○  Go for a walk       5-day run │ │  HabitCheckRow (tap circle = done)
 │ │ ●  Call a friend       2-day run │ │
@@ -146,7 +147,9 @@ Entry points into the **Urge** flow: the Today button, the home-screen quick act
 ```
 
 Rules:
-- Order: CheckInBanner (if pending) → "Quitting" (vices, by `sortOrder`) → "Building" (habits) → SOSButton pinned with `safeAreaInset(edge: .bottom)`.
+- Order: check-in card → "Quitting" (vices, by `sortOrder`) → "Building" (habits) → SOSButton pinned with `safeAreaInset(edge: .bottom)`.
+- The check-in card stays once anything is tracked. While today is open it is a brand-filled button pinned above the urge button's space: the streak on one line (when there is one) and how many answers are left. After today is answered it becomes "N days in a row" and "You checked in today." The streak is consecutive days the check-in was answered, including today only after it is answered. A presumed-free day does not count. A logged slip does. One missed day ends the run, and the app does not say so. The urge button sits under the list, not over the last row.
+- Once anything is tracked, both headers stay visible. The + on Quitting opens Add metric as a vice. The + on Building opens it as a habit. The type picker is still there.
 - The SOSButton shows only if there's at least one active vice.
 - Tapping a ViceCard opens Metric Detail (pushes onto the Progress tab's stack: switch tab, then push. Or present Metric Detail as a sheet from Today, which is simpler; **use the sheet**).
 - Tapping a habit's circle toggles done for today (haptic `.success` on done, `.selection` on undo). Tapping the row text opens Metric Detail.
@@ -178,7 +181,7 @@ Having an urge right now? →            (closes this sheet, opens Urge, then br
 - "Free today" → `RecoveryStore.markFree(metric, on: today)`.
 - "I slipped" → present the **Slip flow** with `day = today`. When it finishes, that row shows "Slip logged · thanks for being honest" and can't be toggled back from here (fix it in the Day editor).
 - Habit rows toggle done.
-- **Done** → `CheckInCompleteView` (inside the same sheet): an animated check, then one line per vice ("13 days free · $104 saved"), then any milestone → Celebration.
+- **Done** → `CheckInCompleteView` (inside the same sheet): an animated check, the check-in streak in a big number ("5" / "days in a row" / "You checked in today."), then one line per vice ("13 days free · $104 saved"), then any milestone → Celebration.
 - Check-in counts as **complete** for a day when every active vice has an entry for that day. Habits are optional for completeness.
 
 ### 4.4 Urge flow ("I'm having an urge")
@@ -244,7 +247,7 @@ Notification copy is never guilt-based. In **discreet mode** it never names the 
 
 ### 4.7 Progress tab
 
-- Top: a summary row of three `StatTile`s: **Total saved** (sum across vices, hidden if no costs set), **Urges beaten** (all time), **Days checked in** (last 30).
+- Top: one summary card. The lead number is **Total saved** when any vice has a cost, otherwise the **check-in streak**. Under it, a compact row: **Urges beaten**, **Days checked in** (last 30), and the streak when it is not already the lead.
 - Then one `ProgressMetricCard` per active metric (vices first). For a vice: "12 days free · longest 40 · 27/30 days". For a habit: "5-day run · best 14 · 22/30 days". A chevron leads to **Metric Detail**.
 - An "Archived" disclosure at the bottom lists archived metrics (they can be restored).
 
@@ -252,7 +255,7 @@ Notification copy is never guilt-based. In **discreet mode** it never names the 
 
 1. **Summary panel:** icon, live free clock (vice) or run count (habit), then rows for the four stats, the next milestone, and the quit date or start date. Saved shows the daily cost as a caption, or "—" plus **Add a daily cost** when no cost is set. Habits show "Don't miss twice" in this panel when yesterday was missed and today is still open. Vice rows: Current run, Longest run, Free last 30 (`free/counted`), Saved. Habit rows: Current run, Best run, Done last 30, Done all time.
 2. **Calendar:** month grid with month paging back to `startedAt`, plus a legend for the marks on screen. On a wide or short screen this sits under the summary, beside the record. Day cell states: confirmed free (solid brand), presumed free (outlined brand), slip (amber mark), habit done (solid indigo), missed (hollow), before start or future (dimmed). Tap a past day → **Day editor** sheet: vice = [Free] [Slipped] [Clear]; habit = [Done] [Not done]. Changing to "Slipped" opens the Slip flow for that day.
-3. **Record panel** (vices, one card, only once there is something to show): urge rows for beaten, slipped, not sure, and average strength. In-progress urges are left out. Until the first finished urge, that empty line stays in the summary panel. **Patterns** (once there are ≥3 slips + urges combined): top 3 triggers as horizontal bars with counts; hardest time and, when it isn't a tie, hardest weekday (§6.8). Hardest time and day count slips and non-resisted urges. **Recent:** the latest slips, ridden-out urges, and "not sure" urges (up to 8). Each row shows when, trigger names, strength, and any note. A slip picks up the strength of a slipped urge on that same day.
+3. **Record panel** (vices, one card, only once there is something to show): urge rows for beaten, slipped, not sure, and average strength. In-progress urges are left out. Until the first finished urge, that sentence sits under the Urges label, across the card. **Patterns** (once there are ≥3 slips + urges combined): top 3 triggers as horizontal bars with counts; hardest time and, when it isn't a tie, hardest weekday (§6.8). Hardest time and day count slips and non-resisted urges. **Recent:** the latest slips, ridden-out urges, and "not sure" urges (up to 8). Each row shows when, trigger names, strength, and any note. A slip picks up the strength of a slipped urge on that same day.
 4. **Your reasons:** a list with add, tap-to-edit, and a row menu to edit, move up, move down, or delete. The first one is marked Primary, with a line that it is what you see when you slip.
 5. **Your plan:** the if-then prefix and the plan text. **Save** appears when the text differs from what's stored.
 6. Toolbar → **Edit** (MetricForm: name, icon, start date, cost per day, archive, delete). The name is the navigation title.
@@ -306,7 +309,7 @@ Finish → create everything in one `RecoveryStore` transaction → land on Toda
   - Detail tiles: daily limit, 7-day average, within the limit in the last 30 days, usual, and saved (needs a baseline and a cost).
   - Switching to quit starts the free clock now.
 - **Amount habits.** A habit can track an amount with a **daily target** ("8 glasses"). The row shows a progress ring that adds a step on each tap (5 when the target is 20 or more). Long-press removes one. Below the target is partial (hollow square); reaching it counts as done for the run.
-- **Day mood and note.** One optional mood (Rough, Low, Okay, Good, Great) and note per calendar day. It's asked at the end of check-in, can be edited in the Day editor, and the last five appear under "Recent days" on Progress.
+- **Day mood and note.** One optional mood (Rough, Low, Okay, Good, Great) and note per calendar day. It's asked at the end of check-in, can be edited in the Day editor, and the last five appear under "Recent days" on Progress. Those rows stay on the list. They are not links, so they do not open Metric Detail.
 
 
 

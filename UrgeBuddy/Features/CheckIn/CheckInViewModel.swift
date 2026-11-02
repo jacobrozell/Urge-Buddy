@@ -44,6 +44,7 @@ final class CheckInViewModel {
     private(set) var habits: [CheckInHabitRow] = []
     private(set) var amountHabits: [CheckInAmountRow] = []
     private(set) var lines: [CheckInSummaryLine] = []
+    private(set) var checkInStreak = 0
     var mood: Mood?
     var noteText = ""
     var showComplete = false
@@ -126,6 +127,7 @@ final class CheckInViewModel {
                 ? cutBackLine(metric, entries: entries, now: now, locale: locale)
                 : quitLine(metric, entries: entries, now: now, locale: locale, highest: celebrated[metric.id] ?? 0)
         }
+        checkInStreak = ProgressMath.checkInStreak(metrics: metrics, entries: entries, now: now, calendar: calendar)
         showComplete = true
     }
 
