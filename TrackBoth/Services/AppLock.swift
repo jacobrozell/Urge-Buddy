@@ -21,6 +21,8 @@ final class AppLock {
         isLocked = Preferences.appLockEnabled
     }
 
+    var shouldHoldPresentations: Bool { isEnabled && isLocked }
+
     var isAvailable: Bool {
         LAContext().canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
     }

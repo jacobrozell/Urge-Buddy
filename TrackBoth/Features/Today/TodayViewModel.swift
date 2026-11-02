@@ -17,12 +17,6 @@ struct ViceCardModel: Identifiable, Equatable {
         if let savedText { return "\(clock) · \(savedText)" }
         return clock
     }
-
-    var accessibilityLabel: String {
-        var parts = [name, RecoveryCopy.daysFree(daysFree)]
-        if let savedText { parts.append(savedText) }
-        return parts.joined(separator: ", ")
-    }
 }
 
 struct CutBackCardModel: Identifiable, Equatable {

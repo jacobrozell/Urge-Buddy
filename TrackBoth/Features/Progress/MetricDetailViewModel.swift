@@ -169,12 +169,21 @@ final class MetricDetailViewModel {
         return key >= calendar.startOfDay(for: metric.startedAt) && key <= today
     }
 
+    func canShiftMonth(_ delta: Int, metric: Metric, now: Date) -> Bool {
+        guard let next = calendar.date(byAdding: .month, value: delta, to: month) else { return false }
+        let start = monthStart(metric.startedAt)
+        let current = monthStart(now)
+        return next >= start && next <= current
+    }
+
     func shiftMonth(_ delta: Int, metric: Metric, now: Date) {
-        guard let next = calendar.date(byAdding: .month, value: delta, to: month) else { return }
-        let start = calendar.date(from: calendar.dateComponents([.year, .month], from: metric.startedAt)) ?? metric.startedAt
-        let current = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now
-        if next < start || next > current { return }
+        guard canShiftMonth(delta, metric: metric, now: now),
+              let next = calendar.date(byAdding: .month, value: delta, to: month) else { return }
         month = next
+    }
+
+    private func monthStart(_ date: Date) -> Date {
+        calendar.date(from: calendar.dateComponents([.year, .month], from: date)) ?? date
     }
 
     private func cutBackStats(metric: Metric, entries: [MetricEntry], urges: [UrgeEvent], now: Date, started: String) -> DetailStats {

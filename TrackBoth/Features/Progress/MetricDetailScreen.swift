@@ -18,7 +18,7 @@ struct MetricDetailScreen: View {
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var model = MetricDetailViewModel()
     @State private var sheet: DetailSheet?
-    @State private var pendingSlip = false
+    @State private var pendingSlipDay: Date?
     @State private var planText = ""
     @State private var didLoadPlan = false
     @State private var newReason = ""
@@ -63,16 +63,16 @@ struct MetricDetailScreen: View {
         .onAppear { refresh() }
         .onChange(of: refreshToken) { refresh() }
         .sheet(item: $sheet, onDismiss: {
-            if pendingSlip {
-                pendingSlip = false
-                sheet = .slip
+            if let day = pendingSlipDay {
+                pendingSlipDay = nil
+                sheet = .slip(day)
             }
         }) { sheet in
             switch sheet {
             case .editor(let day):
-                DayEditorSheet(metric: metric, day: day) { pendingSlip = true }
-            case .slip:
-                SlipFlowView(metric: metric, prefilledTriggers: []) { self.sheet = nil }
+                DayEditorSheet(metric: metric, day: day) { pendingSlipDay = day }
+            case .slip(let day):
+                SlipFlowView(metric: metric, prefilledTriggers: [], occurredOn: day) { self.sheet = nil }
             case .form:
                 MetricFormView(metric: metric)
             }
@@ -108,10 +108,18 @@ struct MetricDetailScreen: View {
     private var summaryPanel: some View {
         Card {
             VStack(alignment: .leading, spacing: Spacing.m) {
+                if metric.isArchived {
+                    PrimaryButton(title: RecoveryCopy.restore) {
+                        try? RecoveryStore(context: modelContext).setArchived(metric, false)
+                    }
+                }
                 HStack(alignment: .center, spacing: Spacing.m) {
                     IconBadge(systemImage: metric.iconName, tint: metric.habitType == .vice ? .tbBrand : .tbHabit)
                     VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text(model.stats.primary).bigNumberStyle().foregroundStyle(Color.tbTextPrimary)
+                        Text(model.stats.primary)
+                            .bigNumberStyle()
+                            .foregroundStyle(Color.tbTextPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
                         if metric.isQuitting {
                             TimelineView(.periodic(from: .now, by: 60)) { context in
                                 let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: model.calendar)
@@ -167,13 +175,15 @@ struct MetricDetailScreen: View {
                     Image(systemName: "chevron.left")
                         .frame(minWidth: 44, minHeight: 44)
                 }
-                .accessibilityLabel("Previous month")
+                .disabled(!model.canShiftMonth(-1, metric: metric, now: Date()))
+                .accessibilityLabel(RecoveryCopy.previousMonth)
                 Spacer()
                 Button { model.shiftMonth(1, metric: metric, now: Date()) } label: {
                     Image(systemName: "chevron.right")
                         .frame(minWidth: 44, minHeight: 44)
                 }
-                .accessibilityLabel("Next month")
+                .disabled(!model.canShiftMonth(1, metric: metric, now: Date()))
+                .accessibilityLabel(RecoveryCopy.nextMonth)
             }
             .font(.subheadline.weight(.semibold))
             .foregroundStyle(Color.tbBrand)
@@ -301,6 +311,7 @@ struct MetricDetailScreen: View {
                 Text(trigger.title)
                     .font(.body)
                     .foregroundStyle(Color.tbTextPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: Spacing.s)
                 Text("\(trigger.count)")
                     .font(.body.monospacedDigit())
@@ -379,6 +390,7 @@ struct MetricDetailScreen: View {
                         .font(.headline)
                         .foregroundStyle(Color.tbBrand)
                         .frame(maxWidth: .infinity, minHeight: 44)
+                        .disabled(newReason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
         }
@@ -424,7 +436,7 @@ struct MetricDetailScreen: View {
                     .foregroundStyle(Color.tbTextSecondary)
                     .frame(minWidth: 44, minHeight: 44)
             }
-            .accessibilityLabel(RecoveryCopy.edit)
+            .accessibilityLabel(RecoveryCopy.reasonActions)
         }
         .accessibilityElement(children: .combine)
         .accessibilityAction(named: RecoveryCopy.edit) {
@@ -514,13 +526,13 @@ struct MetricDetailScreen: View {
 
 private enum DetailSheet: Identifiable {
     case editor(Date)
-    case slip
+    case slip(Date)
     case form
 
     var id: String {
         switch self {
         case .editor(let day): "editor-\(day.timeIntervalSinceReferenceDate)"
-        case .slip: "slip"
+        case .slip(let day): "slip-\(day.timeIntervalSinceReferenceDate)"
         case .form: "form"
         }
     }
@@ -629,7 +641,11 @@ struct DayEditorSheet: View {
     }
 
     private func markFree() {
-        try? RecoveryStore(context: modelContext).markFree(metric, on: day, now: Date())
+        let store = RecoveryStore(context: modelContext)
+        if let existing = try? store.entry(for: metric.id, on: day), existing.status == .slipped {
+            try? store.clearDay(metric, on: day)
+        }
+        try? store.markFree(metric, on: day, now: Date())
         dismiss()
     }
 

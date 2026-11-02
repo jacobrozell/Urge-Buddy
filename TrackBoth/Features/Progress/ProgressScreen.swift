@@ -11,7 +11,9 @@ struct ProgressScreen: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @State private var model = ProgressViewModel()
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showAdd = false
+    @State private var showArchived = false
     @State private var selection: UUID?
     @State private var didOpenDetail = false
     @State private var containerWidth: CGFloat = 0
@@ -28,16 +30,21 @@ struct ProgressScreen: View {
         NavigationSplitView {
             List(selection: $selection) {
                 Section {
-                    VStack(alignment: .leading, spacing: Spacing.m) {
-                        if let saved = model.summary.savedText {
-                            summaryLine(saved, systemImage: "dollarsign.circle")
+                    LazyVGrid(
+                        columns: [GridItem(.adaptive(minimum: dynamicTypeSize.usesAccessibilityLayout ? 280 : 150), spacing: Spacing.s)],
+                        alignment: .leading,
+                        spacing: Spacing.s
+                    ) {
+                        if let saved = model.summary.savedValue {
+                            StatTile(value: saved, label: RecoveryCopy.totalSaved, systemImage: "dollarsign.circle")
                         }
-                        summaryLine(RecoveryCopy.urgesBeatenCount(model.summary.urgesBeaten), systemImage: "wind")
-                        summaryLine("\(model.summary.daysCheckedIn) \(RecoveryCopy.daysCheckedIn.lowercased())", systemImage: "checkmark.circle")
+                        StatTile(value: "\(model.summary.urgesBeaten)", label: RecoveryCopy.urgesBeaten, systemImage: "wind")
+                        StatTile(value: "\(model.summary.daysCheckedIn)", label: RecoveryCopy.daysCheckedIn, systemImage: "checkmark.circle")
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, Spacing.s)
-                    .listRowBackground(Color.tbSurface)
+                    .listRowBackground(Color.tbBackground)
+                    .listRowSeparator(.hidden)
                 }
                 Section {
                     ForEach(model.active) { card in
@@ -74,9 +81,15 @@ struct ProgressScreen: View {
                     }
                 }
                 if !model.archived.isEmpty {
-                    Section(RecoveryCopy.archived) {
-                        ForEach(model.archived) { card in
-                            NavigationLink(value: card.id) { cardRow(card) }
+                    Section {
+                        DisclosureGroup(isExpanded: $showArchived) {
+                            ForEach(model.archived) { card in
+                                archivedRow(card)
+                            }
+                        } label: {
+                            Text(RecoveryCopy.archived)
+                                .font(.headline)
+                                .foregroundStyle(Color.tbTextPrimary)
                         }
                     }
                 }
@@ -123,24 +136,50 @@ struct ProgressScreen: View {
         }
     }
 
-    private func summaryLine(_ text: String, systemImage: String) -> some View {
-        Label(text, systemImage: systemImage)
-            .font(.body.weight(.semibold))
-            .foregroundStyle(Color.tbTextPrimary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, Spacing.xs)
-            .accessibilityLabel(text)
-    }
-
     private func cardRow(_ card: ProgressCardModel) -> some View {
-        HStack(spacing: Spacing.m) {
-            IconBadge(systemImage: card.iconName, tint: card.habitType == .vice ? .tbBrand : .tbHabit)
-            VStack(alignment: .leading, spacing: Spacing.s) {
-                Text(card.name).font(.headline).foregroundStyle(Color.tbTextPrimary)
-                Text(card.line).font(.subheadline).foregroundStyle(Color.tbTextSecondary)
+        Group {
+            if dynamicTypeSize.usesAccessibilityLayout {
+                VStack(alignment: .leading, spacing: Spacing.s) { cardContents(card) }
+            } else {
+                HStack(alignment: .center, spacing: Spacing.m) { cardContents(card) }
             }
         }
-        .frame(minHeight: 44)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(card.spoken)
+    }
+
+    @ViewBuilder
+    private func cardContents(_ card: ProgressCardModel) -> some View {
+        IconBadge(systemImage: card.iconName, tint: card.habitType == .vice ? .tbBrand : .tbHabit)
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(card.name)
+                .font(.headline)
+                .foregroundStyle(Color.tbTextPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(card.line)
+                .font(.subheadline)
+                .foregroundStyle(Color.tbTextSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func archivedRow(_ card: ProgressCardModel) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Button { selection = card.id } label: { cardRow(card) }
+                .buttonStyle(.plain)
+            Button(RecoveryCopy.restore) { restore(card.id) }
+                .font(.headline)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .buttonStyle(.bordered)
+                .tint(Color.tbBrand)
+        }
+        .listRowBackground(Color.tbSurface)
+    }
+
+    private func restore(_ id: UUID) {
+        guard let metric = metrics.first(where: { $0.id == id }) else { return }
+        try? RecoveryStore(context: modelContext).setArchived(metric, false)
     }
 
     private var snapshot: String {

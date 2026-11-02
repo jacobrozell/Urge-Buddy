@@ -29,6 +29,9 @@ struct CheckInBanner: View {
             .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
         }
         .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(RecoveryCopy.checkInTitle), \(RecoveryCopy.checkInBanner(left: remaining))")
+        .accessibilityAddTraits(.isButton)
         .accessibilityIdentifier(AccessibilityIdentifiers.todayCheckInBanner)
     }
 }

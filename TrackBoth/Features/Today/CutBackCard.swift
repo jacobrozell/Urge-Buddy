@@ -15,10 +15,12 @@ struct CutBackCard: View {
                             .font(.headline)
                             .foregroundStyle(Color.tbTextPrimary)
                             .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     Text(RecoveryCopy.todayAmount(model.amount, limit: model.limit, unit: model.unit))
                         .font(.title2.weight(.bold))
                         .foregroundStyle(Color.tbTextPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
                     LimitBar(amount: model.amount, limit: model.limit)
                     if model.isOver {
                         Text(RecoveryCopy.overLimitToday)

@@ -9,7 +9,8 @@ Plans **in implementation**. Shipped behavior lives in [`Specs/`](../Specs/).
 | Plan | Doc | Status | Notes |
 |------|-----|--------|-------|
 | **Adaptive layout (landscape, iPad, Duo)** | [`adaptive-layout-plan.md`](adaptive-layout-plan.md) | In progress | Phases 0–9 per plan; PuzzleBuddy/DartBuddy size-class rules. |
-| **Recovery overhaul → production** | [`recovery-overhaul-plan.md`](recovery-overhaul-plan.md) | Onboarding and Settings in the working tree | 3 tabs. Phases 0–6 committed. Phase 7 checkpoint. Onboarding, Settings, reminders, and lock are local and not committed. Cut back mode, amount habits, and day mood (2026-11-01) are local too; see `Specs/ProductSpec.md` §4.10. |
+| **Recovery overhaul → production** | [`recovery-overhaul-plan.md`](recovery-overhaul-plan.md) | Phase 7 DoD in the working tree | 3 tabs. Phases 0–6 committed. Phase 7 numbers, archive/restore, and past-day slips are local and not committed. Onboarding, Settings, reminders, lock, cut back, amounts, and day mood stay. See `Specs/ProductSpec.md` §4.10. |
+| **1.0.0 review-lane fixes** | [`1.0.0-review-fixes.md`](1.0.0-review-fixes.md) | **In progress** | Default lanes ingested. Bugbot highs fixed, uncommitted. UI tests still deferred. |
 
 ## Finished (archive)
 

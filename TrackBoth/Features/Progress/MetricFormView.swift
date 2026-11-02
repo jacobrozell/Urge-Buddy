@@ -18,7 +18,7 @@ struct MetricFormView: View {
                         Text(error).font(.footnote).foregroundStyle(Color.tbSlip)
                     }
                     if model.showsTypePicker {
-                        Picker("Type", selection: Bindable(model).habitType) {
+                        Picker(RecoveryCopy.metricType, selection: Bindable(model).habitType) {
                             Text(RecoveryCopy.quitting).tag(HabitType.vice)
                             Text(RecoveryCopy.building).tag(HabitType.positive)
                         }

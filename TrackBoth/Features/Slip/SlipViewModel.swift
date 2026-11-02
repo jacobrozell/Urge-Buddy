@@ -18,6 +18,17 @@ enum SlipWhen: Equatable {
             return DayMath.endOfDay(day, calendar: calendar)
         }
     }
+
+    /// The slip flow opened from a calendar day. Today stays "just now".
+    static func forEditing(day: Date, now: Date, calendar: Calendar) -> SlipWhen {
+        if calendar.isDate(day, inSameDayAs: now) { return .justNow }
+        let today = calendar.startOfDay(for: now)
+        if let yesterday = calendar.date(byAdding: .day, value: -1, to: today),
+           calendar.isDate(day, inSameDayAs: yesterday) {
+            return .yesterday
+        }
+        return .picked(day)
+    }
 }
 
 struct SlipSummary: Equatable {
@@ -39,11 +50,12 @@ final class SlipViewModel {
 
     private let originalPlan: String
 
-    init(store: RecoveryStore, plan: String?, triggers: [TriggerTag]) {
+    init(store: RecoveryStore, plan: String?, triggers: [TriggerTag], when: SlipWhen = .justNow) {
         self.store = store
         self.plan = plan ?? ""
         self.originalPlan = plan ?? ""
         self.triggers = Set(triggers)
+        self.when = when
     }
 
     var calendar: Calendar { store.calendar }

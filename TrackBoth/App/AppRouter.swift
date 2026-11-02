@@ -27,9 +27,39 @@ final class AppRouter {
     var selectedTab: AppTab = .today
     var presented: PresentedFlow?
     var pendingQuickAction: PresentedFlow?
+    var resumeCheckInAfterUrge = false
 
     func present(_ flow: PresentedFlow) {
+        if AppLock.shared.shouldHoldPresentations {
+            pendingQuickAction = flow
+            return
+        }
+        if case .urge = flow, case .checkIn = presented {
+            resumeCheckInAfterUrge = true
+        }
         presented = flow
+    }
+
+    func finishUrge() {
+        if resumeCheckInAfterUrge {
+            resumeCheckInAfterUrge = false
+            presented = .checkIn
+        } else {
+            presented = nil
+        }
+    }
+
+    /// Pull a visible flow behind the lock so a sheet cannot sit on top of it.
+    func holdForLock() {
+        guard AppLock.shared.shouldHoldPresentations, let presented else { return }
+        pendingQuickAction = presented
+        self.presented = nil
+    }
+
+    func flushPending() {
+        guard !AppLock.shared.shouldHoldPresentations, let pending = pendingQuickAction else { return }
+        pendingQuickAction = nil
+        present(pending)
     }
 
     @discardableResult

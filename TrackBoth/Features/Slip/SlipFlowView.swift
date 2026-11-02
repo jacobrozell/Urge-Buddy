@@ -4,6 +4,8 @@ import SwiftUI
 struct SlipFlowView: View {
     var metric: Metric
     var prefilledTriggers: [TriggerTag]
+    /// Set when the day editor opens this flow for a specific day.
+    var occurredOn: Date? = nil
     var onFinish: () -> Void
 
     @Environment(\.modelContext) private var modelContext
@@ -63,9 +65,16 @@ struct SlipFlowView: View {
         }
         .adaptiveFormSheet()
         .onAppear {
-            if model == nil {
-                model = SlipViewModel(store: RecoveryStore(context: modelContext), plan: metric.ifThenPlan, triggers: prefilledTriggers)
-            }
+            guard model == nil else { return }
+            let now = Date()
+            let when = occurredOn.map { SlipWhen.forEditing(day: $0, now: now, calendar: calendar) } ?? .justNow
+            if case .picked(let day) = when { pickedDay = day }
+            model = SlipViewModel(
+                store: RecoveryStore(context: modelContext),
+                plan: metric.ifThenPlan,
+                triggers: prefilledTriggers,
+                when: when
+            )
         }
         .sheet(isPresented: $showHelp) {
             CrisisResourcesView()
@@ -157,6 +166,7 @@ struct SlipFlowView: View {
             .padding(.vertical, Spacing.s)
             .frame(minHeight: 44)
             .background(isSelected(when, model: model) ? Color.tbBrand : Color.tbSurfaceMuted, in: Capsule())
+            .accessibilityAddTraits(isSelected(when, model: model) ? .isSelected : [])
     }
 
     private func isSelected(_ when: SlipWhen, model: SlipViewModel) -> Bool {

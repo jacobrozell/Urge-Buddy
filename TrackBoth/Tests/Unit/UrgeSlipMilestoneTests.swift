@@ -59,6 +59,26 @@ final class SlipViewModelTests: XCTestCase {
         }
         XCTAssertEqual(model.errorMessage, RecoveryCopy.slipBeforeStart)
     }
+
+    func testEditingAPastDayUsesThatDay() throws {
+        let harness = try TestHarness()
+        let store = harness.store
+        let alcohol = try store.addMetric(
+            name: "Alcohol", habitType: .vice, iconName: "wineglass", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil
+        )
+        let now = date(2026, 10, 13, 15)
+        let day = date(2026, 10, 10, 8)
+        let yesterday = date(2026, 10, 12, 9)
+        XCTAssertEqual(SlipWhen.forEditing(day: now, now: now, calendar: .testNY), .justNow)
+        XCTAssertEqual(SlipWhen.forEditing(day: yesterday, now: now, calendar: .testNY), .yesterday)
+
+        let model = SlipViewModel(store: store, plan: nil, triggers: [], when: SlipWhen.forEditing(day: day, now: now, calendar: .testNY))
+        XCTAssertEqual(model.when, .picked(day))
+        try model.save(metric: alcohol, now: now)
+        let entry = try XCTUnwrap(try store.entries(for: alcohol.id).first)
+        XCTAssertTrue(Calendar.testNY.isDate(entry.occurredAt, inSameDayAs: day))
+        XCTAssertFalse(Calendar.testNY.isDate(entry.occurredAt, inSameDayAs: now))
+    }
 }
 
 @MainActor

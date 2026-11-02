@@ -29,6 +29,10 @@ targets:
         excludes:
           - TrackBoth-Info.plist
           - TrackBoth.entitlements
+          - PrivacyInfo.xcprivacy
+      - path: Resources/PrivacyInfo.xcprivacy
+        type: file
+        buildPhase: resources
       - path: Resources/TrackBoth-Info.plist
         type: file
         buildPhase: none

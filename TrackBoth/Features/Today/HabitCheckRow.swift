@@ -6,37 +6,59 @@ struct HabitCheckRow: View {
     var onSetAmount: (Int) -> Void = { _ in }
     var onOpen: () -> Void
 
-    var body: some View {
-        HStack(alignment: .center, spacing: Spacing.s) {
-            if let target = model.target {
-                amountButton(target: target)
-            } else {
-                toggleButton
-            }
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-            Button(action: onOpen) {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(model.name)
-                        .font(.body)
-                        .foregroundStyle(Color.tbTextPrimary)
-                        .multilineTextAlignment(.leading)
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(Color.tbTextSecondary)
-                    if model.isAtRisk {
-                        Text(RecoveryCopy.dontMissTwice)
-                            .font(.footnote)
-                            .foregroundStyle(Color.tbSlip)
-                    }
+    var body: some View {
+        Group {
+            if dynamicTypeSize.usesAccessibilityLayout {
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    control
+                    labelButton
                 }
-                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            } else {
+                HStack(alignment: .center, spacing: Spacing.s) {
+                    control
+                    labelButton
+                }
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(rowLabel)
         }
         .padding(.horizontal, Spacing.l)
         .padding(.vertical, Spacing.s)
         .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+    }
+
+    @ViewBuilder
+    private var control: some View {
+        if let target = model.target {
+            amountButton(target: target)
+        } else {
+            toggleButton
+        }
+    }
+
+    private var labelButton: some View {
+        Button(action: onOpen) {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(model.name)
+                    .font(.body)
+                    .foregroundStyle(Color.tbTextPrimary)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(Color.tbTextSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if model.isAtRisk {
+                    Text(RecoveryCopy.dontMissTwice)
+                        .font(.footnote)
+                        .foregroundStyle(Color.tbSlip)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(rowLabel)
     }
 
     private var toggleButton: some View {

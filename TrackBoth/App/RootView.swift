@@ -50,13 +50,18 @@ struct RootView: View {
             syncCover()
         }
         .onChange(of: scenePhase) { _, phase in
-            if phase == .background { appLock.lockIfEnabled() }
+            if phase == .background {
+                appLock.lockIfEnabled()
+                router.holdForLock()
+            }
             guard phase == .active else { return }
             try? RecoveryStore(context: modelContext).resolveAbandonedUrges()
-            if onboarded, let pending = router.pendingQuickAction {
-                router.pendingQuickAction = nil
-                router.present(pending)
-            }
+            if onboarded { router.flushPending() }
+            refreshCelebration()
+        }
+        .onChange(of: appLock.isLocked) { _, locked in
+            guard !locked, onboarded else { return }
+            router.flushPending()
             refreshCelebration()
         }
         .onOpenURL { url in
@@ -73,13 +78,16 @@ struct RootView: View {
             syncCover()
             Task { await ReminderScheduler.refresh(context: modelContext) }
         }
-        .onChange(of: router.presented) { _, _ in syncCover() }
+        .onChange(of: router.presented) { _, newValue in
+            syncCover()
+            if newValue == nil { refreshCelebration() }
+        }
         .onChange(of: cover?.id) { _, newID in
             if newID == nil, case .checkIn = router.presented { router.presented = nil }
         }
         .fullScreenCover(item: urgeBinding) { flow in
             if case .urge(let id) = flow {
-                UrgeFlowView(metrics: metrics, preferredID: id) { router.presented = nil }
+                UrgeFlowView(metrics: metrics, preferredID: id) { router.finishUrge() }
             }
         }
         .sheet(item: $cover) { item in
@@ -137,7 +145,7 @@ struct RootView: View {
     }
 
     private func refreshCelebration() {
-        guard router.presented == nil else { return }
+        guard !appLock.shouldHoldPresentations, router.presented == nil else { return }
         celebration = MilestoneCenter.pending(
             metrics: metrics,
             entries: entries,
@@ -145,6 +153,7 @@ struct RootView: View {
             now: Date(),
             calendar: .current
         ).first
+        syncCover()
     }
 }
 

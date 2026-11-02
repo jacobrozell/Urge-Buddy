@@ -112,4 +112,30 @@ final class MetricDetailViewModelTests: XCTestCase {
         XCTAssertTrue(model.stats.recent.isEmpty)
         XCTAssertEqual(model.stats.tiles.map(\.value), ["2", "2", "2", "2"])
     }
+
+    func testMonthPagingStopsAtTheStartMonthAndThisMonth() throws {
+        let harness = try TestHarness()
+        let now = date(2026, 10, 13, 10)
+        let alcohol = try harness.store.addMetric(
+            name: "Alcohol", habitType: .vice, iconName: "wineglass", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil
+        )
+        let model = MetricDetailViewModel(calendar: calendar, locale: locale, now: now)
+        let october = model.month
+        XCTAssertFalse(model.canShiftMonth(-1, metric: alcohol, now: now))
+        XCTAssertFalse(model.canShiftMonth(1, metric: alcohol, now: now))
+        model.shiftMonth(-1, metric: alcohol, now: now)
+        model.shiftMonth(1, metric: alcohol, now: now)
+        XCTAssertEqual(model.month, october)
+
+        let older = try harness.store.addMetric(
+            name: "Older", habitType: .vice, iconName: "smoke", startedAt: date(2026, 8, 2, 9), costPerDay: nil, firstReason: nil
+        )
+        XCTAssertTrue(model.canShiftMonth(-1, metric: older, now: now))
+        model.shiftMonth(-1, metric: older, now: now)
+        XCTAssertEqual(calendar.component(.month, from: model.month), 9)
+        model.shiftMonth(-1, metric: older, now: now)
+        XCTAssertEqual(calendar.component(.month, from: model.month), 8)
+        XCTAssertFalse(model.canShiftMonth(-1, metric: older, now: now))
+        XCTAssertTrue(model.canShiftMonth(1, metric: older, now: now))
+    }
 }

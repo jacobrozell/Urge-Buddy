@@ -32,6 +32,17 @@ final class RecoveryStoreTests: XCTestCase {
         XCTAssertEqual(entry?.note, "After dinner")
     }
 
+    func testClearingASlipLetsTheDayEditorMarkItFree() throws {
+        let metric = try vice()
+        let when = date(2026, 10, 10, 20)
+        try store.logSlip(metric, occurredAt: when, triggers: [.tired], note: "After dinner")
+        try store.clearDay(metric, on: when)
+        try store.markFree(metric, on: when, now: date(2026, 10, 10, 21))
+        let entry = try store.entry(for: metric.id, on: when)
+        XCTAssertEqual(entry?.status, .free)
+        XCTAssertNil(entry?.note)
+    }
+
     func testLogSlipRejectsATimeBeforeTheQuitDay() throws {
         let metric = try vice(started: date(2026, 10, 10, 9))
         XCTAssertThrowsError(try store.logSlip(metric, occurredAt: date(2026, 10, 9, 23), triggers: [], note: nil)) { error in

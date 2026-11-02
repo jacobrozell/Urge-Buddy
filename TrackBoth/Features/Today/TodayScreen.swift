@@ -9,6 +9,7 @@ struct TodayScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppRouter.self) private var router
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var model = TodayViewModel()
     @State private var sheet: TodaySheet?
     @State private var dismissedYesterday = Preferences.dismissedYesterdayPromptDay
@@ -20,6 +21,9 @@ struct TodayScreen: View {
                 ScrollView {
                     ReadableColumn(width: .wide) {
                         VStack(alignment: .leading, spacing: Spacing.m) {
+                            if dynamicTypeSize.usesAccessibilityLayout {
+                                dateLabel
+                            }
                             if let prompt = model.yesterdayPrompt {
                                 YesterdayPrompt(name: prompt.name) {
                                     confirmYesterday(prompt.metricID)
@@ -70,11 +74,8 @@ struct TodayScreen: View {
                 AdaptiveLayout.isShortHeight(vertical: verticalSizeClass) ? .inline : .large
             )
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Text(Date().formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
-                        .font(.subheadline)
-                        .foregroundStyle(Color.tbTextSecondary)
-                        .accessibilityLabel(Date().formatted(date: .complete, time: .omitted))
+                if !dynamicTypeSize.usesAccessibilityLayout {
+                    ToolbarItem(placement: .topBarTrailing) { dateLabel }
                 }
             }
         }
@@ -148,6 +149,13 @@ struct TodayScreen: View {
                 }
             }
         }
+    }
+
+    private var dateLabel: some View {
+        Text(Date().formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
+            .font(.subheadline)
+            .foregroundStyle(Color.tbTextSecondary)
+            .accessibilityLabel(Date().formatted(date: .complete, time: .omitted))
     }
 
     private var snapshotToken: String {

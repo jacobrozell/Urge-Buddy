@@ -2,6 +2,8 @@ import Foundation
 import Observation
 
 struct ProgressSummary: Equatable {
+    /// Currency only, for the Total saved tile. Nil when no vice has a cost basis.
+    var savedValue: String?
     var savedText: String?
     var urgesBeaten: Int
     var daysCheckedIn: Int
@@ -14,6 +16,10 @@ struct ProgressCardModel: Identifiable, Equatable {
     var habitType: HabitType
     var line: String
     var isArchived: Bool
+
+    var spoken: String {
+        "\(name), \(line.replacingOccurrences(of: "\n", with: ", "))"
+    }
 }
 
 struct DayNoteRow: Identifiable, Equatable {
@@ -28,7 +34,7 @@ struct DayNoteRow: Identifiable, Equatable {
 final class ProgressViewModel {
     var calendar: Calendar
     var locale: Locale
-    private(set) var summary = ProgressSummary(savedText: nil, urgesBeaten: 0, daysCheckedIn: 0)
+    private(set) var summary = ProgressSummary(savedValue: nil, savedText: nil, urgesBeaten: 0, daysCheckedIn: 0)
     private(set) var active: [ProgressCardModel] = []
     private(set) var archived: [ProgressCardModel] = []
     private(set) var recentDays: [DayNoteRow] = []
@@ -54,27 +60,38 @@ final class ProgressViewModel {
         active = ordered.filter { !$0.isArchived }.map { card(for: $0, entries: entries, now: now) }
         archived = ordered.filter(\.isArchived).map { card(for: $0, entries: entries, now: now) }
 
-        let savedValues = ordered.filter { !$0.isArchived && $0.habitType == .vice }.compactMap { metric -> Decimal? in
-            if metric.isCuttingBack {
-                let history = Snapshots.cutBackHistory(for: metric, entries: entries, calendar: calendar)
-                return CutBackMath.moneySaved(
-                    unitsAvoided: CutBackMath.unitsAvoided(history, now: now, calendar: calendar),
-                    baseline: history.baseline,
-                    costPerDay: metric.costPerDay
-                )
-            }
-            let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: calendar)
-            return RecoveryMath.moneySaved(totalFreeDays: RecoveryMath.totalFreeDays(history, now: now, calendar: calendar), costPerDay: metric.costPerDay)
+        let withSavings = ordered.filter(includesSavings)
+        let saved = withSavings.reduce(Decimal(0)) { partial, metric in
+            partial + (savings(for: metric, entries: entries, now: now) ?? 0)
         }
-        let saved = savedValues.reduce(Decimal(0), +)
-        let today = calendar.startOfDay(for: now)
-        let start = calendar.date(byAdding: .day, value: -29, to: today) ?? today
-        let window = Set(DayMath.days(from: start, through: today, calendar: calendar))
-        let logged = Set(entries.map { calendar.startOfDay(for: $0.day) })
         summary = ProgressSummary(
-            savedText: saved > 0 ? RecoveryCopy.saved(saved, locale: locale) : nil,
+            savedValue: withSavings.isEmpty ? nil : RecoveryCopy.money(saved, locale: locale),
+            savedText: withSavings.isEmpty ? nil : RecoveryCopy.saved(saved, locale: locale),
             urgesBeaten: PatternInsights.urgeSummary(urges.map(\.outcome)).beaten,
-            daysCheckedIn: logged.intersection(window).count
+            daysCheckedIn: ProgressMath.daysCheckedIn(loggedDays: entries.map(\.day), now: now, calendar: calendar)
+        )
+    }
+
+    /// Quit vices with a daily cost, and cut-back vices with a cost and a baseline.
+    private func includesSavings(_ metric: Metric) -> Bool {
+        guard !metric.isArchived, metric.habitType == .vice, let cost = metric.costPerDay, cost > 0 else { return false }
+        if metric.isCuttingBack { return (metric.baselinePerDay ?? 0) > 0 }
+        return true
+    }
+
+    private func savings(for metric: Metric, entries: [MetricEntry], now: Date) -> Decimal? {
+        if metric.isCuttingBack {
+            let history = Snapshots.cutBackHistory(for: metric, entries: entries, calendar: calendar)
+            return CutBackMath.moneySaved(
+                unitsAvoided: CutBackMath.unitsAvoided(history, now: now, calendar: calendar),
+                baseline: history.baseline,
+                costPerDay: metric.costPerDay
+            )
+        }
+        let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: calendar)
+        return RecoveryMath.moneySaved(
+            totalFreeDays: RecoveryMath.totalFreeDays(history, now: now, calendar: calendar),
+            costPerDay: metric.costPerDay
         )
     }
 
