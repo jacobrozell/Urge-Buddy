@@ -7,6 +7,8 @@ struct TrackBothBackup: Codable, Equatable {
     var entries: [EntryRecord]
     var urges: [UrgeRecord]
     var reasons: [ReasonRecord]
+    /// v6+. Missing in v5 files.
+    var dayNotes: [DayNoteRecord]?
 
     struct MetricRecord: Codable, Equatable {
         var id: String
@@ -19,6 +21,10 @@ struct TrackBothBackup: Codable, Equatable {
         var ifThenPlan: String?
         var sortOrder: Int
         var isArchived: Bool
+        var viceMode: String?
+        var unit: String?
+        var dailyTarget: Int?
+        var baselinePerDay: Int?
     }
 
     struct EntryRecord: Codable, Equatable {
@@ -29,6 +35,15 @@ struct TrackBothBackup: Codable, Equatable {
         var occurredAt: Date
         var note: String?
         var triggers: [String]
+        var amount: Int?
+    }
+
+    struct DayNoteRecord: Codable, Equatable {
+        var id: String
+        var day: Date
+        var mood: Int?
+        var text: String?
+        var updatedAt: Date
     }
 
     struct UrgeRecord: Codable, Equatable {

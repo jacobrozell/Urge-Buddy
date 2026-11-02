@@ -5,6 +5,7 @@ struct ProgressScreen: View {
     @Query(sort: \Metric.sortOrder) private var metrics: [Metric]
     @Query private var entries: [MetricEntry]
     @Query private var urges: [UrgeEvent]
+    @Query private var dayNotes: [DayNote]
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -47,6 +48,29 @@ struct ProgressScreen: View {
                     }
                     .onMove { offsets, destination in
                         try? model.moveActive(from: offsets, to: destination, metrics: metrics, store: RecoveryStore(context: modelContext))
+                    }
+                }
+                if !model.recentDays.isEmpty {
+                    Section(RecoveryCopy.recentDays) {
+                        ForEach(model.recentDays) { row in
+                            HStack(alignment: .firstTextBaseline, spacing: Spacing.m) {
+                                Image(systemName: row.systemImage)
+                                    .foregroundStyle(Color.tbBrand)
+                                    .frame(width: 24)
+                                    .accessibilityHidden(true)
+                                VStack(alignment: .leading, spacing: Spacing.xs) {
+                                    Text(row.day)
+                                        .font(.caption)
+                                        .foregroundStyle(Color.tbTextSecondary)
+                                    Text(row.text)
+                                        .font(.body)
+                                        .foregroundStyle(Color.tbTextPrimary)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                            .accessibilityElement(children: .combine)
+                            .listRowBackground(Color.tbSurface)
+                        }
                     }
                 }
                 if !model.archived.isEmpty {
@@ -120,13 +144,14 @@ struct ProgressScreen: View {
     }
 
     private var snapshot: String {
-        metrics.map { "\($0.id.uuidString):\($0.sortOrder):\($0.isArchived):\($0.name)" }.joined()
-            + entries.map(\.statusRaw).joined()
+        metrics.map { "\($0.id.uuidString):\($0.sortOrder):\($0.isArchived):\($0.name):\($0.viceModeRaw):\($0.dailyTarget ?? -1)" }.joined()
+            + entries.map { "\($0.statusRaw):\($0.amount ?? -1)" }.joined()
             + urges.map(\.outcomeRaw).joined()
+            + dayNotes.map { "\($0.moodRaw):\($0.text ?? "")" }.joined()
     }
 
     private func refresh() {
-        model.update(metrics: metrics, entries: entries, urges: urges, now: Date())
+        model.update(metrics: metrics, entries: entries, urges: urges, dayNotes: dayNotes, now: Date())
     }
 
     private func openFirstDetailIfNeeded() {

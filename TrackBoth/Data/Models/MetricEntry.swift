@@ -12,6 +12,8 @@ final class MetricEntry {
     var occurredAt: Date = Date()
     var note: String?
     var triggersRaw: String = ""
+    /// Count for the day on amount-tracked metrics.
+    var amount: Int?
 
     init(metricID: UUID, day: Date, status: EntryStatus, occurredAt: Date) {
         self.metricID = metricID
@@ -32,7 +34,16 @@ final class MetricEntry {
 }
 
 enum EntryStatus: String, Codable, CaseIterable {
+    /// Quit vice: free that day.
     case free
+    /// Quit vice: slipped. Restarts the free clock.
     case slipped
+    /// Habit: done (target met on amount habits).
     case done
+    /// Amount habit: some logged, target not met yet.
+    case partial
+    /// Cut back: at or under the limit when logged.
+    case within
+    /// Cut back: over the limit when logged.
+    case over
 }

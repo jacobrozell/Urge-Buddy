@@ -261,6 +261,7 @@ enum RecoveryCopy {
     static func whyQuitNamed(_ name: String) -> String {
         name.isEmpty ? "Why does this matter?" : "Why do you want to quit \(name)?"
     }
+    static func whyCutBackNamed(_ name: String) -> String { "Why do you want to cut back on \(name)?" }
     static func onboardingProgress(current: Int, total: Int) -> String { "Step \(current) of \(total)" }
 
     static let settingsReminders = "Reminders"
@@ -309,4 +310,97 @@ enum RecoveryCopy {
     static let callSAMHSA = "Call 1-800-662-4357"
     static let crisisOutside = "Outside the US, find a helpline"
     static let crisisMedical = "Stopping alcohol, benzodiazepines, or opioids suddenly can be dangerous. Talk to a doctor or pharmacist."
+
+    // MARK: Amounts and cutting back
+
+    static let cuttingBack = "Cutting back"
+    static let quitMode = "Quit"
+    static let cutBackMode = "Cut back"
+    static let quitOrCutBack = "Quit or cut back?"
+    static let cutBackExplainer = "Cutting back sets a daily limit. You can switch to quitting any time."
+    static let unitField = "Counted in"
+    static let unitPlaceholder = "e.g. cigarettes, drinks, minutes"
+    static let usualPerDay = "Usual amount per day"
+    static let howManyNow = "How many a day right now?"
+    static let dailyLimit = "Daily limit"
+    static let dailyLimitPrompt = "What's your daily limit to start?"
+    static let dailyTarget = "Daily target"
+    static let trackAnAmount = "Track an amount"
+    static let trackAnAmountFooter = "Count toward a daily target, like 8 glasses of water or 30 minutes."
+    static let costAtUsual = "Cost per day at your usual amount"
+    static let limitRequired = "Set a daily limit. Zero is fine."
+    static let targetRequired = "Set a daily target of at least 1."
+    static let logOne = "Log one"
+    static let removeOne = "Remove one"
+    static let iHadOne = "I had one"
+    static let overLimitToday = "Over your limit today. Tomorrow is a fresh start."
+    static let todayTile = "Today"
+    static let averageLast7 = "Average, last 7"
+    static let withinLast30Tile = "Within limit, last 30"
+    static let usualTile = "Before cutting back"
+    static let legendWithin = "Within limit"
+    static let legendOver = "Over limit"
+    static let legendNotLogged = "Not logged"
+    static let legendPartial = "Partly done"
+    static func howManyToday(limit: Int) -> String { "How many today? Your limit is \(limit)." }
+    static let amount = "Amount"
+    static let saveAmount = "Save amount"
+
+    static func amountOf(_ amount: Int, _ limit: Int, unit: String) -> String {
+        "\(amount) of \(limit) \(unit)"
+    }
+
+    static func amountUnit(_ amount: Int, unit: String) -> String {
+        "\(amount) \(unit)"
+    }
+
+    static func todayAmount(_ amount: Int, limit: Int, unit: String) -> String {
+        "\(amountOf(amount, limit, unit: unit)) today"
+    }
+
+    static func perDayAmount(_ amount: Int, unit: String) -> String {
+        "\(amount) \(unit) a day"
+    }
+
+    static func average(_ value: Double) -> String {
+        let tenths = (value * 10).rounded() / 10
+        if tenths == tenths.rounded() { return String(Int(tenths)) }
+        return String(format: "%.1f", tenths)
+    }
+
+    static func averageLine(_ value: Double, unit: String) -> String {
+        "\(average(value)) \(unit) a day, last 7"
+    }
+
+    static func averageShort(_ value: Double) -> String {
+        "Avg \(average(value)) a day"
+    }
+
+    static func reduction(_ percent: Int, baseline: Int, unit: String) -> String {
+        "Down \(percent)% from \(perDayAmount(baseline, unit: unit))"
+    }
+
+    static func cutBackProgress(today: String, average: String?, within: Int, logged: Int) -> String {
+        var second: [String] = []
+        if let average { second.append(average) }
+        if logged > 0 { second.append("\(within)/\(logged) within limit") }
+        return second.isEmpty ? today : "\(today)\n\(second.joined(separator: " · "))"
+    }
+
+    static func cutBackSummary(amount: Int, limit: Int, unit: String, saved: String?) -> String {
+        let line = todayAmount(amount, limit: limit, unit: unit)
+        if let saved { return "\(line) · \(saved)" }
+        return line
+    }
+    // MARK: Mood and notes
+
+    static let howAreYouFeeling = "How are you feeling?"
+    static let noteField = "Anything on your mind? (optional)"
+    static let yourDay = "Your day"
+    static let saveNote = "Save note"
+    static let recentDays = "Recent days"
+
+    static func moodLine(_ mood: Mood?, note: String?) -> String {
+        [mood?.title, note].compactMap { $0 }.joined(separator: " · ")
+    }
 }

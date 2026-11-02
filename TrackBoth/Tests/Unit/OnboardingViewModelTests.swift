@@ -36,6 +36,22 @@ final class OnboardingViewModelTests: XCTestCase {
         XCTAssertNil(drafts[1].firstReason)
     }
 
+    func testCutBackDraftUsesPresetUnitAndDefaultsLimitToUsual() {
+        let model = OnboardingViewModel()
+        model.toggleVice("smoking")
+        model.toggleHabit("water")
+        let now = date(2026, 10, 28, 15)
+        var detail = model.detail(for: "smoking", now: now)
+        detail.mode = .cutBack
+        detail.when = .yesterday
+        detail.baselineText = "20"
+        model.setDetail(detail, for: "smoking")
+        let drafts = model.drafts(now: now, calendar: .testNY)
+        XCTAssertEqual(drafts[0].startedAt, now)
+        XCTAssertEqual(drafts[0].tracking, MetricTracking(viceMode: .cutBack, unit: "cigarettes", dailyTarget: 20, baselinePerDay: 20))
+        XCTAssertEqual(drafts[1].tracking, MetricTracking(unit: "glasses", dailyTarget: 8))
+    }
+
     func testHabitOnlySkipsVicePages() {
         let model = OnboardingViewModel()
         model.chooseHabitsOnly()

@@ -6,6 +6,16 @@ enum RecoveryStoreError: Error, Equatable {
     case slipBeforeStart
 }
 
+/// How a metric is logged. Defaults to yes/no (habits) or quit (vices).
+struct MetricTracking: Equatable {
+    var viceMode: ViceMode = .quit
+    var unit: String?
+    var dailyTarget: Int?
+    var baselinePerDay: Int?
+
+    static let yesNo = MetricTracking()
+}
+
 extension Notification.Name {
     static let recoveryDataChanged = Notification.Name("TrackBoth.recoveryDataChanged")
 }
@@ -29,10 +39,12 @@ final class RecoveryStore {
         iconName: String,
         startedAt: Date,
         costPerDay: Decimal?,
-        firstReason: String?
+        firstReason: String?,
+        tracking: MetricTracking = .yesNo
     ) throws -> Metric {
         let metric = Metric(name: name, habitType: habitType, iconName: iconName, startedAt: startedAt, sortOrder: try nextSortOrder())
         metric.costPerDay = costPerDay
+        apply(tracking, to: metric)
         context.insert(metric)
         if let firstReason = trimmed(firstReason) {
             context.insert(Reason(metricID: metric.id, text: firstReason, sortOrder: 0))
@@ -41,11 +53,12 @@ final class RecoveryStore {
         return metric
     }
 
-    func update(_ metric: Metric, name: String, iconName: String, startedAt: Date, costPerDay: Decimal?) throws {
+    func update(_ metric: Metric, name: String, iconName: String, startedAt: Date, costPerDay: Decimal?, tracking: MetricTracking? = nil) throws {
         metric.name = name
         metric.iconName = iconName
         metric.startedAt = startedAt
         metric.costPerDay = costPerDay
+        if let tracking { apply(tracking, to: metric) }
         try persist(operation: "updateMetric", entity: "Metric")
     }
 
@@ -119,6 +132,11 @@ final class RecoveryStore {
     }
 
     func setHabitDone(_ metric: Metric, on day: Date, done: Bool, now: Date = Date()) throws {
+        if done, metric.tracksAmount {
+            let current = try entry(for: metric.id, on: day)?.amount ?? 0
+            try setAmount(metric, on: day, amount: max(current, metric.dailyTarget ?? 1), now: now)
+            return
+        }
         if done {
             if let existing = try entry(for: metric.id, on: day) {
                 existing.status = .done
@@ -138,6 +156,39 @@ final class RecoveryStore {
             return
         }
         try persist(operation: "setHabitDone", entity: "MetricEntry")
+    }
+
+    /// Amount habits and cut-back vices. A cut-back zero is still a logged day. An amount habit at zero has no entry.
+    func setAmount(_ metric: Metric, on day: Date, amount: Int, now: Date = Date()) throws {
+        guard metric.tracksAmount else { return }
+        let amount = max(0, amount)
+        let existing = try entry(for: metric.id, on: day)
+        let status: EntryStatus?
+        if metric.isCuttingBack {
+            status = AmountMath.isOverLimit(amount: amount, limit: metric.dailyTarget ?? 0) ? .over : .within
+        } else if amount > 0 {
+            status = AmountMath.isHabitDone(amount: amount, target: metric.dailyTarget ?? 1) ? .done : .partial
+        } else {
+            status = nil
+        }
+        if let status {
+            let entry = existing ?? MetricEntry(metricID: metric.id, day: DayMath.anchor(day, calendar: calendar), status: status, occurredAt: now)
+            if existing == nil { context.insert(entry) }
+            entry.status = status
+            entry.amount = amount
+            entry.day = DayMath.anchor(day, calendar: calendar)
+            entry.occurredAt = now
+        } else if let existing {
+            context.delete(existing)
+        } else {
+            return
+        }
+        try persist(operation: "setAmount", entity: "MetricEntry")
+    }
+
+    func addAmount(_ metric: Metric, _ delta: Int, on day: Date, now: Date = Date()) throws {
+        let current = try entry(for: metric.id, on: day)?.amount ?? 0
+        try setAmount(metric, on: day, amount: current + delta, now: now)
     }
 
     func clearDay(_ metric: Metric, on day: Date) throws {
@@ -205,6 +256,33 @@ final class RecoveryStore {
         try persist(operation: "reorderReasons", entity: "Reason")
     }
 
+    // MARK: Day notes
+
+    func dayNote(on day: Date) throws -> DayNote? {
+        let start = calendar.startOfDay(for: day)
+        guard let end = calendar.date(byAdding: .day, value: 1, to: start) else { return nil }
+        let predicate = #Predicate<DayNote> { $0.day >= start && $0.day < end }
+        return try context.fetch(FetchDescriptor<DayNote>(predicate: predicate)).first
+    }
+
+    /// Saves the day's mood and note. Clearing both removes the note.
+    func setDayNote(on day: Date, mood: Mood?, text: String?, now: Date = Date()) throws {
+        let text = trimmed(text)
+        let existing = try dayNote(on: day)
+        if mood == nil && text == nil {
+            guard let existing else { return }
+            context.delete(existing)
+        } else if let existing {
+            guard existing.mood != mood || existing.text != text else { return }
+            existing.mood = mood
+            existing.text = text
+            existing.updatedAt = now
+        } else {
+            context.insert(DayNote(day: DayMath.anchor(day, calendar: calendar), mood: mood, text: text, updatedAt: now))
+        }
+        try persist(operation: "setDayNote", entity: "DayNote")
+    }
+
     // MARK: Everything
 
     func deleteAllData() throws {
@@ -217,12 +295,13 @@ final class RecoveryStore {
         NotificationCenter.default.post(name: .recoveryDataChanged, object: nil)
     }
 
-    func replaceAll(metrics: [Metric], entries: [MetricEntry], urges: [UrgeEvent], reasons: [Reason]) throws {
+    func replaceAll(metrics: [Metric], entries: [MetricEntry], urges: [UrgeEvent], reasons: [Reason], dayNotes: [DayNote] = []) throws {
         try deleteAllObjects()
         for metric in metrics { context.insert(metric) }
         for entry in entries { context.insert(entry) }
         for urge in urges { context.insert(urge) }
         for reason in reasons { context.insert(reason) }
+        for note in dayNotes { context.insert(note) }
         guard context.saveChanges(operation: "replaceAll", entity: "Store") else {
             throw RecoveryStoreError.saveFailed
         }
@@ -269,6 +348,28 @@ final class RecoveryStore {
         for entry in try context.fetch(FetchDescriptor<MetricEntry>()) { context.delete(entry) }
         for urge in try context.fetch(FetchDescriptor<UrgeEvent>()) { context.delete(urge) }
         for reason in try context.fetch(FetchDescriptor<Reason>()) { context.delete(reason) }
+        for note in try context.fetch(FetchDescriptor<DayNote>()) { context.delete(note) }
+    }
+
+    private func apply(_ tracking: MetricTracking, to metric: Metric) {
+        let unit = trimmed(tracking.unit)
+        switch (metric.habitType, tracking.viceMode) {
+        case (.positive, _):
+            metric.viceMode = .quit
+            metric.dailyTarget = tracking.dailyTarget.map { max(1, $0) }
+            metric.unit = metric.dailyTarget == nil ? nil : unit
+            metric.baselinePerDay = nil
+        case (.vice, .quit):
+            metric.viceMode = .quit
+            metric.unit = nil
+            metric.dailyTarget = nil
+            metric.baselinePerDay = nil
+        case (.vice, .cutBack):
+            metric.viceMode = .cutBack
+            metric.unit = unit
+            metric.dailyTarget = max(0, tracking.dailyTarget ?? 0)
+            metric.baselinePerDay = tracking.baselinePerDay.flatMap { $0 > 0 ? $0 : nil }
+        }
     }
 
     private func persist(operation: String, entity: String) throws {

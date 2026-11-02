@@ -63,6 +63,13 @@ class TrackBothUITestCase: XCTestCase {
             parts.day ?? 0
         )
         var dayButton = app.buttons[identifier]
+        if !calendar.isDate(date, equalTo: Date(), toGranularity: .month) {
+            let previous = app.buttons["Previous month"]
+            for _ in 0..<6 where !previous.isHittable {
+                app.swipeUp()
+            }
+            previous.tap()
+        }
         for _ in 0..<6 {
             if dayButton.waitForExistence(timeout: 2) { break }
             app.swipeUp()

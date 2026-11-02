@@ -6,6 +6,10 @@ struct Preset: Identifiable, Equatable, Hashable {
     var iconName: String
     /// Verb phrase for "When did you last …?" Vices only.
     var lastUseVerb: String
+    /// Default unit when counted (cut back, amount habits).
+    var unit: String = ""
+    /// Habits only. A preset that starts as an amount habit.
+    var dailyTarget: Int? = nil
 }
 
 enum Presets {
@@ -13,23 +17,23 @@ enum Presets {
     static let fallbackIcon = "circle.dashed"
 
     static let vices: [Preset] = [
-        Preset(id: "alcohol", name: "Alcohol", iconName: "wineglass", lastUseVerb: "drink"),
-        Preset(id: "smoking", name: "Smoking", iconName: "smoke", lastUseVerb: "smoke"),
-        Preset(id: "vaping", name: "Vaping", iconName: "cloud", lastUseVerb: "vape"),
-        Preset(id: "cannabis", name: "Cannabis", iconName: "leaf", lastUseVerb: "use cannabis"),
-        Preset(id: "gambling", name: "Gambling", iconName: "dice", lastUseVerb: "gamble"),
-        Preset(id: "porn", name: "Porn", iconName: "eye.slash", lastUseVerb: "watch porn"),
-        Preset(id: "social-media", name: "Social media", iconName: "iphone", lastUseVerb: "scroll social media"),
-        Preset(id: "gaming", name: "Gaming", iconName: "gamecontroller", lastUseVerb: "game"),
-        Preset(id: "junk-food", name: "Junk food", iconName: "takeoutbag.and.cup.and.straw", lastUseVerb: "eat junk food"),
-        Preset(id: "shopping", name: "Impulse shopping", iconName: "bag", lastUseVerb: "impulse shop"),
-        Preset(id: "caffeine", name: "Caffeine", iconName: "cup.and.saucer", lastUseVerb: "have caffeine")
+        Preset(id: "alcohol", name: "Alcohol", iconName: "wineglass", lastUseVerb: "drink", unit: "drinks"),
+        Preset(id: "smoking", name: "Smoking", iconName: "smoke", lastUseVerb: "smoke", unit: "cigarettes"),
+        Preset(id: "vaping", name: "Vaping", iconName: "cloud", lastUseVerb: "vape", unit: "sessions"),
+        Preset(id: "cannabis", name: "Cannabis", iconName: "leaf", lastUseVerb: "use cannabis", unit: "sessions"),
+        Preset(id: "gambling", name: "Gambling", iconName: "dice", lastUseVerb: "gamble", unit: "bets"),
+        Preset(id: "porn", name: "Porn", iconName: "eye.slash", lastUseVerb: "watch porn", unit: "times"),
+        Preset(id: "social-media", name: "Social media", iconName: "iphone", lastUseVerb: "scroll social media", unit: "minutes"),
+        Preset(id: "gaming", name: "Gaming", iconName: "gamecontroller", lastUseVerb: "game", unit: "hours"),
+        Preset(id: "junk-food", name: "Junk food", iconName: "takeoutbag.and.cup.and.straw", lastUseVerb: "eat junk food", unit: "snacks"),
+        Preset(id: "shopping", name: "Impulse shopping", iconName: "bag", lastUseVerb: "impulse shop", unit: "purchases"),
+        Preset(id: "caffeine", name: "Caffeine", iconName: "cup.and.saucer", lastUseVerb: "have caffeine", unit: "cups")
     ]
 
     static let habits: [Preset] = [
         Preset(id: "walk", name: "Go for a walk", iconName: "figure.walk", lastUseVerb: ""),
         Preset(id: "exercise", name: "Exercise", iconName: "figure.run", lastUseVerb: ""),
-        Preset(id: "water", name: "Drink water", iconName: "drop", lastUseVerb: ""),
+        Preset(id: "water", name: "Drink water", iconName: "drop", lastUseVerb: "", unit: "glasses", dailyTarget: 8),
         Preset(id: "reach-out", name: "Call or text a friend", iconName: "phone", lastUseVerb: ""),
         Preset(id: "breathe", name: "Breathe / meditate", iconName: "wind", lastUseVerb: ""),
         Preset(id: "journal", name: "Journal", iconName: "book.closed", lastUseVerb: ""),

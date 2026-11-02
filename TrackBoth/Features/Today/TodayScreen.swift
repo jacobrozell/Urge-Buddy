@@ -43,14 +43,14 @@ struct TodayScreen: View {
                                 ) { sheet = .add }
                                 .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
                             }
-                            if !model.vices.isEmpty && !model.habits.isEmpty {
+                            if model.hasViceSection && !model.habits.isEmpty {
                                 AdaptiveColumns {
-                                    quittingSection
+                                    viceSections
                                 } trailing: {
                                     buildingSection
                                 }
                             } else {
-                                if !model.vices.isEmpty { quittingSection }
+                                if model.hasViceSection { viceSections }
                                 if !model.habits.isEmpty { buildingSection }
                             }
                         }
@@ -103,6 +103,13 @@ struct TodayScreen: View {
         }
     }
 
+    private var viceSections: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            if !model.vices.isEmpty { quittingSection }
+            if !model.cutBacks.isEmpty { cuttingBackSection }
+        }
+    }
+
     @ViewBuilder
     private var quittingSection: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
@@ -115,21 +122,39 @@ struct TodayScreen: View {
         }
     }
 
+    private var cuttingBackSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            SectionHeader(RecoveryCopy.cuttingBack)
+            VStack(spacing: Spacing.m) {
+                ForEach(model.cutBacks) { card in
+                    CutBackCard(model: card, onChange: { setAmount(card.id, $0) }, onOpen: { sheet = .detail(card.id) })
+                }
+            }
+        }
+    }
+
     @ViewBuilder
     private var buildingSection: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             SectionHeader(RecoveryCopy.building)
             VStack(spacing: Spacing.s) {
                 ForEach(model.habits) { row in
-                    HabitCheckRow(model: row, onToggle: { toggleHabit(row.id) }, onOpen: { sheet = .detail(row.id) })
+                    HabitCheckRow(
+                        model: row,
+                        onToggle: { toggleHabit(row.id) },
+                        onSetAmount: { setAmount(row.id, $0) },
+                        onOpen: { sheet = .detail(row.id) }
+                    )
                 }
             }
         }
     }
 
     private var snapshotToken: String {
-        let metricPart = metrics.map { "\($0.id.uuidString):\($0.sortOrder):\($0.name):\($0.costPerDayRaw ?? "")" }.joined(separator: "|")
-        let entryPart = entries.map { "\($0.metricID.uuidString):\($0.statusRaw):\($0.day.timeIntervalSinceReferenceDate)" }.joined(separator: "|")
+        let metricPart = metrics.map {
+            "\($0.id.uuidString):\($0.sortOrder):\($0.name):\($0.costPerDayRaw ?? ""):\($0.viceModeRaw):\($0.dailyTarget ?? -1):\($0.unit ?? ""):\($0.baselinePerDay ?? -1)"
+        }.joined(separator: "|")
+        let entryPart = entries.map { "\($0.metricID.uuidString):\($0.statusRaw):\($0.amount ?? -1):\($0.day.timeIntervalSinceReferenceDate)" }.joined(separator: "|")
         return metricPart + "#" + entryPart + "#\(dismissedYesterday?.timeIntervalSinceReferenceDate ?? 0)"
     }
 
@@ -139,7 +164,7 @@ struct TodayScreen: View {
 
     private func presentSlipIfNeeded() {
         guard LaunchConfiguration.presentsSlip, !didPresentSlip,
-              let vice = metrics.first(where: { $0.habitType == .vice && !$0.isArchived }) else { return }
+              let vice = metrics.first(where: { $0.isQuitting && !$0.isArchived }) else { return }
         didPresentSlip = true
         sheet = .slip(vice.id)
     }
@@ -149,6 +174,11 @@ struct TodayScreen: View {
         let store = RecoveryStore(context: modelContext)
         let done = model.habits.first { $0.id == id }?.isDoneToday == false
         try? store.setHabitDone(metric, on: Date(), done: done, now: Date())
+    }
+
+    private func setAmount(_ id: UUID, _ amount: Int) {
+        guard let metric = metrics.first(where: { $0.id == id }) else { return }
+        try? RecoveryStore(context: modelContext).setAmount(metric, on: Date(), amount: amount, now: Date())
     }
 
     private func confirmYesterday(_ id: UUID) {

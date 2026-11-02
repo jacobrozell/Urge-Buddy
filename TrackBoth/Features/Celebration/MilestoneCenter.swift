@@ -13,7 +13,7 @@ enum MilestoneCenter {
     /// One celebration per metric: the highest threshold newly reached. Vices first, then habits, in sort order.
     static func pending(metrics: [Metric], entries: [MetricEntry], reasons: [Reason], now: Date, calendar: Calendar) -> [CelebrationRequest] {
         let active = metrics.filter { !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
-        let vices = active.filter { $0.habitType == .vice }
+        let vices = active.filter(\.isQuitting)
         let habits = active.filter { $0.habitType == .positive }
         return (vices + habits).compactMap { metric in
             let isVice = metric.habitType == .vice

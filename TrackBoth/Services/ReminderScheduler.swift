@@ -39,7 +39,7 @@ enum ReminderScheduler {
         let checkInComplete = activeVices.allSatisfy { metric in
             entries.contains { $0.metricID == metric.id && calendar.isDate($0.day, inSameDayAs: today) }
         }
-        let vices = activeVices.map { metric in
+        let vices = activeVices.filter(\.isQuitting).map { metric in
             let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: calendar)
             return MilestoneReminderInput(
                 metricID: metric.id,

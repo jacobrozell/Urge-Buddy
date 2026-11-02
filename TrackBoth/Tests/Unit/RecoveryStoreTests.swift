@@ -48,6 +48,59 @@ final class RecoveryStoreTests: XCTestCase {
         XCTAssertNil(try store.entry(for: habit.id, on: day))
     }
 
+    func testCutBackAmountsSnapshotTheLimitAndKeepZero() throws {
+        let metric = try store.addMetric(
+            name: "Smoking", habitType: .vice, iconName: "smoke", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil,
+            tracking: MetricTracking(viceMode: .cutBack, unit: "cigarettes", dailyTarget: 5)
+        )
+        let day = date(2026, 10, 10)
+        try store.setAmount(metric, on: day, amount: 0)
+        XCTAssertEqual(try store.entry(for: metric.id, on: day)?.status, .within)
+        try store.addAmount(metric, 6, on: day)
+        let entry = try store.entry(for: metric.id, on: day)
+        XCTAssertEqual(entry?.amount, 6)
+        XCTAssertEqual(entry?.status, .over)
+        try store.update(metric, name: metric.name, iconName: metric.iconName, startedAt: metric.startedAt, costPerDay: nil,
+                         tracking: MetricTracking(viceMode: .cutBack, unit: "cigarettes", dailyTarget: 10))
+        XCTAssertEqual(try store.entry(for: metric.id, on: day)?.status, .over)
+    }
+
+    func testAmountHabitIsPartialThenDoneAndZeroRemovesIt() throws {
+        let water = try store.addMetric(
+            name: "Water", habitType: .positive, iconName: "drop", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil,
+            tracking: MetricTracking(unit: "glasses", dailyTarget: 8)
+        )
+        let day = date(2026, 10, 10)
+        try store.setAmount(water, on: day, amount: 3)
+        XCTAssertEqual(try store.entry(for: water.id, on: day)?.status, .partial)
+        try store.setHabitDone(water, on: day, done: true)
+        XCTAssertEqual(try store.entry(for: water.id, on: day)?.amount, 8)
+        XCTAssertEqual(try store.entry(for: water.id, on: day)?.status, .done)
+        try store.setAmount(water, on: day, amount: 0)
+        XCTAssertNil(try store.entry(for: water.id, on: day))
+    }
+
+    func testQuitViceIgnoresAmountsAndDropsAmountFields() throws {
+        let metric = try store.addMetric(
+            name: "Alcohol", habitType: .vice, iconName: "wineglass", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil,
+            tracking: MetricTracking(viceMode: .quit, unit: "drinks", dailyTarget: 3)
+        )
+        XCTAssertNil(metric.unit)
+        XCTAssertNil(metric.dailyTarget)
+        try store.setAmount(metric, on: date(2026, 10, 10), amount: 2)
+        XCTAssertTrue(try store.entries(for: metric.id).isEmpty)
+    }
+
+    func testDayNoteUpsertsAndClears() throws {
+        let day = date(2026, 10, 10, 9)
+        try store.setDayNote(on: day, mood: .good, text: "  Walked  ")
+        try store.setDayNote(on: date(2026, 10, 10, 21), mood: .great, text: "Walked")
+        XCTAssertEqual(try store.context.fetchCount(FetchDescriptor<DayNote>()), 1)
+        XCTAssertEqual(try store.dayNote(on: day)?.mood, .great)
+        try store.setDayNote(on: day, mood: nil, text: " ")
+        XCTAssertNil(try store.dayNote(on: day))
+    }
+
     func testDeleteCascadesEntriesUrgesAndReasons() throws {
         let metric = try vice()
         try store.addReason("For my health", to: metric)

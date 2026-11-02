@@ -25,6 +25,26 @@ struct ViceCardModel: Identifiable, Equatable {
     }
 }
 
+struct CutBackCardModel: Identifiable, Equatable {
+    var id: UUID
+    var name: String
+    var iconName: String
+    var amount: Int
+    var limit: Int
+    var unit: String
+    var isOver: Bool
+    var trendLine: String?
+    var week: [DayVisualState]
+    var weekLabels: [String]
+
+    var accessibilityLabel: String {
+        var parts = [name, RecoveryCopy.todayAmount(amount, limit: limit, unit: unit)]
+        if isOver { parts.append(RecoveryCopy.overLimitToday) }
+        if let trendLine { parts.append(trendLine) }
+        return parts.joined(separator: ", ")
+    }
+}
+
 struct HabitRowModel: Identifiable, Equatable {
     var id: UUID
     var name: String
@@ -32,6 +52,13 @@ struct HabitRowModel: Identifiable, Equatable {
     var run: Int
     var isDoneToday: Bool
     var isAtRisk: Bool
+    var amount: Int = 0
+    /// Set on amount habits.
+    var target: Int?
+    var unit: String = AmountMath.defaultUnit
+
+    var tracksAmount: Bool { target != nil }
+    var step: Int { AmountMath.step(for: target) }
 }
 
 struct YesterdayPromptModel: Equatable {
@@ -45,6 +72,7 @@ final class TodayViewModel {
     var calendar: Calendar
     var locale: Locale
     private(set) var vices: [ViceCardModel] = []
+    private(set) var cutBacks: [CutBackCardModel] = []
     private(set) var habits: [HabitRowModel] = []
     private(set) var checkInRemaining = 0
     private(set) var yesterdayPrompt: YesterdayPromptModel?
@@ -54,8 +82,9 @@ final class TodayViewModel {
         self.locale = locale
     }
 
-    var showsSOS: Bool { !vices.isEmpty }
-    var isEmpty: Bool { vices.isEmpty && habits.isEmpty }
+    var showsSOS: Bool { !vices.isEmpty || !cutBacks.isEmpty }
+    var isEmpty: Bool { vices.isEmpty && cutBacks.isEmpty && habits.isEmpty }
+    var hasViceSection: Bool { !vices.isEmpty || !cutBacks.isEmpty }
 
     func update(metrics: [Metric], entries: [MetricEntry], now: Date, dismissedYesterday: Date?) {
         let active = metrics
@@ -65,7 +94,7 @@ final class TodayViewModel {
         let weekStart = calendar.date(byAdding: .day, value: -6, to: today) ?? today
         let weekDays = DayMath.days(from: weekStart, through: today, calendar: calendar)
 
-        vices = active.filter { $0.habitType == .vice }.map { metric in
+        vices = active.filter(\.isQuitting).map { metric in
             let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: calendar)
             let daysFree = RecoveryMath.currentRunDays(history, now: now, calendar: calendar)
             let saved = RecoveryMath.moneySaved(
@@ -86,6 +115,23 @@ final class TodayViewModel {
             )
         }
 
+        cutBacks = active.filter(\.isCuttingBack).map { metric in
+            let history = Snapshots.cutBackHistory(for: metric, entries: entries, calendar: calendar)
+            let amount = CutBackMath.amount(on: today, history, calendar: calendar)
+            return CutBackCardModel(
+                id: metric.id,
+                name: metric.name,
+                iconName: metric.iconName,
+                amount: amount,
+                limit: history.limit,
+                unit: metric.unitLabel,
+                isOver: AmountMath.isOverLimit(amount: amount, limit: history.limit),
+                trendLine: Self.trendLine(history, unit: metric.unitLabel, now: now, calendar: calendar),
+                week: weekDays.map { DayVisualState(cutBackState: CutBackMath.state(of: $0, in: history, now: now, calendar: calendar)) },
+                weekLabels: weekDays.map { weekdayName($0) }
+            )
+        }
+
         habits = active.filter { $0.habitType == .positive }.map { metric in
             let history = Snapshots.habitHistory(for: metric, entries: entries, calendar: calendar)
             return HabitRowModel(
@@ -94,17 +140,33 @@ final class TodayViewModel {
                 iconName: metric.iconName,
                 run: HabitMath.currentRun(history, now: now, calendar: calendar),
                 isDoneToday: history.doneDays.contains(today),
-                isAtRisk: HabitMath.isAtRisk(history, now: now, calendar: calendar)
+                isAtRisk: HabitMath.isAtRisk(history, now: now, calendar: calendar),
+                amount: Snapshots.amount(for: metric, on: today, entries: entries, calendar: calendar),
+                target: metric.tracksAmount ? metric.dailyTarget : nil,
+                unit: metric.unitLabel
             )
         }
 
         checkInRemaining = active.filter { metric in
-            guard metric.habitType == .vice else { return false }
+            if metric.isCuttingBack {
+                let history = Snapshots.cutBackHistory(for: metric, entries: entries, calendar: calendar)
+                return !CutBackMath.isLogged(today, history, calendar: calendar)
+            }
+            guard metric.isQuitting else { return false }
             let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: calendar)
             return RecoveryMath.state(of: today, in: history, now: now, calendar: calendar) == .todayPending
         }.count
 
-        yesterdayPrompt = makeYesterdayPrompt(vices: active.filter { $0.habitType == .vice }, entries: entries, now: now, dismissedYesterday: dismissedYesterday)
+        yesterdayPrompt = makeYesterdayPrompt(vices: active.filter(\.isQuitting), entries: entries, now: now, dismissedYesterday: dismissedYesterday)
+    }
+
+    /// "Down 60% from 20 a day" once there's a baseline, else the 7-day average.
+    static func trendLine(_ history: CutBackHistory, unit: String, now: Date, calendar: Calendar) -> String? {
+        let average = CutBackMath.average(inLast: 7, history, now: now, calendar: calendar)
+        if let percent = CutBackMath.reductionPercent(average: average, baseline: history.baseline), let baseline = history.baseline {
+            return RecoveryCopy.reduction(percent, baseline: baseline, unit: unit)
+        }
+        return average.map { RecoveryCopy.averageLine($0, unit: unit) }
     }
 
     private func makeYesterdayPrompt(vices: [Metric], entries: [MetricEntry], now: Date, dismissedYesterday: Date?) -> YesterdayPromptModel? {

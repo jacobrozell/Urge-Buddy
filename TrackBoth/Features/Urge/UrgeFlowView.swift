@@ -47,7 +47,7 @@ struct UrgeFlowView: View {
             }
             .confirmationDialog(RecoveryCopy.howDidItGo, isPresented: $askClose, titleVisibility: .visible) {
                 Button(RecoveryCopy.theUrgePassed) { try? model?.passed(now: Date()) }
-                Button(RecoveryCopy.iSlipped) { showSlip = true }
+                Button(slipTitle) { slipped() }
                 Button(RecoveryCopy.notSure) { try? model?.markNotSure(now: Date()); onClose() }
                 Button(RecoveryCopy.close, role: .cancel) {}
             }
@@ -191,7 +191,7 @@ struct UrgeFlowView: View {
         PrimaryButton(title: RecoveryCopy.theUrgePassed, systemImage: nil, accessibilityID: AccessibilityIdentifiers.urgePassed) {
             try? model.passed(now: Date())
         }
-        Button(RecoveryCopy.iSlipped) { showSlip = true }
+        Button(slipTitle) { slipped() }
             .frame(minHeight: 44)
             .foregroundStyle(Color.tbOnCalm)
             .accessibilityIdentifier(AccessibilityIdentifiers.urgeSlipped)
@@ -268,6 +268,21 @@ struct UrgeFlowView: View {
 
     private var selectedMetric: Metric? {
         metrics.first { $0.id == model?.selectedID }
+    }
+
+    private var slipTitle: String {
+        selectedMetric?.isCuttingBack == true ? RecoveryCopy.iHadOne : RecoveryCopy.iSlipped
+    }
+
+    /// Quit opens the slip flow. Cut back logs one more for today and closes.
+    private func slipped() {
+        guard let metric = selectedMetric, metric.isCuttingBack else {
+            showSlip = true
+            return
+        }
+        try? RecoveryStore(context: modelContext).addAmount(metric, 1, on: Date(), now: Date())
+        try? model?.markSlipped(now: Date())
+        onClose()
     }
 
     private var selectedReasons: [String] {

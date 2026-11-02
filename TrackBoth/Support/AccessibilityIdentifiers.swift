@@ -25,6 +25,13 @@ enum AccessibilityIdentifiers {
 
     static func viceCard(_ id: UUID) -> String { "today.viceCard.\(id.uuidString)" }
     static func habitToggle(_ id: UUID) -> String { "today.habitToggle.\(id.uuidString)" }
+    static func cutBackCard(_ id: UUID) -> String { "today.cutBackCard.\(id.uuidString)" }
+    static func cutBackStepper(_ id: UUID) -> String { "today.cutBackStepper.\(id.uuidString)" }
+    static func checkInAmount(_ id: UUID) -> String { "checkIn.amount.\(id.uuidString)" }
+    static let checkInMood = "checkIn.mood"
+    static let checkInNote = "checkIn.note"
+    static let dayEditorAmount = "dayEditor.amount"
+    static let dayEditorSaveNote = "dayEditor.saveNote"
     static func checkInFree(_ id: UUID) -> String { "checkIn.free.\(id.uuidString)" }
     static func checkInSlipped(_ id: UUID) -> String { "checkIn.slipped.\(id.uuidString)" }
     static func urgeIntensity(_ level: Int) -> String { "urge.intensity.\(level)" }

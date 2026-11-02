@@ -55,8 +55,8 @@ Every feature below traces back to one of these. If a feature can't be traced, i
 
 | Cut | Why |
 |-----|-----|
-| Goals (weekly/monthly/yearly targets, quantity goals, Goals tab) | A monthly vice target ("8 times this month") contradicts quitting. Milestones are the goal. |
-| Quantity, units, mood chips, starred entries | Extra input on every log adds friction and doesn't change behavior. Trigger tags replace mood where it matters (slips and urges). |
+| Goals tab, weekly/monthly/yearly targets | Daily targets and limits shipped instead (§4.10). Weekly goals are in `FutureIdeas/backlog.md`. |
+| Per-entry mood chips, starred entries | One optional mood and note per day replaces them (§4.10). Trigger tags still cover slips and urges. |
 | Charts tab (line, bar, heatmap), chart PNG/PDF export | Generic analytics. Replaced by a calendar plus three recovery stats. |
 | Multiple color themes, font picker | Decoration. One calm palette that follows system light/dark. |
 | Per-device layout files (4 per screen) | 4× the QA work. **Ship one adaptive layout per screen** (D6, §8.7), not separate orientation files. |
@@ -287,6 +287,22 @@ Finish → create everything in one `RecoveryStore` transaction → land on Toda
 - Outside the US: **findahelpline.com** (`https://findahelpline.com`)
 - "Stopping alcohol, benzodiazepines, or opioids suddenly can be dangerous. Talk to a doctor or pharmacist."
 
+### 4.10 Cutting back, amounts, and day mood
+
+**Quit or cut back.** Each vice has a mode (`ViceMode`), chosen in onboarding and the metric form.
+
+- **Quit** is everything above: free clock, milestones, slips.
+- **Cut back** tracks a count per day against a **daily limit** (0 allowed), with an optional unit ("cigarettes") and **usual per day** (baseline). It starts today. There is no free clock and there are no milestones.
+  - Today shows a `CutBackCard` in a "Cutting back" section: "3 of 8 cigarettes today", a limit bar, a stepper, last 7 days, and "Down 60% from 20 cigarettes a day" (or the 7-day average when there's no baseline).
+  - Going over the limit is amber, never red: "Over your limit today. Tomorrow is a fresh start."
+  - Calendar: within limit (solid brand), over (amber triangle), not logged (hollow). An unlogged day is unknown, never presumed.
+  - Check-in asks "How many today?" with a stepper. Done logs the shown amount, so an untouched row logs 0.
+  - Urge flow: "I had one" adds 1 and closes. It doesn't open the slip flow.
+  - Detail tiles: daily limit, 7-day average, within the limit in the last 30 days, usual, and saved (needs a baseline and a cost).
+  - Switching to quit starts the free clock now.
+- **Amount habits.** A habit can track an amount with a **daily target** ("8 glasses"). The row shows a progress ring that adds a step on each tap (5 when the target is 20 or more). Long-press removes one. Below the target is partial (hollow square); reaching it counts as done for the run.
+- **Day mood and note.** One optional mood (Rough, Low, Okay, Good, Great) and note per calendar day. It's asked at the end of check-in, can be edited in the Day editor, and the last five appear under "Recent days" on Progress.
+
 
 
 ## 9. Copy deck (key strings — put in `RecoveryCopy`)
@@ -311,6 +327,11 @@ Finish → create everything in one `RecoveryStore` transaction → land on Toda
 | `milestoneVice(t, name)` | t == 1 ? "Your first day free from \(name)." : "\(t) days free from \(name)." |
 | `milestoneHabit(t, name)` | "\(t)-day run: \(name)." |
 | `disclaimer` | see §4.8 step 8 |
+| `cutBackProgress(amount, limit, unit)` | "\(amount) of \(limit) \(unit) today" |
+| `overLimitToday` | "Over your limit today. Tomorrow is a fresh start." |
+| `reduction(pct, baseline, unit)` | "Down \(pct)% from \(baseline) \(unit) a day" |
+| `howManyToday(limit)` | "How many today? Your limit is \(limit)." |
+| `howAreYouFeeling` | "How are you feeling?" |
 
 Plurals: simple ternaries are fine for 1.0 (English only). Leave `SWIFT_EMIT_LOC_STRINGS` on.
 

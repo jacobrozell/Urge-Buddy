@@ -29,6 +29,47 @@ final class TrackBothUITests: TrackBothUITestCase {
         XCTAssertTrue(banner.waitForNonExistence(timeout: 6))
     }
 
+    func testCutBackStepperLogsOneMore() {
+        launchApp()
+        let stepper = app.otherElements.matching(NSPredicate(format: "identifier BEGINSWITH 'today.cutBackStepper.'")).firstMatch
+        for _ in 0..<4 where !stepper.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(stepper.waitForExistence(timeout: 8))
+        XCTAssertEqual(stepper.value as? String, "3 cigarettes")
+        stepper.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+        let card = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'today.cutBackCard.'")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 4))
+        XCTAssertTrue(card.label.contains("4 of 8 cigarettes"))
+    }
+
+    func testCutBackDetailShowsLimitAndTrend() {
+        launchApp()
+        openProgressMetric(named: "Smoking")
+        assertStaticTextExists("Daily limit")
+        assertStaticTextExists("Down")
+    }
+
+    func testCheckInSavesTheMoodToRecentDays() {
+        launchApp()
+        let banner = app.buttons["today.checkInBanner"]
+        XCTAssertTrue(banner.waitForExistence(timeout: 8))
+        banner.tap()
+        let great = app.buttons["Great"]
+        for _ in 0..<4 where !great.isHittable {
+            app.swipeUp()
+        }
+        XCTAssertTrue(great.waitForExistence(timeout: 4))
+        great.tap()
+        app.buttons["Close"].firstMatch.tap()
+        tab(named: "Progress", identifier: "tab.progress").tap()
+        let greatRow = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'Great'")).firstMatch
+        for _ in 0..<6 where !greatRow.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(greatRow.waitForExistence(timeout: 6))
+    }
+
     func testUrgeFlowResisted() {
         launchApp()
         let sos = app.buttons["today.sosButton"]

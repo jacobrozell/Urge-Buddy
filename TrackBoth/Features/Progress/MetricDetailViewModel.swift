@@ -35,6 +35,8 @@ struct DetailStats: Equatable {
     var tiles: [DetailTile]
     var plan: String
     var nextMilestone: String?
+    /// Cut back: "Down 60% from 20 a day" or the 7-day average.
+    var trend: String? = nil
     var startedLine: String
     var atRisk: Bool
     var needsCost: Bool
@@ -76,7 +78,9 @@ final class MetricDetailViewModel {
 
     func update(metric: Metric, entries: [MetricEntry], urges: [UrgeEvent], now: Date) {
         let started = formattedDay(metric.startedAt)
-        if metric.habitType == .vice {
+        if metric.isCuttingBack {
+            stats = cutBackStats(metric: metric, entries: entries, urges: urges, now: now, started: started)
+        } else if metric.habitType == .vice {
             let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: calendar)
             let days = RecoveryMath.currentRunDays(history, now: now, calendar: calendar)
             let window = RecoveryMath.freeDays(inLast: 30, history, now: now, calendar: calendar)
@@ -112,14 +116,20 @@ final class MetricDetailViewModel {
             let history = Snapshots.habitHistory(for: metric, entries: entries, calendar: calendar)
             let run = HabitMath.currentRun(history, now: now, calendar: calendar)
             let next = MilestonePolicy.next(after: run, isVice: false)
+            var tiles = [
+                DetailTile(label: RecoveryCopy.currentRun, value: "\(run)", caption: nil),
+                DetailTile(label: RecoveryCopy.bestRun, value: "\(HabitMath.bestRun(history, now: now, calendar: calendar))", caption: nil),
+                DetailTile(label: RecoveryCopy.doneLast30Tile, value: "\(HabitMath.doneCount(inLast: 30, history, now: now, calendar: calendar))", caption: nil),
+                DetailTile(label: RecoveryCopy.doneAllTime, value: "\(history.doneDays.count)", caption: nil)
+            ]
+            if metric.tracksAmount, let target = metric.dailyTarget {
+                let today = Snapshots.amount(for: metric, on: now, entries: entries, calendar: calendar)
+                tiles.insert(DetailTile(label: RecoveryCopy.todayTile, value: RecoveryCopy.amountOf(today, target, unit: metric.unitLabel), caption: nil), at: 0)
+                tiles.append(DetailTile(label: RecoveryCopy.dailyTarget, value: RecoveryCopy.amountUnit(target, unit: metric.unitLabel), caption: nil))
+            }
             stats = DetailStats(
                 primary: RecoveryCopy.habitRun(run),
-                tiles: [
-                    DetailTile(label: RecoveryCopy.currentRun, value: "\(run)", caption: nil),
-                    DetailTile(label: RecoveryCopy.bestRun, value: "\(HabitMath.bestRun(history, now: now, calendar: calendar))", caption: nil),
-                    DetailTile(label: RecoveryCopy.doneLast30Tile, value: "\(HabitMath.doneCount(inLast: 30, history, now: now, calendar: calendar))", caption: nil),
-                    DetailTile(label: RecoveryCopy.doneAllTime, value: "\(history.doneDays.count)", caption: nil)
-                ],
+                tiles: tiles,
                 plan: "",
                 nextMilestone: RecoveryCopy.nextMilestone(next, inDays: next - run),
                 startedLine: started,
@@ -136,6 +146,10 @@ final class MetricDetailViewModel {
     }
 
     func state(for day: Date, metric: Metric, entries: [MetricEntry], now: Date) -> DayVisualState {
+        if metric.isCuttingBack {
+            let history = Snapshots.cutBackHistory(for: metric, entries: entries, calendar: calendar)
+            return DayVisualState(cutBackState: CutBackMath.state(of: day, in: history, now: now, calendar: calendar))
+        }
         if metric.habitType == .vice {
             let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: calendar)
             return DayVisualState(dayState: RecoveryMath.state(of: day, in: history, now: now, calendar: calendar))
@@ -145,7 +159,8 @@ final class MetricDetailViewModel {
         let today = calendar.startOfDay(for: now)
         let started = calendar.startOfDay(for: metric.startedAt)
         let active = key >= started && key <= today
-        return .habit(isDone: history.doneDays.contains(key), isToday: key == today, isActive: active)
+        let isPartial = entries.contains { $0.metricID == metric.id && $0.status == .partial && calendar.isDate($0.day, inSameDayAs: key) }
+        return .habit(isDone: history.doneDays.contains(key), isPartial: isPartial, isToday: key == today, isActive: active)
     }
 
     func canEdit(_ day: Date, metric: Metric, now: Date) -> Bool {
@@ -160,6 +175,46 @@ final class MetricDetailViewModel {
         let current = calendar.date(from: calendar.dateComponents([.year, .month], from: now)) ?? now
         if next < start || next > current { return }
         month = next
+    }
+
+    private func cutBackStats(metric: Metric, entries: [MetricEntry], urges: [UrgeEvent], now: Date, started: String) -> DetailStats {
+        let history = Snapshots.cutBackHistory(for: metric, entries: entries, calendar: calendar)
+        let unit = metric.unitLabel
+        let today = CutBackMath.amount(on: now, history, calendar: calendar)
+        let average = CutBackMath.average(inLast: 7, history, now: now, calendar: calendar)
+        let window = CutBackMath.withinDays(inLast: 30, history, now: now, calendar: calendar)
+        let saved = CutBackMath.moneySaved(
+            unitsAvoided: CutBackMath.unitsAvoided(history, now: now, calendar: calendar),
+            baseline: history.baseline,
+            costPerDay: metric.costPerDay
+        )
+        let mine = urges.filter { $0.metricID == metric.id }
+        let hardMoments = mine.filter { $0.outcome != .resisted }.map(\.startedAt)
+        var tiles = [
+            DetailTile(label: RecoveryCopy.dailyLimit, value: RecoveryCopy.amountUnit(history.limit, unit: unit), caption: nil),
+            DetailTile(label: RecoveryCopy.averageLast7, value: average.map { RecoveryCopy.average($0) } ?? "—", caption: nil),
+            DetailTile(label: RecoveryCopy.withinLast30Tile, value: "\(window.within)/\(window.logged)", caption: nil)
+        ]
+        if let baseline = history.baseline {
+            tiles.append(DetailTile(label: RecoveryCopy.usualTile, value: RecoveryCopy.perDayAmount(baseline, unit: unit), caption: nil))
+            tiles.append(savedTile(amount: saved, cost: metric.costPerDay))
+        }
+        return DetailStats(
+            primary: RecoveryCopy.todayAmount(today, limit: history.limit, unit: unit),
+            tiles: tiles,
+            plan: metric.ifThenPlan ?? "",
+            nextMilestone: nil,
+            trend: TodayViewModel.trendLine(history, unit: unit, now: now, calendar: calendar),
+            startedLine: started,
+            atRisk: false,
+            needsCost: history.baseline != nil && metric.costPerDay == nil,
+            urges: urgeSummary(mine),
+            triggers: patternTriggers(slips: [], urges: mine),
+            hardestTime: PatternInsights.hardestTime(from: hardMoments, calendar: calendar)?.title,
+            hardestDay: PatternInsights.hardestWeekday(from: hardMoments, calendar: calendar).map { weekdayName($0) },
+            recent: recentEvents(slips: [], urges: mine),
+            month: month
+        )
     }
 
     private func savedTile(amount: Decimal?, cost: Decimal?) -> DetailTile {

@@ -112,7 +112,7 @@ struct MetricDetailScreen: View {
                     IconBadge(systemImage: metric.iconName, tint: metric.habitType == .vice ? .tbBrand : .tbHabit)
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text(model.stats.primary).bigNumberStyle().foregroundStyle(Color.tbTextPrimary)
-                        if metric.habitType == .vice {
+                        if metric.isQuitting {
                             TimelineView(.periodic(from: .now, by: 60)) { context in
                                 let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: model.calendar)
                                 Text(RecoveryCopy.clock(RecoveryMath.currentRunClock(history, now: context.date, calendar: model.calendar)))
@@ -131,15 +131,15 @@ struct MetricDetailScreen: View {
                 ForEach(Array(model.stats.tiles.enumerated()), id: \.offset) { _, tile in
                     detailRow(label: tile.label, value: tile.value, caption: tile.caption)
                 }
-                if let nextMilestone = model.stats.nextMilestone {
-                    Text(nextMilestone)
+                ForEach([model.stats.nextMilestone, model.stats.trend].compactMap { $0 }, id: \.self) { line in
+                    Text(line)
                         .font(.subheadline)
                         .foregroundStyle(Color.tbTextSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if !model.stats.startedLine.isEmpty {
                     detailRow(
-                        label: metric.habitType == .vice ? RecoveryCopy.quitDate : RecoveryCopy.startedLabel,
+                        label: metric.isQuitting ? RecoveryCopy.quitDate : RecoveryCopy.startedLabel,
                         value: model.stats.startedLine
                     )
                 }
@@ -189,19 +189,30 @@ struct MetricDetailScreen: View {
         .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
     }
 
-    private var calendarLegend: some View {
-        let items: [(DayVisualState, String)] = metric.habitType == .vice
-            ? [
+    private var legendItems: [(DayVisualState, String)] {
+        if metric.isCuttingBack {
+            return [
+                (.withinLimit, RecoveryCopy.legendWithin),
+                (.overLimit, RecoveryCopy.legendOver),
+                (.notLogged, RecoveryCopy.legendNotLogged),
+                (.todayPending, RecoveryCopy.legendToday)
+            ]
+        }
+        if metric.habitType == .vice {
+            return [
                 (.confirmedFree, RecoveryCopy.legendCheckedFree),
                 (.presumedFree, RecoveryCopy.legendCountedFree),
                 (.slipped, RecoveryCopy.legendSlip),
                 (.todayPending, RecoveryCopy.legendToday)
             ]
-            : [
-                (.habitDone, RecoveryCopy.legendDone),
-                (.missed, RecoveryCopy.legendMissed),
-                (.todayPending, RecoveryCopy.legendToday)
-            ]
+        }
+        var items: [(DayVisualState, String)] = [(.habitDone, RecoveryCopy.legendDone)]
+        if metric.tracksAmount { items.append((.habitPartial, RecoveryCopy.legendPartial)) }
+        return items + [(.missed, RecoveryCopy.legendMissed), (.todayPending, RecoveryCopy.legendToday)]
+    }
+
+    private var calendarLegend: some View {
+        let items = legendItems
         return LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: Spacing.s)], alignment: .leading, spacing: Spacing.s) {
             ForEach(Array(items.enumerated()), id: \.offset) { _, item in
                 HStack(spacing: Spacing.s) {
@@ -459,10 +470,11 @@ struct MetricDetailScreen: View {
     }
 
     private var refreshToken: String {
-        entries.map { "\($0.statusRaw):\($0.note ?? ""):\($0.triggersRaw)" }.joined(separator: "|")
+        entries.map { "\($0.statusRaw):\($0.amount ?? -1):\($0.note ?? ""):\($0.triggersRaw)" }.joined(separator: "|")
             + "#" + urges.map { "\($0.outcomeRaw):\($0.intensity):\($0.triggersRaw)" }.joined(separator: "|")
             + "#" + (metric.costPerDayRaw ?? "")
             + "#" + String(metric.startedAt.timeIntervalSinceReferenceDate)
+            + "#\(metric.viceModeRaw):\(metric.dailyTarget ?? -1):\(metric.unit ?? ""):\(metric.baselinePerDay ?? -1)"
     }
 
     private func refresh() {
@@ -521,13 +533,26 @@ struct DayEditorSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @State private var amount = 0
+    @State private var mood: Mood?
+    @State private var noteText = ""
+    @State private var didLoad = false
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 ReadableColumn {
-                    VStack(spacing: Spacing.s) {
-                        if metric.habitType == .vice {
+                    VStack(alignment: .leading, spacing: Spacing.s) {
+                        if metric.tracksAmount {
+                            AmountStepper(value: amount, unit: metric.unitLabel, step: amountStep, label: metric.name) { amount = $0 }
+                                .accessibilityIdentifier(AccessibilityIdentifiers.dayEditorAmount)
+                            editorButton(RecoveryCopy.saveAmount, prominent: true, action: saveAmount)
+                            if metric.isCuttingBack {
+                                editorButton(RecoveryCopy.clearDay, id: AccessibilityIdentifiers.dayEditorClear, action: clear)
+                            } else {
+                                editorButton(RecoveryCopy.notDone) { setDone(false) }
+                            }
+                        } else if metric.habitType == .vice {
                             editorButton(RecoveryCopy.free, id: AccessibilityIdentifiers.dayEditorFree, prominent: true, action: markFree)
                             editorButton(RecoveryCopy.iSlipped, id: AccessibilityIdentifiers.dayEditorSlipped) { onSlip(); dismiss() }
                             editorButton(RecoveryCopy.clearDay, id: AccessibilityIdentifiers.dayEditorClear, action: clear)
@@ -535,6 +560,7 @@ struct DayEditorSheet: View {
                             editorButton(RecoveryCopy.done, prominent: true) { setDone(true) }
                             editorButton(RecoveryCopy.notDone) { setDone(false) }
                         }
+                        daySection
                     }
                     .padding(.vertical, Spacing.l)
                 }
@@ -547,6 +573,44 @@ struct DayEditorSheet: View {
         }
         .presentationDetents([.medium, .large])
         .adaptiveFormSheet()
+        .onAppear(perform: load)
+    }
+
+    private var amountStep: Int {
+        metric.isCuttingBack ? 1 : AmountMath.step(for: metric.dailyTarget)
+    }
+
+    private var daySection: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            SectionHeader(RecoveryCopy.yourDay)
+            MoodPicker(selection: mood) { mood = $0 }
+            TextField(RecoveryCopy.noteField, text: $noteText, axis: .vertical)
+                .lineLimit(2...5)
+                .textFieldStyle(.roundedBorder)
+                .textInputAutocapitalization(.sentences)
+            editorButton(RecoveryCopy.saveNote, id: AccessibilityIdentifiers.dayEditorSaveNote, action: saveNote)
+        }
+        .padding(.top, Spacing.m)
+    }
+
+    private func load() {
+        guard !didLoad else { return }
+        didLoad = true
+        let store = RecoveryStore(context: modelContext)
+        amount = (try? store.entry(for: metric.id, on: day))?.amount ?? 0
+        let note = try? store.dayNote(on: day)
+        mood = note?.mood
+        noteText = note?.text ?? ""
+    }
+
+    private func saveAmount() {
+        try? RecoveryStore(context: modelContext).setAmount(metric, on: day, amount: amount, now: Date())
+        dismiss()
+    }
+
+    private func saveNote() {
+        try? RecoveryStore(context: modelContext).setDayNote(on: day, mood: mood, text: noteText, now: Date())
+        dismiss()
     }
 
     private func editorButton(_ title: String, id: String? = nil, prominent: Bool = false, action: @escaping () -> Void) -> some View {

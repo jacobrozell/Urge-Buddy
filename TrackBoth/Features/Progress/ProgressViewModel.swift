@@ -16,6 +16,13 @@ struct ProgressCardModel: Identifiable, Equatable {
     var isArchived: Bool
 }
 
+struct DayNoteRow: Identifiable, Equatable {
+    var id: UUID
+    var day: String
+    var systemImage: String
+    var text: String
+}
+
 @MainActor
 @Observable
 final class ProgressViewModel {
@@ -24,18 +31,38 @@ final class ProgressViewModel {
     private(set) var summary = ProgressSummary(savedText: nil, urgesBeaten: 0, daysCheckedIn: 0)
     private(set) var active: [ProgressCardModel] = []
     private(set) var archived: [ProgressCardModel] = []
+    private(set) var recentDays: [DayNoteRow] = []
 
     init(calendar: Calendar = .current, locale: Locale = .current) {
         self.calendar = calendar
         self.locale = locale
     }
 
-    func update(metrics: [Metric], entries: [MetricEntry], urges: [UrgeEvent], now: Date) {
+    func update(metrics: [Metric], entries: [MetricEntry], urges: [UrgeEvent], dayNotes: [DayNote] = [], now: Date) {
+        recentDays = dayNotes
+            .sorted { $0.day > $1.day }
+            .prefix(5)
+            .map { note in
+                DayNoteRow(
+                    id: note.id,
+                    day: note.day.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(locale)),
+                    systemImage: note.mood?.systemImage ?? "note.text",
+                    text: RecoveryCopy.moodLine(note.mood, note: note.text)
+                )
+            }
         let ordered = metrics.sorted { $0.sortOrder < $1.sortOrder }
         active = ordered.filter { !$0.isArchived }.map { card(for: $0, entries: entries, now: now) }
         archived = ordered.filter(\.isArchived).map { card(for: $0, entries: entries, now: now) }
 
         let savedValues = ordered.filter { !$0.isArchived && $0.habitType == .vice }.compactMap { metric -> Decimal? in
+            if metric.isCuttingBack {
+                let history = Snapshots.cutBackHistory(for: metric, entries: entries, calendar: calendar)
+                return CutBackMath.moneySaved(
+                    unitsAvoided: CutBackMath.unitsAvoided(history, now: now, calendar: calendar),
+                    baseline: history.baseline,
+                    costPerDay: metric.costPerDay
+                )
+            }
             let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: calendar)
             return RecoveryMath.moneySaved(totalFreeDays: RecoveryMath.totalFreeDays(history, now: now, calendar: calendar), costPerDay: metric.costPerDay)
         }
@@ -62,7 +89,16 @@ final class ProgressViewModel {
 
     private func card(for metric: Metric, entries: [MetricEntry], now: Date) -> ProgressCardModel {
         let line: String
-        if metric.habitType == .vice {
+        if metric.isCuttingBack {
+            let history = Snapshots.cutBackHistory(for: metric, entries: entries, calendar: calendar)
+            let window = CutBackMath.withinDays(inLast: 30, history, now: now, calendar: calendar)
+            line = RecoveryCopy.cutBackProgress(
+                today: RecoveryCopy.todayAmount(CutBackMath.amount(on: now, history, calendar: calendar), limit: history.limit, unit: metric.unitLabel),
+                average: CutBackMath.average(inLast: 7, history, now: now, calendar: calendar).map { RecoveryCopy.averageShort($0) },
+                within: window.within,
+                logged: window.logged
+            )
+        } else if metric.habitType == .vice {
             let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: calendar)
             let window = RecoveryMath.freeDays(inLast: 30, history, now: now, calendar: calendar)
             line = RecoveryCopy.viceProgress(

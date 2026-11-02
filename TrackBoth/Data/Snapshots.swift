@@ -14,6 +14,19 @@ enum Snapshots {
             .map { calendar.startOfDay(for: $0.day) }
         return HabitHistory(startedAt: metric.startedAt, doneDays: Set(done))
     }
+
+    static func cutBackHistory(for metric: Metric, entries: [MetricEntry], calendar: Calendar = .current) -> CutBackHistory {
+        var days: [Date: CutBackDay] = [:]
+        for entry in entries where entry.metricID == metric.id && (entry.status == .within || entry.status == .over) {
+            days[calendar.startOfDay(for: entry.day)] = CutBackDay(amount: entry.amount ?? 0, isOver: entry.status == .over)
+        }
+        return CutBackHistory(startedAt: metric.startedAt, limit: metric.dailyTarget ?? 0, baseline: metric.baselinePerDay, days: days)
+    }
+
+    /// Today's logged amount for an amount-tracked metric.
+    static func amount(for metric: Metric, on day: Date, entries: [MetricEntry], calendar: Calendar = .current) -> Int {
+        entries.first { $0.metricID == metric.id && calendar.isDate($0.day, inSameDayAs: day) }?.amount ?? 0
+    }
 }
 
 extension DayVisualState {
@@ -27,10 +40,21 @@ extension DayVisualState {
         }
     }
 
+    init(cutBackState: CutBackDayState) {
+        switch cutBackState {
+        case .within: self = .withinLimit
+        case .over: self = .overLimit
+        case .notLogged: self = .notLogged
+        case .todayPending: self = .todayPending
+        case .beforeStart, .future: self = .inactive
+        }
+    }
+
     /// A habit day. Today is never shown as missed.
-    static func habit(isDone: Bool, isToday: Bool, isActive: Bool) -> DayVisualState {
+    static func habit(isDone: Bool, isPartial: Bool = false, isToday: Bool, isActive: Bool) -> DayVisualState {
         guard isActive else { return .inactive }
         if isDone { return .habitDone }
+        if isPartial { return .habitPartial }
         return isToday ? .todayPending : .missed
     }
 }

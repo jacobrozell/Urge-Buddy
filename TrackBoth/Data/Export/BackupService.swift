@@ -16,7 +16,7 @@ enum BackupError: LocalizedError, Equatable {
 }
 
 enum BackupService {
-    static let currentSchemaVersion = 5
+    static let currentSchemaVersion = 6
 
     @MainActor
     static func exportData(from context: ModelContext, now: Date = Date()) throws -> Data {
@@ -24,13 +24,15 @@ enum BackupService {
         let entries = try context.fetch(FetchDescriptor<MetricEntry>())
         let urges = try context.fetch(FetchDescriptor<UrgeEvent>())
         let reasons = try context.fetch(FetchDescriptor<Reason>())
+        let dayNotes = try context.fetch(FetchDescriptor<DayNote>())
         let backup = TrackBothBackup(
             schemaVersion: currentSchemaVersion,
             exportDate: now,
             metrics: metrics.map(metricRecord),
             entries: entries.map(entryRecord),
             urges: urges.map(urgeRecord),
-            reasons: reasons.map(reasonRecord)
+            reasons: reasons.map(reasonRecord),
+            dayNotes: dayNotes.map(dayNoteRecord)
         )
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
@@ -48,14 +50,14 @@ enum BackupService {
         let version = try schemaVersion(in: data)
         if version > currentSchemaVersion { throw BackupError.newerVersion }
         let built: BuiltModels
-        if version == currentSchemaVersion {
-            built = try models(from: try decodeV5(data), calendar: store.calendar)
+        if (5...currentSchemaVersion).contains(version) {
+            built = try models(from: try decodeCurrent(data), calendar: store.calendar)
         } else if (1...4).contains(version) {
             built = try models(from: try decodeLegacy(data), calendar: store.calendar)
         } else {
             throw BackupError.invalid
         }
-        try store.replaceAll(metrics: built.metrics, entries: built.entries, urges: built.urges, reasons: built.reasons)
+        try store.replaceAll(metrics: built.metrics, entries: built.entries, urges: built.urges, reasons: built.reasons, dayNotes: built.dayNotes)
         Preferences.hasCompletedOnboarding = true
         Preferences.hasAcceptedDisclaimer = true
     }
@@ -72,7 +74,7 @@ enum BackupService {
         }
     }
 
-    private static func decodeV5(_ data: Data) throws -> TrackBothBackup {
+    private static func decodeCurrent(_ data: Data) throws -> TrackBothBackup {
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         do {
@@ -114,6 +116,7 @@ enum BackupService {
         var entries: [MetricEntry]
         var urges: [UrgeEvent]
         var reasons: [Reason]
+        var dayNotes: [DayNote] = []
     }
 
     private static func models(from backup: TrackBothBackup, calendar: Calendar) throws -> BuiltModels {
@@ -129,6 +132,13 @@ enum BackupService {
             metric.costPerDayRaw = record.costPerDay
             metric.ifThenPlan = record.ifThenPlan
             metric.isArchived = record.isArchived
+            if let mode = record.viceMode {
+                guard let viceMode = ViceMode(rawValue: mode) else { throw BackupError.invalid }
+                metric.viceMode = viceMode
+            }
+            metric.unit = record.unit
+            metric.dailyTarget = record.dailyTarget
+            metric.baselinePerDay = record.baselinePerDay
             metrics.append(metric)
         }
         var seenDays = Set<String>()
@@ -144,6 +154,7 @@ enum BackupService {
             entry.id = id
             entry.note = record.note
             entry.triggers = record.triggers.compactMap(TriggerTag.init(rawValue:))
+            entry.amount = record.amount
             entries.append(entry)
         }
         var urges: [UrgeEvent] = []
@@ -170,7 +181,16 @@ enum BackupService {
             reason.createdAt = record.createdAt
             reasons.append(reason)
         }
-        return BuiltModels(metrics: metrics, entries: entries, urges: urges, reasons: reasons)
+        var dayNotes: [DayNote] = []
+        var seenNoteDays = Set<Date>()
+        for record in backup.dayNotes ?? [] {
+            guard let id = UUID(uuidString: record.id),
+                  seenNoteDays.insert(calendar.startOfDay(for: record.day)).inserted else { throw BackupError.invalid }
+            let note = DayNote(day: record.day, mood: record.mood.flatMap(Mood.init(rawValue:)), text: record.text, updatedAt: record.updatedAt)
+            note.id = id
+            dayNotes.append(note)
+        }
+        return BuiltModels(metrics: metrics, entries: entries, urges: urges, reasons: reasons, dayNotes: dayNotes)
     }
 
     private static func models(from payload: LegacyExportV4.Payload, calendar: Calendar) throws -> BuiltModels {
@@ -265,7 +285,11 @@ enum BackupService {
             costPerDay: metric.costPerDayRaw,
             ifThenPlan: metric.ifThenPlan,
             sortOrder: metric.sortOrder,
-            isArchived: metric.isArchived
+            isArchived: metric.isArchived,
+            viceMode: metric.habitType == .vice ? metric.viceMode.rawValue : nil,
+            unit: metric.unit,
+            dailyTarget: metric.dailyTarget,
+            baselinePerDay: metric.baselinePerDay
         )
     }
 
@@ -277,7 +301,8 @@ enum BackupService {
             status: entry.status.rawValue,
             occurredAt: entry.occurredAt,
             note: entry.note,
-            triggers: entry.triggers.map(\.rawValue)
+            triggers: entry.triggers.map(\.rawValue),
+            amount: entry.amount
         )
     }
 
@@ -291,6 +316,16 @@ enum BackupService {
             intensity: urge.intensity,
             triggers: urge.triggers.map(\.rawValue),
             note: urge.note
+        )
+    }
+
+    private static func dayNoteRecord(_ note: DayNote) -> TrackBothBackup.DayNoteRecord {
+        TrackBothBackup.DayNoteRecord(
+            id: note.id.uuidString,
+            day: note.day,
+            mood: note.mood?.rawValue,
+            text: note.text,
+            updatedAt: note.updatedAt
         )
     }
 

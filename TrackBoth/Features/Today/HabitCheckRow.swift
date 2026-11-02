@@ -3,20 +3,16 @@ import SwiftUI
 struct HabitCheckRow: View {
     var model: HabitRowModel
     var onToggle: () -> Void
+    var onSetAmount: (Int) -> Void = { _ in }
     var onOpen: () -> Void
 
     var body: some View {
         HStack(alignment: .center, spacing: Spacing.s) {
-            Button(action: onToggle) {
-                Image(systemName: model.isDoneToday ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundStyle(model.isDoneToday ? Color.tbHabit : Color.tbTextSecondary)
-                    .frame(minWidth: 44, minHeight: 44)
+            if let target = model.target {
+                amountButton(target: target)
+            } else {
+                toggleButton
             }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier(AccessibilityIdentifiers.habitToggle(model.id))
-            .accessibilityLabel(model.isDoneToday ? "\(model.name), done" : "\(model.name), not done")
-            .sensoryFeedback(model.isDoneToday ? .success : .selection, trigger: model.isDoneToday)
 
             Button(action: onOpen) {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -24,7 +20,7 @@ struct HabitCheckRow: View {
                         .font(.body)
                         .foregroundStyle(Color.tbTextPrimary)
                         .multilineTextAlignment(.leading)
-                    Text(RecoveryCopy.habitRun(model.run))
+                    Text(subtitle)
                         .font(.subheadline)
                         .foregroundStyle(Color.tbTextSecondary)
                     if model.isAtRisk {
@@ -43,8 +39,60 @@ struct HabitCheckRow: View {
         .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
     }
 
+    private var toggleButton: some View {
+        Button(action: onToggle) {
+            Image(systemName: model.isDoneToday ? "checkmark.circle.fill" : "circle")
+                .font(.title2)
+                .foregroundStyle(model.isDoneToday ? Color.tbHabit : Color.tbTextSecondary)
+                .frame(minWidth: 44, minHeight: 44)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(AccessibilityIdentifiers.habitToggle(model.id))
+        .accessibilityLabel(model.isDoneToday ? "\(model.name), done" : "\(model.name), not done")
+        .sensoryFeedback(model.isDoneToday ? .success : .selection, trigger: model.isDoneToday)
+    }
+
+    private func amountButton(target: Int) -> some View {
+        Button { onSetAmount(model.amount + model.step) } label: {
+            ZStack {
+                Circle()
+                    .stroke(Color.tbSurfaceMuted, lineWidth: 3)
+                Circle()
+                    .trim(from: 0, to: min(1, CGFloat(model.amount) / CGFloat(max(target, 1))))
+                    .stroke(Color.tbHabit, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                Image(systemName: model.isDoneToday ? "checkmark" : "plus")
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(model.isDoneToday ? Color.tbHabit : Color.tbTextSecondary)
+            }
+            .frame(width: 30, height: 30)
+            .frame(minWidth: 44, minHeight: 44)
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button(RecoveryCopy.removeOne, systemImage: "minus") { onSetAmount(max(0, model.amount - model.step)) }
+        }
+        .accessibilityIdentifier(AccessibilityIdentifiers.habitToggle(model.id))
+        .accessibilityLabel(model.name)
+        .accessibilityValue(RecoveryCopy.amountOf(model.amount, target, unit: model.unit))
+        .accessibilityHint(RecoveryCopy.logOne)
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: onSetAmount(model.amount + model.step)
+            case .decrement: onSetAmount(max(0, model.amount - model.step))
+            @unknown default: break
+            }
+        }
+        .sensoryFeedback(model.isDoneToday ? .success : .selection, trigger: model.amount)
+    }
+
+    private var subtitle: String {
+        guard let target = model.target else { return RecoveryCopy.habitRun(model.run) }
+        return "\(RecoveryCopy.amountOf(model.amount, target, unit: model.unit)) · \(RecoveryCopy.habitRun(model.run))"
+    }
+
     private var rowLabel: String {
-        var label = "\(model.name), \(RecoveryCopy.habitRun(model.run))"
+        var label = "\(model.name), \(subtitle)"
         if model.isAtRisk { label += ", \(RecoveryCopy.dontMissTwice)" }
         return label
     }

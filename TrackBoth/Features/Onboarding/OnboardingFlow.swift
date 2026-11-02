@@ -155,10 +155,29 @@ struct OnboardingFlow: View {
     private func viceWhen(_ vice: OnboardingChoice) -> some View {
         let detail = model.detail(for: vice.id, now: Date())
         return VStack(alignment: .leading, spacing: Spacing.l) {
-            Text(RecoveryCopy.whenDidYouLast(vice.verb))
-                .font(.title2.weight(.bold))
+            Text(RecoveryCopy.quitOrCutBack)
+                .font(.headline)
                 .foregroundStyle(Color.tbTextPrimary)
-            whenButtons(viceID: vice.id, detail: detail)
+            HStack(spacing: Spacing.s) {
+                whenButton(RecoveryCopy.quitMode, selected: detail.mode == .quit) {
+                    update(vice.id, detail) { $0.mode = .quit }
+                }
+                whenButton(RecoveryCopy.cutBackMode, selected: detail.mode == .cutBack) {
+                    update(vice.id, detail) { $0.mode = .cutBack }
+                }
+            }
+            if detail.mode == .cutBack {
+                Text(RecoveryCopy.cutBackExplainer)
+                    .font(.footnote)
+                    .foregroundStyle(Color.tbTextSecondary)
+                numberField(RecoveryCopy.howManyNow, unit: vice.unit, text: textBinding(vice.id, \.baselineText))
+                numberField(RecoveryCopy.dailyLimitPrompt, unit: vice.unit, text: textBinding(vice.id, \.limitText))
+            } else {
+                Text(RecoveryCopy.whenDidYouLast(vice.verb))
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(Color.tbTextPrimary)
+                whenButtons(viceID: vice.id, detail: detail)
+            }
             Text(RecoveryCopy.whatDoesItCost)
                 .font(.headline)
                 .foregroundStyle(Color.tbTextPrimary)
@@ -169,6 +188,39 @@ struct OnboardingFlow: View {
                 .font(.footnote)
                 .foregroundStyle(Color.tbTextSecondary)
         }
+    }
+
+    private var whyTitle: String {
+        guard let first = model.viceChoices.first else { return RecoveryCopy.whyQuitNamed("") }
+        return model.detail(for: first.id, now: Date()).mode == .cutBack
+            ? RecoveryCopy.whyCutBackNamed(first.name)
+            : RecoveryCopy.whyQuitNamed(first.name)
+    }
+
+    private func numberField(_ title: String, unit: String, text: Binding<String>) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(Color.tbTextPrimary)
+            HStack(spacing: Spacing.s) {
+                TextField("0", text: text)
+                    .keyboardType(.numberPad)
+                    .textFieldStyle(.roundedBorder)
+                Text(unit.isEmpty ? AmountMath.defaultUnit : unit)
+                    .foregroundStyle(Color.tbTextSecondary)
+            }
+        }
+    }
+
+    private func textBinding(_ id: String, _ keyPath: WritableKeyPath<OnboardingViewModel.ViceDetail, String>) -> Binding<String> {
+        Binding(
+            get: { model.detail(for: id, now: Date())[keyPath: keyPath] },
+            set: { text in
+                var next = model.detail(for: id, now: Date())
+                next[keyPath: keyPath] = text
+                model.setDetail(next, for: id)
+            }
+        )
     }
 
     private func whenButtons(viceID: String, detail: OnboardingViewModel.ViceDetail) -> some View {
@@ -201,7 +253,7 @@ struct OnboardingFlow: View {
 
     private var why: some View {
         VStack(alignment: .leading, spacing: Spacing.l) {
-            Text(RecoveryCopy.whyQuitNamed(model.viceChoices.first?.name ?? ""))
+            Text(whyTitle)
                 .font(.title2.weight(.bold))
                 .foregroundStyle(Color.tbTextPrimary)
             TextField(RecoveryCopy.yourWhy, text: reasonText, axis: .vertical)
@@ -412,7 +464,8 @@ struct OnboardingFlow: View {
                 iconName: draft.iconName,
                 startedAt: draft.startedAt,
                 costPerDay: draft.costPerDay,
-                firstReason: draft.firstReason
+                firstReason: draft.firstReason,
+                tracking: draft.tracking
             )
         }
         Preferences.reminderHour = model.reminderHour

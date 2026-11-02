@@ -23,11 +23,32 @@ struct MetricFormView: View {
                             Text(RecoveryCopy.building).tag(HabitType.positive)
                         }
                     }
+                    if model.showsModePicker {
+                        Section {
+                            Picker(RecoveryCopy.quitOrCutBack, selection: Bindable(model).viceMode) {
+                                Text(RecoveryCopy.quitMode).tag(ViceMode.quit)
+                                Text(RecoveryCopy.cutBackMode).tag(ViceMode.cutBack)
+                            }
+                            .pickerStyle(.segmented)
+                        } footer: {
+                            if model.isCuttingBack { Text(RecoveryCopy.cutBackExplainer) }
+                        }
+                    }
+                    if model.habitType == .positive {
+                        Section {
+                            Toggle(RecoveryCopy.trackAnAmount, isOn: Bindable(model).tracksHabitAmount)
+                        } footer: {
+                            Text(RecoveryCopy.trackAnAmountFooter)
+                        }
+                    }
+                    if model.showsAmountFields {
+                        amountFields(model)
+                    }
                     if model.showsQuitDate {
                         DatePicker(RecoveryCopy.quitDate, selection: Bindable(model).startedAt, in: ...Date(), displayedComponents: .date)
                     }
                     if model.showsCost {
-                        TextField(RecoveryCopy.costPerDay, text: Bindable(model).costText)
+                        TextField(model.costLabel, text: Bindable(model).costText)
                             .keyboardType(.decimalPad)
                     }
                     iconPicker(model)
@@ -54,6 +75,34 @@ struct MetricFormView: View {
         .adaptiveFormSheet()
         .onAppear {
             if model == nil { model = MetricFormViewModel(metric: metric) }
+        }
+        .onChange(of: model?.viceMode) { old, new in
+            if old == .cutBack, new == .quit { model?.startedAt = Date() }
+        }
+    }
+
+    @ViewBuilder
+    private func amountFields(_ model: MetricFormViewModel) -> some View {
+        Section {
+            LabeledContent(RecoveryCopy.unitField) {
+                TextField(RecoveryCopy.unitPlaceholder, text: Bindable(model).unit)
+                    .multilineTextAlignment(.trailing)
+                    .textInputAutocapitalization(.never)
+            }
+            LabeledContent(model.targetLabel) {
+                TextField("0", text: Bindable(model).targetText)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+            }
+            if model.isCuttingBack {
+                LabeledContent(RecoveryCopy.usualPerDay) {
+                    TextField(RecoveryCopy.optional, text: Bindable(model).baselineText)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.trailing)
+                }
+            }
+        } footer: {
+            if let error = model.targetError { Text(error).foregroundStyle(Color.tbSlip) }
         }
     }
 

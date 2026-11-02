@@ -6,6 +6,8 @@ struct OnboardingChoice: Identifiable, Equatable {
     var name: String
     var iconName: String
     var verb: String
+    var unit: String = ""
+    var dailyTarget: Int? = nil
 }
 
 struct OnboardingMetricDraft: Equatable {
@@ -15,6 +17,7 @@ struct OnboardingMetricDraft: Equatable {
     var startedAt: Date
     var costPerDay: Decimal?
     var firstReason: String?
+    var tracking: MetricTracking = .yesNo
 }
 
 @MainActor
@@ -25,9 +28,12 @@ final class OnboardingViewModel {
     }
 
     struct ViceDetail: Equatable {
+        var mode: ViceMode = .quit
         var when: When = .today
         var pickedDay: Date
         var costText: String = ""
+        var baselineText: String = ""
+        var limitText: String = ""
     }
 
     enum Page: Equatable {
@@ -78,7 +84,7 @@ final class OnboardingViewModel {
         var result: [OnboardingChoice] = []
         for id in selectedViceIDs {
             guard let preset = Presets.vices.first(where: { $0.id == id }) else { continue }
-            result.append(OnboardingChoice(id: preset.id, name: preset.name, iconName: preset.iconName, verb: preset.lastUseVerb))
+            result.append(OnboardingChoice(id: preset.id, name: preset.name, iconName: preset.iconName, verb: preset.lastUseVerb, unit: preset.unit))
         }
         let custom = customViceName.trimmingCharacters(in: .whitespacesAndNewlines)
         if !custom.isEmpty, result.count < maxChoices {
@@ -91,7 +97,7 @@ final class OnboardingViewModel {
         var result: [OnboardingChoice] = []
         for id in selectedHabitIDs {
             guard let preset = Presets.habits.first(where: { $0.id == id }) else { continue }
-            result.append(OnboardingChoice(id: preset.id, name: preset.name, iconName: preset.iconName, verb: ""))
+            result.append(OnboardingChoice(id: preset.id, name: preset.name, iconName: preset.iconName, verb: "", unit: preset.unit, dailyTarget: preset.dailyTarget))
         }
         let custom = customHabitName.trimmingCharacters(in: .whitespacesAndNewlines)
         if !custom.isEmpty, result.count < maxChoices {
@@ -158,13 +164,15 @@ final class OnboardingViewModel {
             let reason = reasonText.trimmingCharacters(in: .whitespacesAndNewlines)
             for (index, vice) in viceChoices.enumerated() {
                 let detail = detail(for: vice.id, now: now)
+                let cuttingBack = detail.mode == .cutBack
                 drafts.append(OnboardingMetricDraft(
                     name: vice.name,
                     habitType: .vice,
                     iconName: vice.iconName,
-                    startedAt: startedAt(detail, now: now, calendar: calendar),
+                    startedAt: cuttingBack ? now : startedAt(detail, now: now, calendar: calendar),
                     costPerDay: cost(detail.costText),
-                    firstReason: index == 0 && !reason.isEmpty ? reason : nil
+                    firstReason: index == 0 && !reason.isEmpty ? reason : nil,
+                    tracking: cuttingBack ? cutBackTracking(detail, unit: vice.unit) : .yesNo
                 ))
             }
         }
@@ -175,10 +183,24 @@ final class OnboardingViewModel {
                 iconName: habit.iconName,
                 startedAt: now,
                 costPerDay: nil,
-                firstReason: nil
+                firstReason: nil,
+                tracking: habit.dailyTarget.map { MetricTracking(unit: habit.unit, dailyTarget: $0) } ?? .yesNo
             ))
         }
         return drafts
+    }
+
+    /// No limit typed: start at the usual amount, or zero.
+    func cutBackTracking(_ detail: ViceDetail, unit: String) -> MetricTracking {
+        let baseline = wholeNumber(detail.baselineText).flatMap { $0 > 0 ? $0 : nil }
+        let limit = wholeNumber(detail.limitText) ?? baseline ?? 0
+        return MetricTracking(viceMode: .cutBack, unit: unit.isEmpty ? nil : unit, dailyTarget: limit, baselinePerDay: baseline)
+    }
+
+    private func wholeNumber(_ text: String) -> Int? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let value = Int(trimmed), value >= 0 else { return nil }
+        return value
     }
 
     func startedAt(_ detail: ViceDetail, now: Date, calendar: Calendar) -> Date {

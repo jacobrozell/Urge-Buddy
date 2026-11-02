@@ -2,7 +2,7 @@
 
 Living register for the recovery overhaul. Every new feature starts as **Planned** until the phase that builds it lands.
 
-**Last reviewed:** 2026-10-28
+**Last reviewed:** 2026-11-01
 **Stage:** Overhaul in progress
 
 ## Status legend
@@ -28,15 +28,19 @@ Living register for the recovery overhaul. Every new feature starts as **Planned
 | Onboarding (quit date, reason, reminders, lock, disclaimer) | **Ships 1.0** | Built. Unit-tested draft mapping. UI test not run |
 | Daily reminder + milestone notifications | **Ships 1.0** | Scheduler and settings toggle. Not fired on a device yet |
 | App lock and app-switcher privacy cover | **Ships 1.0** | Built. Not checked on a device |
-| Settings, backup/restore, delete all, crisis resources | **Ships 1.0** | v5 round-trip unit-tested. Legacy import code exists, not retested this pass |
+| Settings, backup/restore, delete all, crisis resources | **Ships 1.0** | v6 round-trip and v5 import unit-tested. Legacy import code exists, not retested this pass |
 | Home-screen quick action and `trackboth://urge` | **Ships 1.0** | Phase 6 |
+| Cut back mode (daily limit, count, trend, savings) | **Ships 1.0** | Added 2026-11-01. Per vice: quit or cut back. Unit, UI, and backup tests |
+| Amount habits (daily target, partial days) | **Ships 1.0** | Added 2026-11-01. Water preset defaults to 8 glasses |
+| Day mood and note | **Ships 1.0** | Added 2026-11-01. End of check-in, Day editor, Progress "Recent days" |
 
 ## Cut from the pre-overhaul app
 
 | Feature | Status | Why |
 |---------|--------|-----|
-| Goals tab and quantity goals | **Cut** | A monthly vice target fights quitting |
-| Quantity, units, mood chips, starred entries | **Cut** | Friction. Trigger tags replace mood on slips and urges |
+| Goals tab, weekly/monthly goals | **Cut** | Daily targets and limits replace them. Weekly goals are **Later** |
+| Per-entry mood chips, starred entries | **Cut** | One mood per day replaces them |
+| Quantity and units | **Back** | Returned as cut back mode and amount habits |
 | Charts tab and chart export | **Cut** | Replaced by a calendar and three recovery stats |
 | Color themes and font picker | **Cut** | One palette, follows the system |
 | Per-device layout files | **Cut** | iPhone portrait only. Adaptive rules stay |
@@ -49,5 +53,5 @@ Living register for the recovery overhaul. Every new feature starts as **Planned
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| One "days free" widget | **Later** | Optional post-launch |
+| App Intents, urge widgets, notification actions, neutral icon, catch-up, weekly goals, insights | **Later** | Ordered list in `FutureIdeas/backlog.md` |
 | iPad and landscape | **Shipped (in branch)** | Adaptive layout plan; see `ongoing/adaptive-layout-plan.md` |

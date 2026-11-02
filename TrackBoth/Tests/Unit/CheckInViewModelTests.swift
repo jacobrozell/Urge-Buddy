@@ -47,4 +47,25 @@ final class CheckInViewModelTests: XCTestCase {
         try model.finish(metrics: metrics, now: now, celebrated: [:])
         XCTAssertFalse(model.showComplete)
     }
+
+    func testFinishLogsUntouchedCutBackAsZeroAndSavesTheMood() throws {
+        let harness = try TestHarness()
+        let store = harness.store
+        let smoking = try store.addMetric(
+            name: "Smoking", habitType: .vice, iconName: "smoke", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil,
+            tracking: MetricTracking(viceMode: .cutBack, unit: "cigarettes", dailyTarget: 5)
+        )
+        let now = date(2026, 10, 13, 20)
+        let model = CheckInViewModel(store: store)
+        model.load(metrics: [smoking], entries: [], now: now)
+        XCTAssertTrue(model.canFinish)
+        XCTAssertEqual(model.cutBacks.first?.amount, 0)
+        model.mood = .good
+        model.noteText = "Calm day"
+        try model.finish(metrics: [smoking], now: now, locale: Locale(identifier: "en_US"), celebrated: [:])
+        XCTAssertEqual(try store.entry(for: smoking.id, on: now)?.status, .within)
+        XCTAssertEqual(model.lines.first?.detail, "0 of 5 cigarettes today")
+        XCTAssertEqual(try store.dayNote(on: now)?.mood, .good)
+        XCTAssertEqual(try store.dayNote(on: now)?.text, "Calm day")
+    }
 }

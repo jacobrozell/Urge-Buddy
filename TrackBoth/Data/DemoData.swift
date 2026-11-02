@@ -84,6 +84,44 @@ enum DemoData {
             firstReason: nil
         )
 
+        let smoking = try store.addMetric(
+            name: "Smoking",
+            habitType: .vice,
+            iconName: "smoke",
+            startedAt: alcoholStart,
+            costPerDay: 10,
+            firstReason: "To breathe easier on runs",
+            tracking: MetricTracking(viceMode: .cutBack, unit: "cigarettes", dailyTarget: 8, baselinePerDay: 20)
+        )
+        for (offset, amount) in [(-1, 7), (-2, 9), (-3, 8), (-4, 6), (-5, 10), (-6, 8)] {
+            if let day = calendar.date(byAdding: .day, value: offset, to: now) {
+                try store.setAmount(smoking, on: day, amount: amount, now: day)
+            }
+        }
+        try store.setAmount(smoking, on: now, amount: 3, now: now)
+
+        let water = try store.addMetric(
+            name: "Drink water",
+            habitType: .positive,
+            iconName: "drop",
+            startedAt: alcoholStart,
+            costPerDay: nil,
+            firstReason: nil,
+            tracking: MetricTracking(unit: "glasses", dailyTarget: 8)
+        )
+        for (offset, amount) in [(0, 5), (-1, 8), (-2, 6), (-3, 8)] {
+            if let day = calendar.date(byAdding: .day, value: offset, to: now) {
+                try store.setAmount(water, on: day, amount: amount, now: day)
+            }
+        }
+
+        let notes: [(Int, Mood, String?)] = [(-1, .good, "Long walk after work helped."), (-2, .low, "Rough meeting. Rode out two urges."), (-3, .okay, nil)]
+        for (offset, mood, text) in notes {
+            if let day = calendar.date(byAdding: .day, value: offset, to: now) {
+                try store.setDayNote(on: day, mood: mood, text: text, now: day)
+            }
+        }
+
         let walk = try store.addMetric(
             name: "Go for a walk",
             habitType: .positive,

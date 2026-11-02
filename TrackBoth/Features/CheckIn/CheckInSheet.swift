@@ -111,6 +111,7 @@ struct CheckInSheet: View {
         .presentationDetents([.medium, .large], selection: $detent)
         .adaptiveFormSheet()
         .onAppear { prepare() }
+        .onDisappear { try? model?.saveDayNote(now: Date()) }
         .onChange(of: entryToken) { prepare() }
         .sheet(isPresented: slippingPresented) {
             if let slippingID, let metric = metrics.first(where: { $0.id == slippingID }) {
@@ -120,7 +121,7 @@ struct CheckInSheet: View {
     }
 
     private var entryToken: String {
-        entries.map { "\($0.metricID.uuidString):\($0.statusRaw)" }.joined()
+        entries.map { "\($0.metricID.uuidString):\($0.statusRaw):\($0.amount ?? -1)" }.joined()
     }
 
     private func form(_ model: CheckInViewModel) -> some View {
@@ -142,8 +143,17 @@ struct CheckInSheet: View {
                 .padding(.vertical, Spacing.m)
                 .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
             }
-            if !model.habits.isEmpty {
+            if !model.cutBacks.isEmpty {
+                SectionHeader(RecoveryCopy.cuttingBack)
+                ForEach(model.cutBacks) { row in
+                    amountRow(row, model: model, subtitle: RecoveryCopy.howManyToday(limit: row.goal))
+                }
+            }
+            if !model.habits.isEmpty || !model.amountHabits.isEmpty {
                 SectionHeader(RecoveryCopy.building)
+                ForEach(model.amountHabits) { row in
+                    amountRow(row, model: model, subtitle: RecoveryCopy.amountOf(row.amount, row.goal, unit: row.unit))
+                }
                 ForEach(model.habits) { row in
                     Button {
                         toggleHabit(row.id)
@@ -165,10 +175,45 @@ struct CheckInSheet: View {
                     .accessibilityLabel(row.isDone ? "\(row.name), done" : "\(row.name), not done")
                 }
             }
+            moodSection(model)
             Button(RecoveryCopy.havingAnUrge) {
                 router.present(.urge(nil))
             }
             .frame(maxWidth: .infinity, minHeight: 44)
+        }
+    }
+
+    private func amountRow(_ row: CheckInAmountRow, model: CheckInViewModel, subtitle: String) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(row.name)
+                .font(.headline)
+                .foregroundStyle(Color.tbTextPrimary)
+            Text(subtitle)
+                .font(.subheadline)
+                .foregroundStyle(Color.tbTextSecondary)
+            AmountStepper(value: row.amount, unit: row.unit, step: row.step, label: row.name) { value in
+                try? model.setAmount(row.id, value, metrics: metrics, now: Date())
+            }
+            .accessibilityIdentifier(AccessibilityIdentifiers.checkInAmount(row.id))
+        }
+        .padding(.horizontal, Spacing.l)
+        .padding(.vertical, Spacing.m)
+        .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+    }
+
+    private func moodSection(_ model: CheckInViewModel) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            SectionHeader(RecoveryCopy.howAreYouFeeling)
+            MoodPicker(selection: model.mood) { mood in
+                model.mood = mood
+                try? model.saveDayNote(now: Date())
+            }
+            .accessibilityIdentifier(AccessibilityIdentifiers.checkInMood)
+            TextField(RecoveryCopy.noteField, text: Bindable(model).noteText, axis: .vertical)
+                .lineLimit(2...5)
+                .textFieldStyle(.roundedBorder)
+                .textInputAutocapitalization(.sentences)
+                .accessibilityIdentifier(AccessibilityIdentifiers.checkInNote)
         }
     }
 

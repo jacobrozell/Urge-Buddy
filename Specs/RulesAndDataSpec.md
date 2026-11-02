@@ -107,8 +107,24 @@ enum EntryStatus: String, Codable, CaseIterable {
     case free      // vice: confirmed free day
     case slipped   // vice: used / did it
     case done      // habit: completed
+    case partial   // amount habit: logged, below target
+    case within    // cut back: at or under the limit
+    case over      // cut back: over the limit
 }
 ```
+
+**Amounts and day notes** (added in place to `TrackBothSchemaV2`; new properties are optional or defaulted, so lightweight migration keeps existing stores):
+
+| Model | Field | Rule |
+|-------|-------|------|
+| `Metric` | `viceModeRaw: String = "quit"` | `ViceMode.quit` or `.cutBack`. Habits ignore it. |
+| `Metric` | `unit: String?` | Display unit. Falls back to "times". |
+| `Metric` | `dailyTarget: Int?` | Habit: target (≥ 1; `nil` = yes/no habit). Cut back: daily limit (≥ 0). |
+| `Metric` | `baselinePerDay: Int?` | Cut back only. Usual amount before cutting back (> 0). |
+| `MetricEntry` | `amount: Int?` | Cut back and amount habits only. |
+| `DayNote` (new) | `day`, `moodRaw` (0 = none, 1…5), `text?`, `updatedAt` | One per calendar day (noon anchor), across all metrics. |
+
+`within`/`over` is decided when the amount is saved against the limit at that time, so changing the limit later doesn't rewrite past days. `Metric.tracksAmount` = cut back, or a habit with a target.
 
 ```swift
 // Data/Models/UrgeEvent.swift
@@ -225,6 +241,10 @@ Rules:
 - `entry(for:on:)` is internal: it fetches with `FetchDescriptor<MetricEntry>` using `#Predicate { $0.metricID == id && $0.day >= start && $0.day < end }`, where `start`/`end` bracket the calendar day.
 - `logSlip` refuses (throws `.slipBeforeStart`) when `occurredAt < startOfDay(metric.startedAt)`.
 - `markFree` on a day that's already `.slipped` → **do nothing**. Only the Day editor's explicit "Free" (which calls `clearDay` and then `markFree`) can override a slip.
+- `setAmount(_:on:amount:)` does nothing unless `tracksAmount`. Cut back: saves `within`/`over`; 0 is kept as a logged day. Amount habit: `done` at or above target, `partial` below, 0 deletes the entry. `addAmount` adds a delta, floored at 0.
+- `setHabitDone(done: true)` on an amount habit raises the amount to the target.
+- `setDayNote(on:mood:text:)` upserts, trims text, and deletes the note when both mood and text are empty.
+- `addMetric`/`update` take `MetricTracking` and normalize it: quit vices clear unit, target, and baseline; habits keep a unit only with a target.
 
 ### 6.5 `DayMath` (`Domain/Calendar/DayMath.swift`)
 
@@ -447,6 +467,15 @@ enum HabitMath {
 | H4 | done Oct 10, 11; now Oct 13 (not done, Oct 12 missed) | currentRun 2; isAtRisk true |
 | H5 | startedAt Oct 13, now Oct 13, not done | currentRun 0; isAtRisk false |
 
+### 6.6a Cut back math (`Domain/Quantity/AmountMath.swift`)
+
+- `AmountMath.step(for: target)`: 5 when the target is ≥ 20, else 1. Habit done when amount ≥ target. Over when amount > limit.
+- `CutBackMath` works on a `CutBackHistory` (start, limit, baseline, logged days keyed by anchor).
+- Day state: before start, future, today pending (nothing logged yet), not logged (past, unknown), within, over.
+- `withinDays(inLast: n)` and `average(inLast: n)` cover the n days before today, from the start date on, and count logged days only.
+- `reductionPercent = round((1 − average / baseline) × 100)`, `nil` without a baseline or when the average isn't below it. Today falls back to "Avg N a day".
+- Money saved = Σ max(0, baseline − amount) over logged days before today × costPerDay ÷ baseline. It needs a baseline and is added to Progress "Total saved".
+
 ### 6.7 Triggers (`Domain/Triggers/TriggerTag.swift`)
 
 ```swift
@@ -565,7 +594,8 @@ When to check: on Today `onAppear`, after the check-in Done, after an urge resol
 
 - Dates: ISO 8601 (`JSONEncoder.DateEncodingStrategy.iso8601`). File name: `TrackBoth-Backup-YYYY-MM-DD.json`. Share with `ShareLink` on a temp file URL.
 - Import = **replace all** (confirm first: "This replaces everything on this device with the backup."). Validate everything before deleting anything. Do it in one transaction: decode → validate → `deleteAllData()` → insert → save.
-- Unknown `schemaVersion` > 5 → error "This backup is from a newer version of TrackBoth."
+- Unknown `schemaVersion` > 6 → error "This backup is from a newer version of TrackBoth."
+- **v6** (current export) adds optional fields, so v5 and v6 decode with the same struct: metric `viceMode`, `unit`, `dailyTarget`, `baselinePerDay`; entry `amount`; top-level `dayNotes: [{ id, day, mood, text, updatedAt }]`. An unknown `viceMode` or two notes on the same day fail validation.
 
 **Legacy import (schema 1–4, from the old app).** Decode with the old structs (rename them `LegacyExportV4` and keep them in `Data/Export/LegacyExportV4.swift`):
 

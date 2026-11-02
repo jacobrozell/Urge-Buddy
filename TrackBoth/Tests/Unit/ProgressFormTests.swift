@@ -30,6 +30,52 @@ final class MetricFormViewModelTests: XCTestCase {
         XCTAssertTrue(model.showsTypePicker)
     }
 
+    func testCutBackNeedsALimitAndStartsToday() throws {
+        let harness = try TestHarness()
+        let model = MetricFormViewModel(metric: nil)
+        model.name = "Smoking"
+        model.viceMode = .cutBack
+        XCTAssertFalse(model.showsQuitDate)
+        XCTAssertEqual(model.targetError, RecoveryCopy.limitRequired)
+        model.targetText = "0"
+        XCTAssertTrue(model.canSave)
+        model.unit = "cigarettes"
+        model.baselineText = "20"
+        let now = date(2026, 10, 13, 10)
+        let saved = try model.save(metric: nil, store: harness.store, now: now)
+        XCTAssertTrue(saved.isCuttingBack)
+        XCTAssertEqual(saved.startedAt, now)
+        XCTAssertEqual(saved.dailyTarget, 0)
+        XCTAssertEqual(saved.baselinePerDay, 20)
+    }
+
+    func testSwitchingCutBackToQuitUsesTheQuitDate() throws {
+        let harness = try TestHarness()
+        let metric = try harness.store.addMetric(
+            name: "Smoking", habitType: .vice, iconName: "smoke", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil,
+            tracking: MetricTracking(viceMode: .cutBack, unit: "cigarettes", dailyTarget: 2)
+        )
+        let model = MetricFormViewModel(metric: metric)
+        model.viceMode = .quit
+        model.startedAt = date(2026, 10, 13, 8)
+        _ = try model.save(metric: metric, store: harness.store, now: date(2026, 10, 13, 10))
+        XCTAssertTrue(metric.isQuitting)
+        XCTAssertEqual(metric.startedAt, date(2026, 10, 13, 8))
+        XCTAssertNil(metric.dailyTarget)
+    }
+
+    func testAmountHabitNeedsATargetOfOne() {
+        let model = MetricFormViewModel(metric: nil)
+        model.name = "Water"
+        model.habitType = .positive
+        model.tracksHabitAmount = true
+        model.targetText = "0"
+        XCTAssertEqual(model.targetError, RecoveryCopy.targetRequired)
+        model.targetText = "8"
+        XCTAssertTrue(model.canSave)
+        XCTAssertEqual(model.tracking.dailyTarget, 8)
+    }
+
     func testNewHabitStartsNow() throws {
         let harness = try TestHarness()
         let model = MetricFormViewModel(metric: nil)
