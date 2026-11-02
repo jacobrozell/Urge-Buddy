@@ -54,7 +54,8 @@ struct MetricDetailScreen: View {
             }
         }
         .contentMargins(.bottom, Spacing.xl, for: .scrollContent)
-        .background(Color.tbBackground)
+        .background(Color.tbBackground.ignoresSafeArea())
+        .tbNavigationBarBackground()
         .navigationTitle(metric.name)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -583,7 +584,8 @@ struct DayEditorSheet: View {
                 }
             }
             .scrollBounceBehavior(.basedOnSize)
-            .background(Color.tbBackground)
+            .background(Color.tbBackground.ignoresSafeArea())
+            .tbNavigationBarBackground()
             .navigationTitle(day.formatted(date: .abbreviated, time: .omitted))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { Button(RecoveryCopy.close) { dismiss() } }

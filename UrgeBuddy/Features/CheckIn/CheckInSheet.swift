@@ -88,7 +88,8 @@ struct CheckInSheet: View {
                     .background(Color.tbBackground)
                 }
             }
-            .background(Color.tbBackground)
+            .background(Color.tbBackground.ignoresSafeArea())
+            .tbNavigationBarBackground()
             .navigationTitle(RecoveryCopy.checkInTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

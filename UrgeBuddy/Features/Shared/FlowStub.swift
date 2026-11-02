@@ -14,7 +14,8 @@ struct FlowStub: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                     .padding(.top, Spacing.xl)
             }
-            .background(Color.tbBackground)
+            .background(Color.tbBackground.ignoresSafeArea())
+            .tbNavigationBarBackground()
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

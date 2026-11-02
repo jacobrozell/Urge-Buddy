@@ -78,7 +78,14 @@ Three layout signals (see `DesignSystem/AdaptiveLayout.swift`):
 2. **Short height** — `isShortHeight` (`verticalSizeClass == .compact`): inline nav titles, primary actions in the toolbar (check-in Done, slip Save), side-by-side urge ride and onboarding controls, landscape celebration split.
 3. **Two content columns** — `AdaptiveColumns` when measured width ≥ 700pt and Dynamic Type is not accessibility-sized. Today (Quitting | Building), metric detail (summary | record). Metric detail lowers that to 520pt when the height is compact, so landscape phones put the calendar beside the record.
 
-**Components:** `ReadableColumn(width: .text | .wide)`, `AdaptiveColumns`, `View.adaptiveFormSheet()`, `View.adaptivePageSheet()`, `View.readableListMargins()`.
+**Components:** `ReadableColumn(width: .text | .wide)`, `AdaptiveColumns`, `View.adaptiveFormSheet()`, `View.adaptivePageSheet()`, `View.readableListMargins()`, `View.tbWindowChrome()`, `View.tbNavigationBarBackground()`, `VerticalBarFloatingBar`.
+
+**iPhone Duo chrome** (`DesignSystem/WindowChrome.swift`):
+
+- The window is painted with the Background color, and screen backgrounds ignore the safe area, so the trailing status-bar edge is not white.
+- On iOS 26 and later, navigation bars use `containerBackground` instead of an opaque toolbar fill. Liquid Glass would otherwise leave a white strip.
+- The Today SOS control stays centered above a bottom tab bar. When the tab bar is vertical (`toolbarVerticalEdge == .trailing`), it moves to the leading edge.
+- The urge Close control stays leading on iPhone and moves to the trailing edge with the vertical bar.
 
 **Rules:** No `UIDevice` / `UIScreen` in app code. Keep `@State` on screen structs across layout branches. Preserve accessibility identifiers when moving controls to the toolbar.
 

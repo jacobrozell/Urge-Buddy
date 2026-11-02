@@ -12,6 +12,25 @@ enum LaunchConfiguration {
     static var shouldSeedDemo: Bool {
         let arguments = ProcessInfo.processInfo.arguments
         return arguments.contains("-seed_demo") || arguments.contains("-screenshot_demo")
+            || arguments.contains("-seed_marketing") || arguments.contains("-seed_cutback")
+    }
+
+    /// Quiet Today set for App Store shots: one quit vice and one habit.
+    static var usesMarketingSeed: Bool {
+        ProcessInfo.processInfo.arguments.contains("-seed_marketing")
+    }
+
+    /// Smoking cut-back card for App Store shots.
+    static var usesCutBackSeed: Bool {
+        ProcessInfo.processInfo.arguments.contains("-seed_cutback")
+    }
+
+    static var showsSlipSummary: Bool {
+        ProcessInfo.processInfo.arguments.contains("-slip_summary")
+    }
+
+    static var opensUrgeRide: Bool {
+        ProcessInfo.processInfo.arguments.contains("-urge_ride")
     }
 
     static var initialTab: AppTab? {
@@ -36,7 +55,7 @@ enum LaunchConfiguration {
     static var initialPresentation: PresentedFlow? {
         let arguments = ProcessInfo.processInfo.arguments
         if arguments.contains("-present_checkin") { return .checkIn }
-        if arguments.contains("-present_urge") { return .urge(nil) }
+        if arguments.contains("-present_urge") || arguments.contains("-urge_ride") { return .urge(nil) }
         return nil
     }
 }
@@ -51,6 +70,14 @@ enum DemoData {
 
     @MainActor
     static func seed(context: ModelContext, now: Date = Date(), calendar: Calendar = .current) throws {
+        if LaunchConfiguration.usesCutBackSeed {
+            try seedCutBack(context: context, now: now, calendar: calendar)
+            return
+        }
+        if LaunchConfiguration.usesMarketingSeed {
+            try seedMarketing(context: context, now: now, calendar: calendar)
+            return
+        }
         let store = RecoveryStore(context: context, calendar: calendar)
         let alcoholStart = calendar.date(byAdding: .day, value: -23, to: now) ?? now
         let socialDay = calendar.date(byAdding: .day, value: -6, to: now) ?? now
@@ -156,6 +183,70 @@ enum DemoData {
             let note = index == 0 ? "The wave peaked and passed. I stayed because I want mornings back." : nil
             try store.finishUrge(urge, outcome: outcome, triggers: index.isMultiple(of: 2) ? [.stressed] : [], note: note, now: started)
         }
+        try silenceMilestones(context: context, now: now, calendar: calendar)
+    }
+
+    @MainActor
+    private static func seedMarketing(context: ModelContext, now: Date, calendar: Calendar) throws {
+        let store = RecoveryStore(context: context, calendar: calendar)
+        let alcoholStart = calendar.date(byAdding: .day, value: -23, to: now) ?? now
+        let slipDay = calendar.date(byAdding: .day, value: -9, to: now) ?? now
+        let slipAt = calendar.date(bySettingHour: 20, minute: 0, second: 0, of: slipDay) ?? slipDay
+        let alcohol = try store.addMetric(
+            name: "Alcohol",
+            habitType: .vice,
+            iconName: "wineglass",
+            startedAt: alcoholStart,
+            costPerDay: 8,
+            firstReason: "For my health"
+        )
+        try store.setPlan(alcohol, plan: "When I feel the urge, I will go for a walk.")
+        try store.addReason("For my family", to: alcohol)
+        try store.logSlip(alcohol, occurredAt: slipAt, triggers: [.tired], note: nil)
+        for offset in [-8, -7, -6, -5, -4, -3, -2, -1, 0] {
+            if let day = calendar.date(byAdding: .day, value: offset, to: now) {
+                try store.markFree(alcohol, on: day, now: day)
+            }
+        }
+        let walk = try store.addMetric(
+            name: "Go for a walk",
+            habitType: .positive,
+            iconName: "figure.walk",
+            startedAt: alcoholStart,
+            costPerDay: nil,
+            firstReason: nil
+        )
+        for offset in [-1, -2, -3, -4, -5] {
+            if let day = calendar.date(byAdding: .day, value: offset, to: now) {
+                try store.setHabitDone(walk, on: day, done: true, now: day)
+            }
+        }
+        try silenceMilestones(context: context, now: now, calendar: calendar)
+    }
+
+    @MainActor
+    private static func seedCutBack(context: ModelContext, now: Date, calendar: Calendar) throws {
+        let store = RecoveryStore(context: context, calendar: calendar)
+        let start = calendar.date(byAdding: .day, value: -14, to: now) ?? now
+        let smoking = try store.addMetric(
+            name: "Smoking",
+            habitType: .vice,
+            iconName: "smoke",
+            startedAt: start,
+            costPerDay: 10,
+            firstReason: "To breathe easier on runs",
+            tracking: MetricTracking(viceMode: .cutBack, unit: "cigarettes", dailyTarget: 8, baselinePerDay: 20)
+        )
+        for (offset, amount) in [(-1, 7), (-2, 9), (-3, 8), (-4, 6), (-5, 10), (-6, 8), (0, 3)] {
+            if let day = calendar.date(byAdding: .day, value: offset, to: now) {
+                try store.setAmount(smoking, on: day, amount: amount, now: day)
+            }
+        }
+        try silenceMilestones(context: context, now: now, calendar: calendar)
+    }
+
+    @MainActor
+    private static func silenceMilestones(context: ModelContext, now: Date, calendar: Calendar) throws {
         let seededMetrics = try context.fetch(FetchDescriptor<Metric>())
         let seededEntries = try context.fetch(FetchDescriptor<MetricEntry>())
         let seededReasons = try context.fetch(FetchDescriptor<Reason>())

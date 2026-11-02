@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -82,6 +82,7 @@
 		8AD3CC59F33E3B40C416A364 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC3E1AAF411DF02A49CA4423 /* SettingsScreen.swift */; };
 		9210994D0216CCA8CC336C11 /* DayMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF1C295B0CDF3F1196E56EE3 /* DayMath.swift */; };
 		9261E94C674BDDEDB135995F /* legacy-v4.json in Resources */ = {isa = PBXBuildFile; fileRef = 1159106FC0E73BA4DE2C42C5 /* legacy-v4.json */; };
+		942DFDD4699E9F0E430CC94E /* WindowChrome.swift in Sources */ = {isa = PBXBuildFile; fileRef = C442CF5ED5A883FB3CEC027D /* WindowChrome.swift */; };
 		9430368D2C1489B689E486FE /* TestStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B58BB0690B0EA82742A5CE25 /* TestStore.swift */; };
 		955F332100CC23E97987C347 /* UrgeSurfingExplainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E3F15EC83FD43BC00B0E68 /* UrgeSurfingExplainer.swift */; };
 		976A68EC4AA98D58D290BC98 /* StoreRecoveryBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638AC60F721270B9F55B2B44 /* StoreRecoveryBanner.swift */; };
@@ -243,7 +244,7 @@
 		9621A4412628D2785C82BD16 /* FlowStub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowStub.swift; sourceTree = "<group>"; };
 		971516AB0C64790C479F92C2 /* ChipGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChipGrid.swift; sourceTree = "<group>"; };
 		97C5CD5C17071965451A7EBC /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
-		9EBD5838F90FF59B28C4C7C1 /* UrgeBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UrgeBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9EBD5838F90FF59B28C4C7C1 /* UrgeBuddy.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = UrgeBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3B5CECB1BBB3736BA0D61F6 /* AdaptiveLayoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveLayoutUITests.swift; sourceTree = "<group>"; };
 		A40E8F0C78FE5B28DFDD675B /* TypeScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeScale.swift; sourceTree = "<group>"; };
 		A600DC4A3112885B3673D912 /* Radius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Radius.swift; sourceTree = "<group>"; };
@@ -264,8 +265,9 @@
 		BBEBAFE67336E3A5BDE24B91 /* DayNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayNote.swift; sourceTree = "<group>"; };
 		BBEC1E61E04CC6A11C49D262 /* BootstrapStoreRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootstrapStoreRecoveryTests.swift; sourceTree = "<group>"; };
 		BD545F49EB0AF3C9A69D4798 /* PatternInsightsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternInsightsTests.swift; sourceTree = "<group>"; };
-		C07786D6A99988D3CF2381B9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C07786D6A99988D3CF2381B9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C307C48A6E7CE7C933766326 /* PatternInsights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternInsights.swift; sourceTree = "<group>"; };
+		C442CF5ED5A883FB3CEC027D /* WindowChrome.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowChrome.swift; sourceTree = "<group>"; };
 		C48D9CB424B364E144C934DE /* Mood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mood.swift; sourceTree = "<group>"; };
 		C5D30B73413A70D72802A732 /* ProgressMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressMath.swift; sourceTree = "<group>"; };
 		C828E232C83784A93307A960 /* UrgeEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UrgeEvent.swift; sourceTree = "<group>"; };
@@ -584,6 +586,7 @@
 				A600DC4A3112885B3673D912 /* Radius.swift */,
 				FE39C12819E752F0F4B526F7 /* Spacing.swift */,
 				A40E8F0C78FE5B28DFDD675B /* TypeScale.swift */,
+				C442CF5ED5A883FB3CEC027D /* WindowChrome.swift */,
 			);
 			path = DesignSystem;
 			sourceTree = "<group>";
@@ -854,6 +857,7 @@
 			);
 			mainGroup = 4FB70368FE23B477E9145544;
 			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -1035,6 +1039,7 @@
 				6F3BA64B19726501D3CC1843 /* UrgeViewModel.swift in Sources */,
 				1377278F8FDB620FF5F365A7 /* ViceCard.swift in Sources */,
 				0431B95E9F5F7D8D74B0A3D1 /* WCAGContrast.swift in Sources */,
+				942DFDD4699E9F0E430CC94E /* WindowChrome.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1245,12 +1250,23 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Resources/UrgeBuddy-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Urge Buddy";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to keep your progress private.";
 				INFOPLIST_KEY_UILaunchScreen_BackgroundColor = LaunchBackground;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiresFullScreen = NO;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = (
+					UIInterfaceOrientationPortrait,
+					UIInterfaceOrientationPortraitUpsideDown,
+					UIInterfaceOrientationLandscapeLeft,
+					UIInterfaceOrientationLandscapeRight,
+				);
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = (
+					UIInterfaceOrientationPortrait,
+					UIInterfaceOrientationLandscapeLeft,
+					UIInterfaceOrientationLandscapeRight,
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1278,12 +1294,23 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Resources/UrgeBuddy-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Urge Buddy";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to keep your progress private.";
 				INFOPLIST_KEY_UILaunchScreen_BackgroundColor = LaunchBackground;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiresFullScreen = NO;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = (
+					UIInterfaceOrientationPortrait,
+					UIInterfaceOrientationPortraitUpsideDown,
+					UIInterfaceOrientationLandscapeLeft,
+					UIInterfaceOrientationLandscapeRight,
+				);
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = (
+					UIInterfaceOrientationPortrait,
+					UIInterfaceOrientationLandscapeLeft,
+					UIInterfaceOrientationLandscapeRight,
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

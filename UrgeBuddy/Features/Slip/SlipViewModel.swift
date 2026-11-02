@@ -72,15 +72,24 @@ final class SlipViewModel {
         if updated != originalPlan {
             try store.setPlan(metric, plan: updated.isEmpty ? nil : updated)
         }
+        summary = try makeSummary(metric: metric, now: now, locale: locale)
+    }
+
+    /// Summary from the days already stored. Does not log a new slip.
+    func loadExistingSummary(metric: Metric, now: Date, locale: Locale = .current) throws {
+        summary = try makeSummary(metric: metric, now: now, locale: locale)
+    }
+
+    private func makeSummary(metric: Metric, now: Date, locale: Locale) throws -> SlipSummary {
         let entries = try store.entries(for: metric.id)
         let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: calendar)
         let window = RecoveryMath.freeDays(inLast: 30, history, now: now, calendar: calendar)
         let saved = RecoveryMath.moneySaved(
             totalFreeDays: RecoveryMath.totalFreeDays(history, now: now, calendar: calendar),
             costPerDay: metric.costPerDay
-        ).map { RecoveryCopy.saved($0, locale: locale) }
+        ).map { RecoveryCopy.money($0, locale: locale) }
         let reason = try store.reasons(for: metric.id).sorted { $0.sortOrder < $1.sortOrder }.first?.text
-        summary = SlipSummary(
+        return SlipSummary(
             title: RecoveryCopy.slipSummaryTitle,
             body: RecoveryCopy.slipSummaryBody(free: window.free, counted: window.counted, saved: saved),
             reason: reason

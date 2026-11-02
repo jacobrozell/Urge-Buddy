@@ -34,7 +34,8 @@ struct JournalScreen: View {
                     .scrollContentBackground(.hidden)
                 }
             }
-            .background(Color.tbBackground)
+            .background(Color.tbBackground.ignoresSafeArea())
+            .tbNavigationBarBackground()
             .navigationTitle(RecoveryCopy.journal)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -109,7 +110,8 @@ struct JournalEntryScreen: View {
             .padding(Spacing.l)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(Color.tbBackground)
+        .background(Color.tbBackground.ignoresSafeArea())
+        .tbNavigationBarBackground()
         .navigationTitle(entry.metricName)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

@@ -63,13 +63,17 @@ final class UrgeViewModel {
         }
         if let preferredID, vices.contains(where: { $0.id == preferredID }) {
             selectedID = preferredID
-        } else if vices.count == 1 {
+        } else if vices.count == 1 || LaunchConfiguration.opensUrgeRide {
             selectedID = vices[0].id
         } else {
             step = .choose
             return
         }
         if resumeRecentRide(now: now) {
+            return
+        }
+        if LaunchConfiguration.opensUrgeRide {
+            try? begin(metrics: metrics, now: now)
             return
         }
         step = .intensity

@@ -6,6 +6,8 @@ struct SlipFlowView: View {
     var prefilledTriggers: [TriggerTag]
     /// Set when the day editor opens this flow for a specific day.
     var occurredOn: Date? = nil
+    /// Screenshot launch: show the summary from data already stored.
+    var showSummary: Bool = false
     var onFinish: () -> Void
 
     @Environment(\.modelContext) private var modelContext
@@ -48,7 +50,8 @@ struct SlipFlowView: View {
                     .sensoryFeedback(.impact(weight: .light), trigger: model?.summary?.body)
                 }
             }
-            .background(Color.tbBackground)
+            .background(Color.tbBackground.ignoresSafeArea())
+            .tbNavigationBarBackground()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -76,6 +79,9 @@ struct SlipFlowView: View {
                 triggers: prefilledTriggers,
                 when: when
             )
+            if showSummary {
+                try? model?.loadExistingSummary(metric: metric, now: now)
+            }
         }
         .sheet(isPresented: $showHelp) {
             CrisisResourcesView()

@@ -125,7 +125,8 @@ struct ProgressScreen: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .background(Color.tbBackground)
+            .background(Color.tbBackground.ignoresSafeArea())
+            .tbNavigationBarBackground()
             .navigationTitle("Progress")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { EditButton() }
@@ -142,6 +143,9 @@ struct ProgressScreen: View {
                     .id(metric.id)
             } else {
                 ContentUnavailableView(RecoveryCopy.pickSomethingTitle, systemImage: "chart.line.uptrend.xyaxis")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.tbBackground.ignoresSafeArea())
+                    .tbNavigationBarBackground()
                     .accessibilityIdentifier(AccessibilityIdentifiers.progressDetailPlaceholder)
             }
         }

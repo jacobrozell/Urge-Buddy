@@ -40,7 +40,7 @@ struct CelebrationView: View {
         .scrollBounceBehavior(.basedOnSize)
         .defaultScrollAnchor(.center, for: .alignment)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.tbBackground)
+        .background(Color.tbBackground.ignoresSafeArea())
         .urgeBuddyCelebration(isPresented: shown, reduceMotion: reduceMotion)
         .onAppear { shown = true }
         .adaptiveFormSheet()

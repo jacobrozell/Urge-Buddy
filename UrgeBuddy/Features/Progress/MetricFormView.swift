@@ -59,6 +59,7 @@ struct MetricFormView: View {
                     }
                 }
             }
+            .tbNavigationBarBackground()
             .navigationTitle(model?.isNew == true ? RecoveryCopy.addSomething : RecoveryCopy.edit)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

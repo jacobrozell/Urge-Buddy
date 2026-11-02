@@ -6,6 +6,14 @@ Related: [Specs/DesignSystemSpec.md](../Specs/DesignSystemSpec.md) §8.7, [ongoi
 
 **Automated (2026-10-31):** `TrackBothTests` (incl. `AdaptiveLayoutTests`), `TrackBothUITests` + `AdaptiveLayoutUITests` on iPhone 17; iPad-width `testProgressSplitOnRegularWidth` when window ≥ 744pt.
 
+**App Store screenshots (2026-11-02), light portrait:**
+
+- iPhone 17 Pro Max, 1320×2868: Today, urge ride, slip summary, progress detail, cut back.
+- iPad Pro 13-inch (M5), 2064×2752: the same five scenes.
+- iPhone Duo: not captured. Device Hub had no windows, and the Duo simulator stopped on a data-migration failure.
+
+Files are in `marketing-screenshots/` and are not committed. Dark mode, AX3, Stage Manager, and folding mid-urge are still open below.
+
 ---
 
 ## iPhone 17 portrait

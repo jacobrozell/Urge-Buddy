@@ -56,8 +56,8 @@ struct UrgeFlowView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(Color.tbCalm)
             .padding(.top, 44 + Spacing.m)
-            .overlay(alignment: .topLeading) {
-                closeButton
+            .overlay(alignment: .top) {
+                UrgeCloseBar { closeButton }
                     .padding(.horizontal, Spacing.l)
                     .padding(.top, Spacing.xs)
             }
@@ -104,6 +104,10 @@ struct UrgeFlowView: View {
         }
         .background(Color.tbCalm.ignoresSafeArea())
         .onAppear { prepare() }
+        .onChange(of: metrics.count) {
+            guard LaunchConfiguration.opensUrgeRide, model?.step == .empty else { return }
+            prepare()
+        }
         .onChange(of: model?.step) { _, step in
             guard step != .ride else { return }
             newWhyText = ""
@@ -693,5 +697,45 @@ struct UrgeFlowView: View {
     private func clock(_ remaining: TimeInterval) -> String {
         let total = Int(remaining)
         return String(format: "%d:%02d", total / 60, total % 60)
+    }
+}
+
+/// Close sits on the leading edge on iPhone. On iPhone Duo it follows the vertical bar so it stays on the thumb side.
+private struct UrgeCloseBar<Label: View>: View {
+    @ViewBuilder var label: () -> Label
+
+    var body: some View {
+        if #available(iOS 27.1, *) {
+            UrgeCloseBarOn27(label: label)
+        } else {
+            UrgeCloseBarLayout(onTrailingEdge: false, label: label)
+        }
+    }
+}
+
+@available(iOS 27.1, *)
+private struct UrgeCloseBarOn27<Label: View>: View {
+    @Environment(\.toolbarVerticalEdge) private var toolbarVerticalEdge
+    @ViewBuilder var label: () -> Label
+
+    var body: some View {
+        UrgeCloseBarLayout(onTrailingEdge: toolbarVerticalEdge == .trailing, label: label)
+    }
+}
+
+private struct UrgeCloseBarLayout<Label: View>: View {
+    var onTrailingEdge: Bool
+    @ViewBuilder var label: () -> Label
+
+    var body: some View {
+        HStack(spacing: 0) {
+            if onTrailingEdge {
+                Spacer(minLength: 0)
+                label()
+            } else {
+                label()
+                Spacer(minLength: 0)
+            }
+        }
     }
 }

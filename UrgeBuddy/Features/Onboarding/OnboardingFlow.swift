@@ -42,7 +42,7 @@ struct OnboardingFlow: View {
                 }
             }
         }
-        .background(Color.tbBackground)
+        .background(Color.tbBackground.ignoresSafeArea())
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()

@@ -51,7 +51,8 @@ struct SettingsScreen: View {
             .scrollContentBackground(.hidden)
             .readableListMargins()
             .contentMargins(.bottom, Spacing.xl, for: .scrollContent)
-            .background(Color.tbBackground)
+            .background(Color.tbBackground.ignoresSafeArea())
+            .tbNavigationBarBackground()
             .navigationTitle("Settings")
             .alert(RecoveryCopy.backupProblem, isPresented: messagePresented) {
                 Button(RecoveryCopy.close, role: .cancel) { message = nil }

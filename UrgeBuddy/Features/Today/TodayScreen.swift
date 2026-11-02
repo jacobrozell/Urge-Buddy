@@ -64,18 +64,20 @@ struct TodayScreen: View {
                         }
                     }
                     .padding(.top, Spacing.s)
-                    .padding(.bottom, model.showsSOS ? 72 : Spacing.m)
+                    .padding(.bottom, Spacing.m)
                 }
             }
-            .overlay(alignment: .bottom) {
+            .safeAreaInset(edge: .bottom, spacing: 0) {
                 if model.showsSOS {
-                    SOSButton {
-                        router.present(.urge(nil))
+                    VerticalBarFloatingBar {
+                        SOSButton {
+                            router.present(.urge(nil))
+                        }
                     }
-                    .padding(Spacing.s)
                 }
             }
-            .background(Color.tbBackground)
+            .background(Color.tbBackground.ignoresSafeArea())
+            .tbNavigationBarBackground()
             .navigationTitle("Today")
             .navigationBarTitleDisplayMode(
                 AdaptiveLayout.isShortHeight(vertical: verticalSizeClass) ? .inline : .large
@@ -102,7 +104,11 @@ struct TodayScreen: View {
                 switch sheet {
                 case .slip(let id):
                     if let metric = metrics.first(where: { $0.id == id }) {
-                        SlipFlowView(metric: metric, prefilledTriggers: []) { self.sheet = nil }
+                        SlipFlowView(
+                            metric: metric,
+                            prefilledTriggers: [],
+                            showSummary: LaunchConfiguration.showsSlipSummary
+                        ) { self.sheet = nil }
                     }
                 case .add:
                     MetricFormView(metric: nil)
@@ -184,7 +190,7 @@ struct TodayScreen: View {
     }
 
     private func presentSlipIfNeeded() {
-        guard LaunchConfiguration.presentsSlip, !didPresentSlip,
+        guard (LaunchConfiguration.presentsSlip || LaunchConfiguration.showsSlipSummary), !didPresentSlip,
               let vice = metrics.first(where: { $0.isQuitting && !$0.isArchived }) else { return }
         didPresentSlip = true
         sheet = .slip(vice.id)

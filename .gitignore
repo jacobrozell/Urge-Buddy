@@ -31,3 +31,7 @@ Carthage/Build/
 
 # MCP screenshot / scratch output
 tmp/
+
+# App Store screenshot captures and local build products
+marketing-screenshots/
+.derivedData/

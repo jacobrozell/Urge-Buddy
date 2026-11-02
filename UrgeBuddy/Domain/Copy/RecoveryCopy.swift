@@ -55,11 +55,15 @@ enum RecoveryCopy {
     static let urgeSurfingRow = "An urge rises and passes, like a wave."
     static let urgeIntro = "This is urge surfing. The urge rises, peaks, and passes, like a wave. Breathe, and watch it."
     static let urgeSurfingWhatTitle = "What it is"
-    static let urgeSurfingWhat = "An urge is a wave. It gets stronger, crests, then fades on its own. Most pass in a few minutes. Some take longer."
+    static let urgeSurfingWhat = "An urge is a wave. It gets stronger, crests, then fades on its own. Your breath is how you stay with it. Most pass in a few minutes. Some take longer."
     static let urgeSurfingHowTitle = "What you do"
     static let urgeSurfingHow = "Stay with it and watch it. Notice where you feel it in your body, and let it crest. You can let it pass without acting on it. Watching it makes the next one easier to ride."
     static let urgeSurfingHereTitle = "When an urge hits"
-    static let urgeSurfingHere = "Open I'm having an urge. Breathe with the circle. Write down what's in your head. Read why this matters to you. The timer gives the wave time to fall. Add 5 minutes if it's still there."
+    static let urgeSurfingHere = "Open I'm having an urge. Urge Buddy stays with you. Breathe with the circle. Write down what's in your head. Read why this matters to you. The timer gives the wave time to fall. Add 5 minutes if it's still there."
+    static let urgeSurfingLearnTitle = "Learn more"
+    static let urgeSurfingLearn = "These pages are outside the app. They explain the idea. Urge Buddy is a self-help tool."
+    static let urgeSurfingLearnHow = "How to surf an urge"
+    static let urgeSurfingLearnOrigin = "Where the idea came from"
     static let urgeSurfedIt = "You stayed with the wave until it fell. That's urge surfing."
 
     static func urgePassed(_ count: Int) -> String {

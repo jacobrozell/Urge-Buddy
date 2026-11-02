@@ -24,7 +24,8 @@ struct RootView: View {
             }
         }
         .persistFailureAlert()
-        .background(Color.tbBackground)
+        .background(Color.tbBackground.ignoresSafeArea())
+        .tbWindowChrome()
         .preferredColorScheme(colorScheme)
         .overlay {
             if onboarded && appLock.isLocked && scenePhase == .active && !appLock.isAuthenticating {

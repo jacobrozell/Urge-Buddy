@@ -39,6 +39,8 @@ final class RecoveryCopyTests: XCTestCase {
         XCTAssertTrue(RecoveryCopy.urgeSurfingWhat.contains("wave"))
         XCTAssertTrue(RecoveryCopy.urgeSurfingHow.contains("watch"))
         XCTAssertFalse(RecoveryCopy.urgeSurfingHere.isEmpty)
+        XCTAssertEqual(AppLinks.urgeSurfingPractice.scheme, "https")
+        XCTAssertEqual(AppLinks.urgeSurfingOrigin.scheme, "https")
         XCTAssertTrue(RecoveryCopy.welcomeLine2.contains("surf"))
         XCTAssertEqual(RecoveryCopy.slipTitle, "Thanks for being honest.")
         XCTAssertEqual(RecoveryCopy.slipSummaryTitle, "Your free clock restarts from here.")
