@@ -65,7 +65,7 @@ final class AppRouter {
     @discardableResult
     func handleQuickAction(type: String) -> Bool {
         guard type == "com.jacobrozell.TrackBoth.urge" else { return false }
-        pendingQuickAction = .urge(nil)
+        present(.urge(nil))
         return true
     }
 }

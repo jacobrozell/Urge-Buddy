@@ -65,6 +65,10 @@ struct RootView: View {
             if onboarded { router.flushPending() }
             refreshCelebration()
         }
+        .onChange(of: onboarded) { _, isOnboarded in
+            guard isOnboarded else { return }
+            router.flushPending()
+        }
         .onChange(of: appLock.isLocked) { _, locked in
             if locked { dismissCoverForLock() }
             guard !locked, onboarded else { return }

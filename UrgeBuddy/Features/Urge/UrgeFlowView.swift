@@ -34,29 +34,27 @@ struct UrgeFlowView: View {
         NavigationStack {
             Group {
                 if let model {
-                    if model.step == .ride && AdaptiveLayout.isShortHeight(vertical: verticalSizeClass) {
-                        rideSideBySide(model)
-                    } else {
-                        ScrollViewReader { proxy in
-                            ScrollView {
-                                ReadableColumn {
-                                    content(model)
-                                }
-                                .padding(.vertical, Spacing.l)
-                                .id(Self.topID)
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            ReadableColumn {
+                                content(model)
                             }
-                            .scrollDismissesKeyboard(.interactively)
-                            .onChange(of: model.step) { _, _ in
-                                proxy.scrollTo(Self.topID, anchor: .top)
-                            }
-                            .onChange(of: pendingFinish) { _, finish in
-                                revealConfirm(finish, proxy)
-                            }
+                            .padding(.vertical, Spacing.l)
+                            .id(Self.topID)
+                        }
+                        .scrollContentBackground(.hidden)
+                        .scrollDismissesKeyboard(.interactively)
+                        .onChange(of: model.step) { _, _ in
+                            proxy.scrollTo(Self.topID, anchor: .top)
+                        }
+                        .onChange(of: pendingFinish) { _, finish in
+                            revealConfirm(finish, proxy)
                         }
                     }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(Color.tbCalm)
             .padding(.top, 44 + Spacing.m)
             .overlay(alignment: .topLeading) {
                 closeButton
@@ -104,6 +102,7 @@ struct UrgeFlowView: View {
                 }
             }
         }
+        .background(Color.tbCalm.ignoresSafeArea())
         .onAppear { prepare() }
         .onChange(of: model?.step) { _, step in
             guard step != .ride else { return }
@@ -185,10 +184,7 @@ struct UrgeFlowView: View {
                 surfingLink
             }
         case .ride:
-            VStack(spacing: Spacing.l) {
-                rideFocus(model)
-                rideSupport(model)
-            }
+            rideBody(model)
         case .passed:
             passed(model)
         case .unsure:
@@ -218,28 +214,29 @@ struct UrgeFlowView: View {
         .buttonStyle(.plain)
     }
 
-    private func rideSideBySide(_ model: UrgeViewModel) -> some View {
-        HStack(alignment: .top, spacing: Spacing.l) {
-            VStack(spacing: Spacing.m) {
+    /// One tree for portrait and landscape so rotation does not swap ScrollViews (white flash).
+    @ViewBuilder
+    private func rideBody(_ model: UrgeViewModel) -> some View {
+        Group {
+        if AdaptiveLayout.isShortHeight(vertical: verticalSizeClass) {
+            HStack(alignment: .top, spacing: Spacing.l) {
+                VStack(spacing: Spacing.m) {
+                    rideFocus(model)
+                }
+                .frame(maxWidth: .infinity, alignment: .top)
+                VStack(alignment: .leading, spacing: Spacing.l) {
+                    rideSupport(model)
+                }
+                .frame(maxWidth: .infinity, alignment: .top)
+            }
+        } else {
+            VStack(spacing: Spacing.l) {
                 rideFocus(model)
+                rideSupport(model)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.l) {
-                        rideSupport(model)
-                    }
-                    .padding(.vertical, Spacing.m)
-                }
-                .scrollBounceBehavior(.basedOnSize)
-                .scrollDismissesKeyboard(.interactively)
-                .onChange(of: pendingFinish) { _, finish in
-                    revealConfirm(finish, proxy)
-                }
-            }
-            .frame(maxWidth: .infinity)
         }
-        .padding(.horizontal, Spacing.l)
+        }
+        .animation(nil, value: verticalSizeClass)
     }
 
     @ViewBuilder

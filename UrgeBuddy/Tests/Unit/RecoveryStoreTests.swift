@@ -136,6 +136,35 @@ final class RecoveryStoreTests: XCTestCase {
         XCTAssertEqual(try store.urges(for: metric.id).count, 1)
     }
 
+    func testBeginStartsFreshRideAndClosesStaleInProgress() throws {
+        let metric = try vice()
+        let started = date(2026, 10, 11, 18)
+        let stale = try store.startUrge(for: metric, intensity: 3, now: started)
+        let model = UrgeViewModel(store: store)
+        model.start(metrics: [metric], preferredID: metric.id, now: date(2026, 10, 11, 18, 30))
+        model.intensity = 4
+        let rideAt = date(2026, 10, 11, 18, 31)
+        try model.begin(metrics: [metric], now: rideAt)
+        XCTAssertNotEqual(model.urge?.id, stale.id)
+        XCTAssertEqual(model.urge?.intensity, 4)
+        XCTAssertEqual(model.remaining(at: rideAt), 5 * 60, accuracy: 0.5)
+        let urges = try store.urges(for: metric.id)
+        XCTAssertEqual(urges.count, 2)
+        XCTAssertEqual(urges.first { $0.id == stale.id }?.outcome, .unknown)
+    }
+
+    func testStartResumesRecentInProgressAfterLock() throws {
+        let metric = try vice()
+        let started = date(2026, 10, 11, 18)
+        let open = try store.startUrge(for: metric, intensity: 3, now: started)
+        let model = UrgeViewModel(store: store)
+        let resumeAt = date(2026, 10, 11, 18, 2)
+        model.start(metrics: [metric], preferredID: metric.id, now: resumeAt)
+        XCTAssertEqual(model.step, .ride)
+        XCTAssertEqual(model.urge?.id, open.id)
+        XCTAssertEqual(model.remaining(at: resumeAt), 3 * 60, accuracy: 0.5)
+    }
+
     func testAddReasonPersistsSortOrderAndSkipsBlank() throws {
         let metric = try vice()
         try store.addReason("For my health", to: metric)

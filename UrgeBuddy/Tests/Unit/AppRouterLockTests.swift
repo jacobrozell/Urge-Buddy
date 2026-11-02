@@ -59,6 +59,54 @@ final class AppRouterLockTests: XCTestCase {
         XCTAssertEqual(router.pendingQuickAction, .urge(nil))
     }
 
+    func testHandleQuickActionPresentsWhenUnlocked() {
+        let lock = AppLock.shared
+        let router = AppRouter.shared
+        let wasEnabled = lock.isEnabled
+        let wasLocked = lock.isLocked
+        let wasPresented = router.presented
+        let wasPending = router.pendingQuickAction
+        defer {
+            lock.isEnabled = wasEnabled
+            lock.isLocked = wasLocked
+            router.presented = wasPresented
+            router.pendingQuickAction = wasPending
+        }
+
+        lock.isEnabled = false
+        lock.isLocked = false
+        router.presented = nil
+        router.pendingQuickAction = nil
+
+        XCTAssertTrue(router.handleQuickAction(type: "com.jacobrozell.TrackBoth.urge"))
+        XCTAssertEqual(router.presented, .urge(nil))
+        XCTAssertNil(router.pendingQuickAction)
+    }
+
+    func testHandleQuickActionQueuesWhenLocked() {
+        let lock = AppLock.shared
+        let router = AppRouter.shared
+        let wasEnabled = lock.isEnabled
+        let wasLocked = lock.isLocked
+        let wasPresented = router.presented
+        let wasPending = router.pendingQuickAction
+        defer {
+            lock.isEnabled = wasEnabled
+            lock.isLocked = wasLocked
+            router.presented = wasPresented
+            router.pendingQuickAction = wasPending
+        }
+
+        lock.isEnabled = true
+        lock.isLocked = true
+        router.presented = nil
+        router.pendingQuickAction = nil
+
+        XCTAssertTrue(router.handleQuickAction(type: "com.jacobrozell.TrackBoth.urge"))
+        XCTAssertNil(router.presented)
+        XCTAssertEqual(router.pendingQuickAction, .urge(nil))
+    }
+
     func testUrgeOpenedFromCheckInReturnsToCheckIn() {
         let lock = AppLock.shared
         let router = AppRouter.shared

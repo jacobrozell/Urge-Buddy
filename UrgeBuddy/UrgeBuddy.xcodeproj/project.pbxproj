@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -243,7 +243,7 @@
 		9621A4412628D2785C82BD16 /* FlowStub.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowStub.swift; sourceTree = "<group>"; };
 		971516AB0C64790C479F92C2 /* ChipGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChipGrid.swift; sourceTree = "<group>"; };
 		97C5CD5C17071965451A7EBC /* OnboardingFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlow.swift; sourceTree = "<group>"; };
-		9EBD5838F90FF59B28C4C7C1 /* UrgeBuddy.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = UrgeBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9EBD5838F90FF59B28C4C7C1 /* UrgeBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UrgeBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A3B5CECB1BBB3736BA0D61F6 /* AdaptiveLayoutUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveLayoutUITests.swift; sourceTree = "<group>"; };
 		A40E8F0C78FE5B28DFDD675B /* TypeScale.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TypeScale.swift; sourceTree = "<group>"; };
 		A600DC4A3112885B3673D912 /* Radius.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Radius.swift; sourceTree = "<group>"; };
@@ -264,7 +264,7 @@
 		BBEBAFE67336E3A5BDE24B91 /* DayNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayNote.swift; sourceTree = "<group>"; };
 		BBEC1E61E04CC6A11C49D262 /* BootstrapStoreRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootstrapStoreRecoveryTests.swift; sourceTree = "<group>"; };
 		BD545F49EB0AF3C9A69D4798 /* PatternInsightsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternInsightsTests.swift; sourceTree = "<group>"; };
-		C07786D6A99988D3CF2381B9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		C07786D6A99988D3CF2381B9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		C307C48A6E7CE7C933766326 /* PatternInsights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternInsights.swift; sourceTree = "<group>"; };
 		C48D9CB424B364E144C934DE /* Mood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mood.swift; sourceTree = "<group>"; };
 		C5D30B73413A70D72802A732 /* ProgressMath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressMath.swift; sourceTree = "<group>"; };
@@ -854,7 +854,6 @@
 			);
 			mainGroup = 4FB70368FE23B477E9145544;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -1249,19 +1248,9 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to keep your progress private.";
 				INFOPLIST_KEY_UILaunchScreen_BackgroundColor = LaunchBackground;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiresFullScreen = NO;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = (
-					UIInterfaceOrientationPortrait,
-					UIInterfaceOrientationPortraitUpsideDown,
-					UIInterfaceOrientationLandscapeLeft,
-					UIInterfaceOrientationLandscapeRight,
-				);
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = (
-					UIInterfaceOrientationPortrait,
-					UIInterfaceOrientationLandscapeLeft,
-					UIInterfaceOrientationLandscapeRight,
-				);
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1292,19 +1281,9 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Use Face ID to keep your progress private.";
 				INFOPLIST_KEY_UILaunchScreen_BackgroundColor = LaunchBackground;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UIRequiresFullScreen = NO;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = (
-					UIInterfaceOrientationPortrait,
-					UIInterfaceOrientationPortraitUpsideDown,
-					UIInterfaceOrientationLandscapeLeft,
-					UIInterfaceOrientationLandscapeRight,
-				);
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = (
-					UIInterfaceOrientationPortrait,
-					UIInterfaceOrientationLandscapeLeft,
-					UIInterfaceOrientationLandscapeRight,
-				);
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

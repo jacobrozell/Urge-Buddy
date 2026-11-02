@@ -51,6 +51,10 @@ final class UrgeViewModel {
 
     var calendar: Calendar { store.calendar }
 
+    private static let rideLength: TimeInterval = 5 * 60
+    /// Resume a ride hidden by app lock if it is still inside the timer window.
+    private static let resumeGrace: TimeInterval = 2 * 60
+
     func start(metrics: [Metric], preferredID: UUID?, now: Date) {
         vices = metrics.filter { $0.habitType == .vice && !$0.isArchived }.sorted { $0.sortOrder < $1.sortOrder }
         if vices.isEmpty {
@@ -59,14 +63,31 @@ final class UrgeViewModel {
         }
         if let preferredID, vices.contains(where: { $0.id == preferredID }) {
             selectedID = preferredID
-            step = .intensity
         } else if vices.count == 1 {
             selectedID = vices[0].id
-            step = .intensity
         } else {
             step = .choose
+            return
         }
-        endDate = now.addingTimeInterval(5 * 60)
+        if resumeRecentRide(now: now) {
+            return
+        }
+        step = .intensity
+        endDate = now.addingTimeInterval(Self.rideLength)
+    }
+
+    /// Returns true when an in-progress ride was restored (e.g. after app lock).
+    private func resumeRecentRide(now: Date) -> Bool {
+        guard let metricID = selectedID,
+              let open = try? store.inProgressUrge(for: metricID) else { return false }
+        let elapsed = now.timeIntervalSince(open.startedAt)
+        guard elapsed < Self.rideLength + Self.resumeGrace else { return false }
+        urge = open
+        intensity = open.intensity
+        endDate = open.startedAt.addingTimeInterval(Self.rideLength)
+        duration = Self.rideLength
+        step = .ride
+        return true
     }
 
     func choose(_ id: UUID) {
@@ -76,9 +97,12 @@ final class UrgeViewModel {
 
     func begin(metrics: [Metric], now: Date) throws {
         guard let metric = metrics.first(where: { $0.id == selectedID }) else { return }
+        if let open = try store.inProgressUrge(for: metric.id) {
+            try store.finishUrge(open, outcome: .unknown, triggers: [], note: nil, now: now)
+        }
         urge = try store.startUrge(for: metric, intensity: intensity, now: now)
-        endDate = now.addingTimeInterval(5 * 60)
-        duration = 5 * 60
+        endDate = now.addingTimeInterval(Self.rideLength)
+        duration = Self.rideLength
         step = .ride
     }
 

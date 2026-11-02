@@ -199,6 +199,14 @@ final class RecoveryStore {
 
     // MARK: Urges
 
+    /// Latest open ride for this vice, if any.
+    func inProgressUrge(for metricID: UUID) throws -> UrgeEvent? {
+        let raw = UrgeOutcome.inProgress.rawValue
+        let predicate = #Predicate<UrgeEvent> { $0.metricID == metricID && $0.outcomeRaw == raw }
+        return try context.fetch(FetchDescriptor<UrgeEvent>(predicate: predicate))
+            .max(by: { $0.startedAt < $1.startedAt })
+    }
+
     @discardableResult
     func startUrge(for metric: Metric, intensity: Int, now: Date = Date()) throws -> UrgeEvent {
         let urge = UrgeEvent(metricID: metric.id, intensity: intensity, startedAt: now)
