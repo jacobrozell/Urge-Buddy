@@ -39,7 +39,7 @@ isProject: false
 
 This plan is written for an implementing agent. Do the phases in order. Commit at the end of each phase. Do not skip a phase's verification. When something here doesn't match the code, stop and write it in the progress log at the bottom of the copied plan (see Phase 0). Don't guess.
 
-Repo: `/Users/jrozell/Desktop/personal/TrackBoth`. The app code is in `TrackBoth/TrackBoth/`, and `project.yml` is at [TrackBoth/TrackBoth/project.yml](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/project.yml).
+Repo: `/Users/jrozell/Desktop/personal/apps/UrgeBuddy`. The app code is in `UrgeBuddy/`, and `project.yml` is at [UrgeBuddy/project.yml](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/project.yml).
 
 **Assumption:** this lands before 1.0 ships and replaces decision D6 ("1.0 is iPhone portrait only"). Once a version with iPad support is on the App Store, every later update has to keep supporting iPad.
 
@@ -50,9 +50,9 @@ Repo: `/Users/jrozell/Desktop/personal/TrackBoth`. The app code is in `TrackBoth
 Read this list first. Each phase below fixes items from it.
 
 1. **Config.** `project.yml` sets `TARGETED_DEVICE_FAMILY: "1"` and portrait as the only iPhone orientation. On iPad the app runs letterboxed in iPhone compatibility mode. The iPhone Duo inner display opens in landscape (2853×2007 in PuzzleBuddy's capture script), so a portrait-only app comes out wrong there.
-2. **Urge "ride" step** ([UrgeFlowView.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/Urge/UrgeFlowView.swift) lines 126–131). It uses `ViewThatFits(in: .vertical)` inside a `ScrollView`. A scroll view offers unlimited height, so the stacked layout always "fits" and the fallback never runs. If the fallback did run, it would put 9 items (intro, circle, clock, +5 min, plan, reasons, chips, two buttons) in one `HStack`.
+2. **Urge "ride" step** ([UrgeFlowView.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/Urge/UrgeFlowView.swift) lines 126–131). It uses `ViewThatFits(in: .vertical)` inside a `ScrollView`. A scroll view offers unlimited height, so the stacked layout always "fits" and the fallback never runs. If the fallback did run, it would put 9 items (intro, circle, clock, +5 min, plan, reasons, chips, two buttons) in one `HStack`.
 3. **Urge nesting is backwards.** `ReadableColumn { ScrollView { ... } }` means only the middle 640pt can scroll. Every other screen does `ScrollView { ReadableColumn { ... } }`.
-4. **Fixed bottom spacers** take height that landscape doesn't have: `Color.clear.frame(height: 72)` in [MetricDetailScreen.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/Progress/MetricDetailScreen.swift) line 44, and `Color.clear.frame(height: 88)` in [SettingsScreen.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/Settings/SettingsScreen.swift) line 52.
+4. **Fixed bottom spacers** take height that landscape doesn't have: `Color.clear.frame(height: 72)` in [MetricDetailScreen.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/Progress/MetricDetailScreen.swift) line 44, and `Color.clear.frame(height: 88)` in [SettingsScreen.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/Settings/SettingsScreen.swift) line 52.
 5. **Pinned bottom actions** fill a landscape screen that is about 390pt tall: CheckIn "Done", Slip "Save", the Today SOS button, and the Onboarding controls (Primary + Secondary + Back, about 170pt). On iPad, CheckIn Done, Slip Save, and the Onboarding controls stretch across the whole window because nothing caps their width.
 6. **Large navigation titles** on Today keep using vertical space in landscape.
 7. **Progress** is a plain `NavigationStack`. On iPad and on the Duo inner display it's a stretched list followed by a pushed detail.
@@ -66,7 +66,7 @@ Read this list first. Each phase below fixes items from it.
 
 ## 2. Layout rules (source of truth)
 
-These rules follow PuzzleBuddy ([PuzzleBuddy/App/Util/AdaptiveLayout.swift](/Users/jrozell/Desktop/personal/PuzzleBuddy/App/Util/AdaptiveLayout.swift), [PuzzleBuddy/ongoing/iphone-duo-1.1.0.md](/Users/jrozell/Desktop/personal/PuzzleBuddy/ongoing/iphone-duo-1.1.0.md)) and DartBuddy ([DartBuddy/DesignSystem/Components/GameplayLayout.swift](/Users/jrozell/Desktop/personal/DartBuddy/DesignSystem/Components/GameplayLayout.swift), and the landscape split in `DartBuddy/Features/Play/Shared/MatchSummaryScreen.swift`).
+These rules follow PuzzleBuddy ([PuzzleBuddy/App/Util/AdaptiveLayout.swift](/Users/jrozell/Desktop/personal/apps/PuzzleBuddy/App/Util/AdaptiveLayout.swift), [PuzzleBuddy/ongoing/iphone-duo-1.1.0.md](/Users/jrozell/Desktop/personal/apps/PuzzleBuddy/ongoing/iphone-duo-1.1.0.md)) and DartBuddy ([DartBuddy/DesignSystem/Components/GameplayLayout.swift](/Users/jrozell/Desktop/personal/apps/DartBuddy/DesignSystem/Components/GameplayLayout.swift), and the landscape split in `DartBuddy/Features/Play/Shared/MatchSummaryScreen.swift`).
 
 There are three independent signals:
 
@@ -107,12 +107,12 @@ Expected result on each device:
 
 ## Phase 0: Prep (no code changes)
 
-1. `cd /Users/jrozell/Desktop/personal/TrackBoth && git status`. Today the only change is `TrackBoth/TrackBoth.xcodeproj/project.pbxproj`, and it has build number **7**, but `project.yml` still says `CURRENT_PROJECT_VERSION: 6`. Running `xcodegen generate` sets it back to 6. Ask the owner which build number they want before regenerating. If they want 7, set `CURRENT_PROJECT_VERSION: 7` in `project.yml`.
+1. `cd /Users/jrozell/Desktop/personal/apps/UrgeBuddy && git status`. Today the only change is `UrgeBuddy/UrgeBuddy.xcodeproj/project.pbxproj`, and it has build number **7**, but `project.yml` still says `CURRENT_PROJECT_VERSION: 6`. Running `xcodegen generate` sets it back to 6. Ask the owner which build number they want before regenerating. If they want 7, set `CURRENT_PROJECT_VERSION: 7` in `project.yml`.
 2. Work on the current branch (`claude/dazzling-albattani-7mg4uh`) unless the owner names a different one.
-3. Copy this plan to `ongoing/adaptive-layout-plan.md`, add a progress-log table at the bottom, and add a row to [ongoing/README.md](/Users/jrozell/Desktop/personal/TrackBoth/ongoing/README.md) under Active.
-4. Record a baseline: `cd TrackBoth && xcodegen generate`, then run unit tests: `xcodebuild test -project TrackBoth.xcodeproj -scheme TrackBoth -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:TrackBothTests CODE_SIGNING_ALLOWED=NO`. Write the pass count in the log.
+3. Copy this plan to `ongoing/adaptive-layout-plan.md`, add a progress-log table at the bottom, and add a row to [ongoing/README.md](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/ongoing/README.md) under Active.
+4. Record a baseline: `cd UrgeBuddy && xcodegen generate`, then run unit tests: `xcodebuild test -project UrgeBuddy.xcodeproj -scheme UrgeBuddy -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:UrgeBuddyTests CODE_SIGNING_ALLOWED=NO`. Write the pass count in the log.
 5. Check for simulators: `xcrun simctl list devices available | rg -i "duo|ipad|iphone 17"`. Today the machine has iPhone 17, iPhone 17 Pro Max, iPad mini (A17 Pro), iPad Air 11/13 (M3), iPad Pro 11/13 (M4), and **no iPhone Duo**. Run `xcrun simctl list devicetypes | rg -i duo`. If the device type exists, create one with `xcrun simctl create "iPhone Duo" "<device type id>"`. If it doesn't exist, log "Duo sim unavailable" and do the Duo checks in Phase 8 on the regular/regular and compact-height proxies.
-6. If you use XcodeBuildMCP, call `session_show_defaults` before the first build, and set the project to `TrackBoth/TrackBoth/TrackBoth.xcodeproj` with scheme `TrackBoth`.
+6. If you use XcodeBuildMCP, call `session_show_defaults` before the first build, and set the project to `UrgeBuddy/UrgeBuddy.xcodeproj` with scheme `TrackBoth`.
 
 ---
 
@@ -136,9 +136,9 @@ Replace the single iPhone orientation line and the device family with:
           - UIInterfaceOrientationLandscapeRight
 ```
 
-Don't add a multiple-scenes key. The app stays single-scene. Don't add orientation keys to `Resources/TrackBoth-Info.plist`.
+Don't add a multiple-scenes key. The app stays single-scene. Don't add orientation keys to `Resources/UrgeBuddy-Info.plist`.
 
-### 1.2 New file `TrackBoth/DesignSystem/AdaptiveLayout.swift`
+### 1.2 New file `UrgeBuddy/DesignSystem/AdaptiveLayout.swift`
 
 ```swift
 import SwiftUI
@@ -171,7 +171,7 @@ enum AdaptiveLayout {
 }
 ```
 
-### 1.3 Update [ReadableColumn.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/DesignSystem/Components/ReadableColumn.swift)
+### 1.3 Update [ReadableColumn.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/DesignSystem/Components/ReadableColumn.swift)
 
 Add a width option. Existing call sites must keep compiling unchanged.
 
@@ -196,7 +196,7 @@ struct ReadableColumn<Content: View>: View {
 }
 ```
 
-### 1.4 New file `TrackBoth/DesignSystem/Components/AdaptiveColumns.swift`
+### 1.4 New file `UrgeBuddy/DesignSystem/Components/AdaptiveColumns.swift`
 
 ```swift
 import SwiftUI
@@ -260,9 +260,9 @@ private struct ReadableListMargins: ViewModifier {
 
 ### 1.6 Landscape launch for screenshots and self-checks
 
-Port [PuzzleBuddy/App/Util/SnapshotOrientationLock.swift](/Users/jrozell/Desktop/personal/PuzzleBuddy/App/Util/SnapshotOrientationLock.swift) as-is to `TrackBoth/Support/SnapshotOrientationLock.swift`. Then wire it up:
+Port [PuzzleBuddy/App/Util/SnapshotOrientationLock.swift](/Users/jrozell/Desktop/personal/apps/PuzzleBuddy/App/Util/SnapshotOrientationLock.swift) as-is to `UrgeBuddy/Support/SnapshotOrientationLock.swift`. Then wire it up:
 
-- In [AppDelegate.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/App/AppDelegate.swift) `didFinishLaunching`, call `SnapshotOrientationLock.configureFromLaunchArguments()`. Add:
+- In [AppDelegate.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/App/AppDelegate.swift) `didFinishLaunching`, call `SnapshotOrientationLock.configureFromLaunchArguments()`. Add:
 
 ```swift
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
@@ -270,12 +270,12 @@ Port [PuzzleBuddy/App/Util/SnapshotOrientationLock.swift](/Users/jrozell/Desktop
     }
 ```
 
-- In [RootView.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/App/RootView.swift), call `SnapshotOrientationLock.applyIfNeeded()` at the top of the existing `.task`.
+- In [RootView.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/App/RootView.swift), call `SnapshotOrientationLock.applyIfNeeded()` at the top of the existing `.task`.
 - With this in place, you can check landscape yourself: launch with `-snapshot_orientation landscape` plus the existing args, then take a screenshot. Because of the multitasking setting from 1.1, iPad ignores the lock. On iPad, rotate with Simulator > Device > Rotate Left, or use `XCUIDevice` in a UI test.
 
-### 1.7 Unit tests: new `TrackBoth/Tests/Unit/AdaptiveLayoutTests.swift` (XCTest, like the other tests)
+### 1.7 Unit tests: new `UrgeBuddy/Tests/Unit/AdaptiveLayoutTests.swift` (XCTest, like the other tests)
 
-Mirror [PuzzleBuddy/AppTests/AdaptiveLayoutTests.swift](/Users/jrozell/Desktop/personal/PuzzleBuddy/AppTests/AdaptiveLayoutTests.swift):
+Mirror [PuzzleBuddy/AppTests/AdaptiveLayoutTests.swift](/Users/jrozell/Desktop/personal/apps/PuzzleBuddy/AppTests/AdaptiveLayoutTests.swift):
 
 - `usesSplitNavigation` is true only for regular/regular. Check all four combinations, plus `nil`.
 - `isShortHeight` is true for compact vertical with either horizontal class.
@@ -284,7 +284,7 @@ Mirror [PuzzleBuddy/AppTests/AdaptiveLayoutTests.swift](/Users/jrozell/Desktop/p
 
 ### 1.8 Verify and commit
 
-- Run `xcodegen generate` from `TrackBoth/TrackBoth`, build, and run unit tests (all green, with the 4 new tests).
+- Run `xcodegen generate` from `UrgeBuddy/TrackBoth`, build, and run unit tests (all green, with the 4 new tests).
 - Launch on iPhone 17 with `-ui_testing -skip_onboarding -seed_demo -snapshot_orientation landscape` and confirm the app is in landscape. The layout will still look wrong at this point.
 - Commit: `Enable iPhone landscape and iPad with adaptive layout helpers.`
 
@@ -299,8 +299,8 @@ This is the PuzzleBuddy `PuzzleForm.pinsSaveInToolbar` pattern. Apply it to **Ch
 - Add `@Environment(\.verticalSizeClass) private var verticalSizeClass` and `private var pinsActionInToolbar: Bool { AdaptiveLayout.isShortHeight(vertical: verticalSizeClass) }`.
 - When `pinsActionInToolbar` is false: keep the bottom `PrimaryButton`, but wrap it in `ReadableColumn { ... }`. Remove its own `.padding(.horizontal, Spacing.l)`, because the column already pads. This caps the width on iPad (audit item 5).
 - When it's true: don't render the bottom button. Add `ToolbarItem(placement: .confirmationAction)` with a plain `Button` that has the same title, the same action, the same `.disabled(...)`, and the **same** `.accessibilityIdentifier` (`checkIn.done`, `slip.save`).
-- In [CheckInSheet.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/CheckIn/CheckInSheet.swift), the title switches between Done and Back to Today. Keep that logic in both places by moving it into a `doneTitle(model)` helper.
-- In [SlipFlowView.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/Slip/SlipFlowView.swift), the summary state has no Save. Show the toolbar item only when `model?.summary == nil`.
+- In [CheckInSheet.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/CheckIn/CheckInSheet.swift), the title switches between Done and Back to Today. Keep that logic in both places by moving it into a `doneTitle(model)` helper.
+- In [SlipFlowView.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/Slip/SlipFlowView.swift), the summary state has no Save. Show the toolbar item only when `model?.summary == nil`.
 
 ### 2.2 Remove fixed bottom spacers
 
@@ -320,9 +320,9 @@ This is the PuzzleBuddy `PuzzleForm.pinsSaveInToolbar` pattern. Apply it to **Ch
 
 ### 2.5 Centered, scrollable full screens: Celebration, Lock, PrivacyCover
 
-- [CelebrationView.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/Celebration/CelebrationView.swift): put the content in `ScrollView { ReadableColumn { ... } }`, then add `.scrollBounceBehavior(.basedOnSize)` and `.defaultScrollAnchor(.center, for: .alignment)` (iOS 18) so short content stays centered.
+- [CelebrationView.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/Celebration/CelebrationView.swift): put the content in `ScrollView { ReadableColumn { ... } }`, then add `.scrollBounceBehavior(.basedOnSize)` and `.defaultScrollAnchor(.center, for: .alignment)` (iOS 18) so short content stays centered.
 - At short height (read `verticalSizeClass`), lay the content out as `HStack(alignment: .center, spacing: Spacing.xl)`: the big number on the left; message, reason, and `PrimaryButton` in a `VStack` on the right. This is DartBuddy's "celebration | cards" landscape split. Keep the `.trackBothCelebration` and `.onAppear` modifiers on the outer container so they don't reset.
-- [LockScreen.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/Lock/LockScreen.swift) `LockScreen`: use the same `ScrollView` and center anchor, and wrap the content in `ReadableColumn`. Change the background to `.background(Color.tbBackground.ignoresSafeArea())`. Do the same background change on `PrivacyCover`. On the Duo the status bar sits on the trailing edge, and these covers must hide everything.
+- [LockScreen.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/Lock/LockScreen.swift) `LockScreen`: use the same `ScrollView` and center anchor, and wrap the content in `ReadableColumn`. Change the background to `.background(Color.tbBackground.ignoresSafeArea())`. Do the same background change on `PrivacyCover`. On the Duo the status bar sits on the trailing edge, and these covers must hide everything.
 
 ### 2.6 Verify and commit
 
@@ -338,7 +338,7 @@ This is the PuzzleBuddy `PuzzleForm.pinsSaveInToolbar` pattern. Apply it to **Ch
 
 ## Phase 3: Today
 
-File: [TodayScreen.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/Today/TodayScreen.swift). Also touches [TodayChrome.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/Today/TodayChrome.swift).
+File: [TodayScreen.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/Today/TodayScreen.swift). Also touches [TodayChrome.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/Today/TodayChrome.swift).
 
 1. Add `@Environment(\.verticalSizeClass) private var verticalSizeClass`.
 2. Change `ReadableColumn {` to `ReadableColumn(width: .wide) {`.
@@ -364,7 +364,7 @@ Verify with screenshots on iPhone 17 portrait (unchanged from today), iPhone 17 
 
 ## Phase 4: Progress split view and Metric Detail columns
 
-### 4.1 [ProgressScreen.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/Progress/ProgressScreen.swift): one `NavigationSplitView` at every size (the PuzzleBuddy `PuzzleList` pattern)
+### 4.1 [ProgressScreen.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/Progress/ProgressScreen.swift): one `NavigationSplitView` at every size (the PuzzleBuddy `PuzzleList` pattern)
 
 - Remove `@State private var path = NavigationPath()`. Add `@State private var selection: UUID?` along with `horizontalSizeClass` and `verticalSizeClass` from the environment.
 - Use this structure:
@@ -393,10 +393,10 @@ NavigationSplitView {
 - Delete `.navigationDestination(for: UUID.self)`. The split view's `List(selection:)` with `NavigationLink(value:)` handles pushing when collapsed and showing the detail column when split.
 - `openFirstDetailIfNeeded()`: set `selection = id` instead of `path.append(id)`.
 - Add `.onChange(of: metrics.map(\.id))`: if `selection` isn't in the list anymore (the metric was deleted), set `selection = nil`.
-- Add `pickSomethingTitle` ("Pick something to see its progress") to `RecoveryCopy`, and `progressDetailPlaceholder = "progress.detailPlaceholder"` to [AccessibilityIdentifiers.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Support/AccessibilityIdentifiers.swift).
+- Add `pickSomethingTitle` ("Pick something to see its progress") to `RecoveryCopy`, and `progressDetailPlaceholder = "progress.detailPlaceholder"` to [AccessibilityIdentifiers.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Support/AccessibilityIdentifiers.swift).
 - Check that EditButton reordering still works with `List(selection:)` on both iPhone and iPad. If edit mode shows selection circles or blocks `.onMove`, log it and stop. Don't hack around it.
 
-### 4.2 [MetricDetailScreen.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/Progress/MetricDetailScreen.swift): two columns
+### 4.2 [MetricDetailScreen.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/Progress/MetricDetailScreen.swift): two columns
 
 - Change to `ReadableColumn(width: .wide)`. `header` stays full width at the top.
 - **Vice**: `AdaptiveColumns { statTiles; calendar } trailing: { reasonsSection; planSection; patterns (if any); urgeLine (if any) }`.
@@ -417,7 +417,7 @@ NavigationSplitView {
 
 ## Phase 5: Urge flow
 
-File: [UrgeFlowView.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/Urge/UrgeFlowView.swift). This is the most important screen to get right in landscape.
+File: [UrgeFlowView.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/Urge/UrgeFlowView.swift). This is the most important screen to get right in landscape.
 
 1. **Fix the nesting** (audit item 3). The body becomes:
 
@@ -461,7 +461,7 @@ HStack(alignment: .top, spacing: Spacing.l) {
 .padding(.horizontal, Spacing.l)
 ```
 
-5. [BreathingCircle.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/DesignSystem/Components/BreathingCircle.swift): add `var maxDiameter: CGFloat = 280` and use it in `.frame(maxWidth: maxDiameter, maxHeight: maxDiameter)`. `UrgeFlowView` passes `AdaptiveLayout.breathingDiameter(vertical: verticalSizeClass)`.
+5. [BreathingCircle.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/DesignSystem/Components/BreathingCircle.swift): add `var maxDiameter: CGFloat = 280` and use it in `.frame(maxWidth: maxDiameter, maxHeight: maxDiameter)`. `UrgeFlowView` passes `AdaptiveLayout.breathingDiameter(vertical: verticalSizeClass)`.
 6. The other steps (`.choose`, `.intensity`, `.passed`) stay single-column inside the scroll view. They're short lists that scroll fine.
 7. `model`, `showSlip`, `askClose`, and `reasonIndex` stay on the view. Rotating in the middle of the ride must not restart the timer, because the timer's end time lives in `UrgeViewModel`.
 
@@ -471,7 +471,7 @@ Verify with screenshots: `-present_urge -snapshot_orientation landscape` on iPho
 
 ## Phase 6: Onboarding
 
-File: [OnboardingFlow.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Features/Onboarding/OnboardingFlow.swift).
+File: [OnboardingFlow.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Features/Onboarding/OnboardingFlow.swift).
 
 1. Pull the paging `TabView` (with its modifiers) out into `private var pager: some View`.
 2. Body:
@@ -513,11 +513,11 @@ Verify: launch with `-ui_testing` and **without** `-skip_onboarding`, plus `-sna
 ## Phase 7: Resize and fold hardening (Stage Manager, Split View, iPhone Duo)
 
 1. **iPhone Duo** (only if Phase 0 created the sim):
-   - Copy [PuzzleBuddy/Scripts/devicehub-pose.swift](/Users/jrozell/Desktop/personal/PuzzleBuddy/Scripts/devicehub-pose.swift) to `TrackBoth/Scripts/`, and switch poses with `swift Scripts/devicehub-pose.swift closed|open|book`. This needs Device Hub open.
+   - Copy [PuzzleBuddy/Scripts/devicehub-pose.swift](/Users/jrozell/Desktop/personal/apps/PuzzleBuddy/Scripts/devicehub-pose.swift) to `UrgeBuddy/Scripts/`, and switch poses with `swift Scripts/devicehub-pose.swift closed|open|book`. This needs Device Hub open.
    - Build with the iOS 27.1 SDK. PuzzleBuddy's notes say the full-display and vertical-bar behavior needs it.
    - Folded (outer): you should get the phone portrait layout.
    - Open (inner, landscape): you should get the Progress split and Today in two columns.
-   - Look for a white strip along the top or trailing edge (the Duo status bar is on the trailing edge). If there is one, port `BrandWindowBackground` from [PuzzleBuddy/App/Util/SystemNavigationPolicy.swift](/Users/jrozell/Desktop/personal/PuzzleBuddy/App/Util/SystemNavigationPolicy.swift) to `TrackBoth/DesignSystem/WindowBackground.swift`, painting with `UIColor(named: "Background")`, and apply `.background(WindowBackground())` once on `RootView`. Skip this if there's no strip.
+   - Look for a white strip along the top or trailing edge (the Duo status bar is on the trailing edge). If there is one, port `BrandWindowBackground` from [PuzzleBuddy/App/Util/SystemNavigationPolicy.swift](/Users/jrozell/Desktop/personal/apps/PuzzleBuddy/App/Util/SystemNavigationPolicy.swift) to `UrgeBuddy/DesignSystem/WindowBackground.swift`, painting with `UIColor(named: "Background")`, and apply `.background(WindowBackground())` once on `RootView`. Skip this if there's no strip.
 2. **Fold and resize with something open.** Each of these must keep the same screen and any typed text:
    - Check-in sheet with one vice marked Free.
    - Urge ride, with the timer still counting.
@@ -535,11 +535,11 @@ Verify: launch with `-ui_testing` and **without** `-skip_onboarding`, plus `-sna
 
 ## Phase 8: UI tests and QA matrix
 
-### 8.1 New `TrackBoth/Tests/UI/AdaptiveLayoutUITests.swift`
+### 8.1 New `UrgeBuddy/Tests/UI/AdaptiveLayoutUITests.swift`
 
 - Use the same launch args as the existing tests: `["-ui_testing", "-skip_onboarding", "-seed_demo"]`.
 - Rotate with `XCUIDevice.shared.orientation = .landscapeLeft`, and reset to `.portrait` in `tearDown`. This works on iPhone and iPad (the snapshot lock doesn't apply to iPad).
-- Copy the private `tab(named:identifier:in:)` helper from [TrackBothUITests.swift](/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth/Tests/UI/TrackBothUITests.swift) line 104. On iPad the tab bar is at the top, so use the helper and never `app.tabBars` directly.
+- Copy the private `tab(named:identifier:in:)` helper from [TrackBothUITests.swift](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy/Tests/UI/TrackBothUITests.swift) line 104. On iPad the tab bar is at the top, so use the helper and never `app.tabBars` directly.
 
 Tests:
 
@@ -553,13 +553,13 @@ Tests:
 
 Run on iPhone 17 and on iPad Air 11 (M3):
 
-`xcodebuild test -project TrackBoth.xcodeproj -scheme TrackBoth -destination 'platform=iOS Simulator,name=iPad Air 11-inch (M3)' -only-testing:TrackBothUITests CODE_SIGNING_ALLOWED=NO`
+`xcodebuild test -project UrgeBuddy.xcodeproj -scheme UrgeBuddy -destination 'platform=iOS Simulator,name=iPad Air 11-inch (M3)' -only-testing:UrgeBuddyUITests CODE_SIGNING_ALLOWED=NO`
 
 Don't add iPad to CI. CI only runs unit tests on iPhone 17 today.
 
 ### 8.2 New `docs/device-qa-matrix.md`
 
-Model it on [PuzzleBuddy/docs/device-qa-matrix.md](/Users/jrozell/Desktop/personal/PuzzleBuddy/docs/device-qa-matrix.md). Use bullet rows, not tables. One row per screen (Today, Check-in, Urge, Slip, Progress, Metric Detail, Day editor, Metric form, Celebration, Lock, Onboarding, Settings, Crisis resources) for each of these setups:
+Model it on [PuzzleBuddy/docs/device-qa-matrix.md](/Users/jrozell/Desktop/personal/apps/PuzzleBuddy/docs/device-qa-matrix.md). Use bullet rows, not tables. One row per screen (Today, Check-in, Urge, Slip, Progress, Metric Detail, Day editor, Metric form, Celebration, Lock, Onboarding, Settings, Crisis resources) for each of these setups:
 
 - iPhone 17 portrait and landscape
 - Pro Max landscape
@@ -578,13 +578,13 @@ Commit: `Add landscape, iPad, and resize UI tests and a device QA matrix.`
 
 ## Phase 9: Docs and status
 
-- [Specs/DesignSystemSpec.md](/Users/jrozell/Desktop/personal/TrackBoth/Specs/DesignSystemSpec.md) §8.7: rewrite it from "adaptive-ready" to "shipped". Put the three signals from §2 of this plan in it, list `AdaptiveLayout`, `AdaptiveColumns`, `ReadableColumn(width:)`, the sheet helpers, and the "move the action to the toolbar at short height" pattern.
-- [Specs/ProductSpec.md](/Users/jrozell/Desktop/personal/TrackBoth/Specs/ProductSpec.md) and [ongoing/recovery-overhaul-plan.md](/Users/jrozell/Desktop/personal/TrackBoth/ongoing/recovery-overhaul-plan.md): change D6 to "iPhone and iPad, portrait and landscape, iPhone Duo-ready". Mark Phase 15 as done by this plan, and add a progress-log row there.
-- [README.md](/Users/jrozell/Desktop/personal/TrackBoth/README.md) line 15 and [docs/feature-inventory.md](/Users/jrozell/Desktop/personal/TrackBoth/docs/feature-inventory.md) line 53: change "Later" to shipped.
+- [Specs/DesignSystemSpec.md](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/Specs/DesignSystemSpec.md) §8.7: rewrite it from "adaptive-ready" to "shipped". Put the three signals from §2 of this plan in it, list `AdaptiveLayout`, `AdaptiveColumns`, `ReadableColumn(width:)`, the sheet helpers, and the "move the action to the toolbar at short height" pattern.
+- [Specs/ProductSpec.md](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/Specs/ProductSpec.md) and [ongoing/recovery-overhaul-plan.md](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/ongoing/recovery-overhaul-plan.md): change D6 to "iPhone and iPad, portrait and landscape, iPhone Duo-ready". Mark Phase 15 as done by this plan, and add a progress-log row there.
+- [README.md](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/README.md) line 15 and [docs/feature-inventory.md](/Users/jrozell/Desktop/personal/apps/UrgeBuddy/docs/feature-inventory.md) line 53: change "Later" to shipped.
 - Read `/Users/jrozell/Desktop/personal/.cursor/rules/project-status-maintenance.mdc` and update `docs/project-status.md` the way it says.
 - App Store follow-up: list it in the ongoing plan, but don't do it here. The 1.0 listing now needs 13" iPad screenshots (2064×2752). Duo screenshots (outer 1398×2034, inner 2853×2007) are optional, for the Duo badge. You can adapt `PuzzleBuddy/Scripts/capture-ipad-marketing-screenshots.sh` and `capture-duo-marketing-screenshots.sh`.
 - Commit: `Document adaptive layout rules and update status for iPad and landscape.`
-- Push with the personal remote (origin is already `git@github.com-personal:jacobrozell/TrackBoth.git`): `git push origin <branch>`.
+- Push with the personal remote (origin is already `git@github.com-personal:jacobrozell/Urge-Buddy.git`): `git push origin <branch>`.
 
 ---
 

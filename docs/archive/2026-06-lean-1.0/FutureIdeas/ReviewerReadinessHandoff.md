@@ -40,7 +40,7 @@ Handoff for continuing **1.0.0 App Store release** prep. Pairs with [`FutureIdea
 ## Environment setup
 
 ```bash
-cd ~/Desktop/personal/TrackBoth/TrackBoth
+cd ~/Desktop/personal/apps/UrgeBuddy/UrgeBuddy
 xcodegen generate
 ```
 

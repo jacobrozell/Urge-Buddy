@@ -1,9 +1,9 @@
 # Code health and analytics plan
 
-> Repo folder renamed to `UrgeBuddy/` (2026-11-02). Replace `TrackBoth/` in paths below.
+> Paths below use the `UrgeBuddy/` project folder (renamed from TrackBoth on 2026-11-02).
 
 **Goal:** Stop silent data loss before 1.0, then pay down structure after launch. Measure the app without collecting any data.
-**Repo:** `/Users/jrozell/Desktop/personal/UrgeBuddy` (Xcode project lives in the inner `UrgeBuddy/` folder)
+**Repo:** `/Users/jrozell/Desktop/personal/apps/UrgeBuddy` (Xcode project lives in the inner `UrgeBuddy/` folder)
 **Branch:** `claude/dazzling-albattani-7mg4uh`
 **Status legend:** `[ ]` not started · `[~]` in progress · `[x]` done · `[>]` deferred
 
@@ -13,13 +13,13 @@
 
 ## Read this first (rules for the agent doing the work)
 
-1. **Paths.** In this doc, `App/…`, `Features/…`, `Tests/…` and `project.yml` are relative to `/Users/jrozell/Desktop/personal/TrackBoth/TrackBoth`. `ongoing/…`, `Specs/…`, `docs/…` are relative to `/Users/jrozell/Desktop/personal/TrackBoth`.
+1. **Paths.** In this doc, `App/…`, `Features/…`, `Tests/…` and `project.yml` are relative to `/Users/jrozell/Desktop/personal/apps/UrgeBuddy/UrgeBuddy`. `ongoing/…`, `Specs/…`, `docs/…` are relative to `/Users/jrozell/Desktop/personal/apps/UrgeBuddy`.
 2. **The working tree has other people's uncommitted changes** (`TodayScreen.swift`, `TodayChrome.swift`, `UrgeFlowView.swift`, `BreathingCircle.swift`, specs). Do not revert, reformat, or "clean up" anything you were not told to touch. Edit only the lines named here.
 3. **Do not commit or push.** Leave changes in the working tree.
 4. **Do one phase at a time.** Finish its "Done when" checks before starting the next. Tick the boxes in this file as you go and update **Last updated**.
 5. **Line numbers drift.** Every site below is listed with its call text. Find it with `rg` on the call text, not the line number.
-6. **Adding a new `.swift` file** needs the Xcode project regenerated: `cd TrackBoth/TrackBoth && xcodegen generate`. Then run `git diff --stat TrackBoth.xcodeproj` and confirm only file references changed.
-7. **Build and test** with the XcodeBuildMCP tools: `session_show_defaults` first, then `build_sim`. For tests, use `test_sim` with `extraArgs: ["-only-testing:TrackBothTests"]`. UI tests are out of scope.
+6. **Adding a new `.swift` file** needs the Xcode project regenerated: `cd UrgeBuddy && xcodegen generate`. Then run `git diff --stat UrgeBuddy.xcodeproj` and confirm only file references changed.
+7. **Build and test** with the XcodeBuildMCP tools: `session_show_defaults` first, then `build_sim`. For tests, use `test_sim` with `extraArgs: ["-only-testing:UrgeBuddyTests"]`. UI tests are out of scope.
 8. **Style.** Match the surrounding code. No new comments unless they state a constraint the code can't show. User-facing strings go in `Domain/Copy/RecoveryCopy.swift`.
 9. **Privacy is fixed.** D12 in `Specs/ProductSpec.md` is **Telemetry: None** and App Privacy is **Data Not Collected**. Never add an SDK, a package, or a network call. Never log user-entered text (vice names, reasons, notes, plans) as `.public`.
 10. **If something in this plan doesn't match the code, stop and report it.** Don't invent a different design.
@@ -223,7 +223,7 @@ Create `Tests/Unit/PersistActionTests.swift`:
 
 ```swift
 import XCTest
-@testable import TrackBoth
+@testable import UrgeBuddy
 
 @MainActor
 final class PersistActionTests: XCTestCase {
@@ -248,9 +248,9 @@ If `RecoveryStoreError.saveFailed` isn't accessible, define a private `struct Bo
 
 #### Done when
 
-- [x] `rg -n 'try\?' TrackBoth/Features TrackBoth/App` (from the repo root) shows only the **Leave** rows above: two `DemoData.seedIfEmpty`, `Task.sleep`, `store.reasons(for:)`, `store.dayNote(on: now)` in `CheckInViewModel`, and the two reads in `DayEditorSheet.load()`, plus the `store.entry` check folded into `markFree` if you kept it as a read.
+- [x] `rg -n 'try\?' UrgeBuddy/Features UrgeBuddy/App` (from the repo root) shows only the **Leave** rows above: two `DemoData.seedIfEmpty`, `Task.sleep`, `store.reasons(for:)`, `store.dayNote(on: now)` in `CheckInViewModel`, and the two reads in `DayEditorSheet.load()`, plus the `store.entry` check folded into `markFree` if you kept it as a read.
 - [x] `build_sim` succeeds with no new warnings.
-- [x] `test_sim` with `-only-testing:TrackBothTests` passes (124 or more tests).
+- [x] `test_sim` with `-only-testing:UrgeBuddyTests` passes (124 or more tests).
 - [x] Manual smoke test on the simulator: launch with `-ui_testing -skip_onboarding -seed_demo`. Mark a habit done on Today, open and close a check-in, and start and pass an urge. No alerts should appear and the changes should stick.
 
 ### 1.2 Release checks `[~]`
@@ -301,7 +301,7 @@ Goal: the portfolio PO skill can show TrackBoth numbers the way it does for the 
 3. [ ] **Feedback email.** In `Support/Navigation/AppSupport.swift`, change the mail body footer to `TrackBoth \(installedVersion) (\(build)) · iOS \(UIDevice.current.systemVersion) · \(modelIdentifier)`. `build` comes from `CFBundleVersion`. `modelIdentifier` comes from `utsname().machine`. Nothing else goes in: no metric names, no counts.
 4. [ ] Run `xcodegen generate`, `build_sim`, and unit tests.
 
-**Done when:** builds clean, tests pass, and `rg -n 'os_log\(' TrackBoth/TrackBoth` returns nothing.
+**Done when:** builds clean, tests pass, and `rg -n 'os_log\(' UrgeBuddy/TrackBoth` returns nothing.
 
 ---
 
@@ -316,7 +316,7 @@ Don't start until 1.0 is submitted. Do the steps in order; each ends with a gree
 3. [ ] Add tests to `MetricDetailViewModelTests.swift` and a new `DayEditorViewModelTests.swift` using `TestHarness` from `Tests/Unit/Support/TestStore.swift`. One test per method: call it, then fetch and assert.
 4. [ ] Repeat for `TodayScreen` (3 sites → `TodayViewModel`, which exists), `UrgeFlowView` habit chip and cut-back slip (→ `UrgeViewModel`), `SettingsScreen.deleteAll`, `ProgressScreen`, `MetricFormView`.
 
-**Done when:** `rg -n 'RecoveryStore\(context' TrackBoth/TrackBoth/Features` only matches lines that create a view model or pass a store into one.
+**Done when:** `rg -n 'RecoveryStore\(context' UrgeBuddy/Features` only matches lines that create a view model or pass a store into one.
 
 ### 3.2 Split large files `[ ]`
 
@@ -328,11 +328,11 @@ Don't start until 1.0 is submitted. Do the steps in order; each ends with a gree
 2. [ ] `OnboardingFlow.swift` (501 lines). Move each page (`welcome`, `chooseVices` + `viceWhen`, `why` + `chipRow`, `habits`, `reminders`, `privacy`, `disclaimer`) into `Features/Onboarding/Pages/<Name>Page.swift`, each a `View` taking `@Bindable var model: OnboardingViewModel`.
 3. [ ] After each file move: `xcodegen generate`, build, tests, and a simulator screenshot of the screen to confirm it looks the same.
 
-**Done when:** no file in `Features/` is over 400 lines (`find TrackBoth/TrackBoth/Features -name '*.swift' | xargs wc -l | sort -rn | head`).
+**Done when:** no file in `Features/` is over 400 lines (`find UrgeBuddy/Features -name '*.swift' | xargs wc -l | sort -rn | head`).
 
 ### 3.3 Make lint meaningful `[ ]`
 
-1. [ ] Add `TrackBoth/TrackBoth/.swiftlint.yml`:
+1. [ ] Add `UrgeBuddy/.swiftlint.yml`:
    ```yaml
    included: [App, DesignSystem, Features, Domain, Data, Services, Support, Tests]
    line_length:
@@ -357,4 +357,4 @@ Don't start until 1.0 is submitted. Do the steps in order; each ends with a gree
 | Date | Phase | Result |
 |------|-------|--------|
 | 2026-11-01 | Plan | Written. Analytics decision: Apple-only, Data Not Collected. |
-| 2026-11-01 | 1.1, 1.2 | `PersistAction` + `.persistFailureAlert()` added; every write `try?` in `Features/` and `App/` converted, only the Leave reads remain. `RootView` `await` warning fixed. Build 0 warnings, 132/132 unit tests pass, simulator smoke test (habit done, check-in open/close, urge start/pass) showed no alerts and changes stuck. Deviations: the plan's `rg` path had an extra `TrackBoth/` (fixed above); `UrgeFlowView` gained a journal feature mid-run, so `markSlipped`/`markNotSure` now take `keepJournal:` (same handling) and two new `commitReflection` writes were converted (rows added); the two multi-statement `persist` closures (`cut-back slip`, `mark day free`) need an explicit `() throws -> Void in` to type-check; onboarding uses `let saved: Void? = persist(…)` then `guard saved != nil`. `xcodegen` also picked up another agent's new `Features/Journal/` files and `JournalEntryTests.swift`. App Store Connect privacy check still open for Jacob. |
+| 2026-11-01 | 1.1, 1.2 | `PersistAction` + `.persistFailureAlert()` added; every write `try?` in `Features/` and `App/` converted, only the Leave reads remain. `RootView` `await` warning fixed. Build 0 warnings, 132/132 unit tests pass, simulator smoke test (habit done, check-in open/close, urge start/pass) showed no alerts and changes stuck. Deviations: the plan's `rg` path had an extra `UrgeBuddy/` (fixed above); `UrgeFlowView` gained a journal feature mid-run, so `markSlipped`/`markNotSure` now take `keepJournal:` (same handling) and two new `commitReflection` writes were converted (rows added); the two multi-statement `persist` closures (`cut-back slip`, `mark day free`) need an explicit `() throws -> Void in` to type-check; onboarding uses `let saved: Void? = persist(…)` then `guard saved != nil`. `xcodegen` also picked up another agent's new `Features/Journal/` files and `JournalEntryTests.swift`. App Store Connect privacy check still open for Jacob. |

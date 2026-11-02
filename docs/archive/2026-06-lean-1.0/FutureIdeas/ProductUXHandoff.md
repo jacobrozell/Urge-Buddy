@@ -290,7 +290,7 @@ UI tests use `-lean_ui` to force Confidence 1.0 in DEBUG.
 ## Environment setup (follow-up agent)
 
 ```bash
-cd ~/Desktop/personal/TrackBoth/TrackBoth
+cd ~/Desktop/personal/apps/UrgeBuddy/UrgeBuddy
 xcodegen generate            # .xcodeproj is generated
 ```
 
