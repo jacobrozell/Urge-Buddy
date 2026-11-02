@@ -444,6 +444,8 @@ struct MetricDetailScreen: View {
             .accessibilityLabel(RecoveryCopy.reasonActions)
         }
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("detail.reason")
+        .accessibilityLabel(index == 0 ? "\(RecoveryCopy.primaryReason), \(reason.text)" : reason.text)
         .accessibilityAction(named: RecoveryCopy.edit) {
             reasonDraft = reason.text
             editingReason = reason

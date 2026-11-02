@@ -18,7 +18,7 @@
 
 ## Current focus
 
-**App Store listing.** Copy, legal pages, and light portrait screenshots for iPhone 6.9" and iPad 13" are ready. iPhone Duo screenshots still need Device Hub. Submit waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
+**App Store listing.** The English listing, review notes, and screenshots are in App Store Connect on version 1.0 (Prepare for Submission): five each for iPhone 6.9", iPad 13", iPhone Duo outer, and iPhone Duo inner. What's New is not accepted until the first release is live. Submit waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
 
 The app has never shipped. Build 5 was archived on 2026-06-22 and never uploaded. There is no production data to migrate.
 

@@ -13,6 +13,10 @@ struct RootView: View {
     @State private var onboarded = Preferences.hasCompletedOnboarding
     @State private var celebration: CelebrationRequest?
     @State private var cover: RootCover?
+    /// Check-in is still dismissing. The urge cover waits so two presentations never overlap.
+    @State private var blockUrgeCover = false
+    /// The urge cover is still dismissing. The next sheet waits for that dismiss to finish.
+    @State private var deferNextCover = false
 
     var body: some View {
         @Bindable var router = router
@@ -73,8 +77,11 @@ struct RootView: View {
         .onChange(of: appLock.isLocked) { _, locked in
             if locked { dismissCoverForLock() }
             guard !locked, onboarded else { return }
+            blockUrgeCover = false
+            deferNextCover = false
             router.flushPending()
             refreshCelebration()
+            syncCover()
         }
         .onOpenURL { url in
             guard url.scheme == "trackboth" else { return }
@@ -90,20 +97,21 @@ struct RootView: View {
             syncCover()
             Task { await ReminderScheduler.refresh(context: modelContext) }
         }
-        .onChange(of: router.presented) { _, newValue in
+        .onChange(of: router.presented) { oldValue, newValue in
+            if isUrge(oldValue), !isUrge(newValue) { deferCoverUntilUrgeIsGone() }
             syncCover()
             if newValue == nil { refreshCelebration() }
         }
         .onChange(of: cover?.id) { _, newID in
             if newID == nil, case .checkIn = router.presented { router.presented = nil }
         }
-        .fullScreenCover(item: urgeBinding) { flow in
+        .fullScreenCover(item: urgeBinding, onDismiss: finishUrgeDismiss) { flow in
             if case .urge(let id) = flow {
                 UrgeFlowView(metrics: metrics, preferredID: id) { router.finishUrge() }
                     .persistFailureAlert()
             }
         }
-        .sheet(item: $cover) { item in
+        .sheet(item: $cover, onDismiss: finishSheetDismiss) { item in
             switch item {
             case .checkIn:
                 CheckInSheet(metrics: metrics, entries: entries)
@@ -127,6 +135,7 @@ struct RootView: View {
     private var urgeBinding: Binding<PresentedFlow?> {
         Binding(
             get: {
+                if blockUrgeCover { return nil }
                 if case .urge = router.presented { return router.presented }
                 return nil
             },
@@ -136,12 +145,60 @@ struct RootView: View {
         )
     }
 
+    private func isUrge(_ flow: PresentedFlow?) -> Bool {
+        if case .urge = flow { return true }
+        return false
+    }
+
+    /// The check-in sheet finished leaving. The urge cover can show now.
+    private func finishSheetDismiss() {
+        guard blockUrgeCover, !appLock.shouldHoldPresentations else { return }
+        blockUrgeCover = false
+        syncCover()
+    }
+
+    /// The urge cover finished leaving. The next sheet can show now.
+    private func finishUrgeDismiss() {
+        guard deferNextCover, !appLock.shouldHoldPresentations else { return }
+        deferNextCover = false
+        syncCover()
+    }
+
+    /// `onDismiss` does not run when the sheet never appeared. Don't wait forever.
+    private func blockUrgeUntilSheetIsGone() {
+        blockUrgeCover = true
+        cover = nil
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(900))
+            guard blockUrgeCover, cover == nil, !appLock.shouldHoldPresentations else { return }
+            blockUrgeCover = false
+            syncCover()
+        }
+    }
+
+    private func deferCoverUntilUrgeIsGone() {
+        deferNextCover = true
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(900))
+            guard deferNextCover, !appLock.shouldHoldPresentations else { return }
+            deferNextCover = false
+            syncCover()
+        }
+    }
+
     private func syncCover() {
+        guard !appLock.shouldHoldPresentations else {
+            if cover != nil { cover = nil }
+            return
+        }
+        if case .urge = router.presented {
+            if cover != nil { blockUrgeUntilSheetIsGone() }
+            return
+        }
+        if blockUrgeCover || deferNextCover { return }
         let next: RootCover?
         if case .checkIn = router.presented {
             next = .checkIn
-        } else if case .urge = router.presented {
-            return
         } else if let celebration {
             next = .celebration(celebration)
         } else {

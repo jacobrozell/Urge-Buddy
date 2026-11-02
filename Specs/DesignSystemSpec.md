@@ -45,7 +45,7 @@ Use Dynamic Type text styles only (`.largeTitle`, `.title2`, `.headline`, `.body
 | `StatTile` | `StatTile(value:, label:, systemImage:)` | VoiceOver reads "label, value" |
 | `Chip` / `ChipGrid` | `ChipGrid(items:, selection: Binding<Set<…>>)` | Adaptive grid, min 44pt height, selected = `Brand` fill |
 | `EmptyState` | `EmptyState(systemImage:, title:, message:, actionTitle:, action:)` | |
-| `BreathingCircle` | `BreathingCircle(inhale: 4, exhale: 6)` | Orb, glow, and ripples ease across the full inhale and exhale. `RideAtmosphere` is the slow wash behind the ride screen. Reduce Motion → text-only cue, no wash motion |
+| `BreathingCircle` | `BreathingCircle(inhale: 4, exhale: 6)` | Orb, glow, and ripples ease across the full inhale and exhale. `RideAtmosphere` is the slow wash behind the ride screen. The top edge stays solid `Calm` so Close and the status area are not tinted. Reduce Motion → text-only cue, no wash motion |
 | `DayDots` | `DayDots(states: [DayVisualState])` | 7 dots. Each dot has a VoiceOver label ("Monday, free"). Shape and color both encode state (solid, ring, triangle for slip) so it works without color. |
 | `MonthCalendar` | `MonthCalendar(month:, stateFor: (Date) -> DayVisualState, onSelect:)` | `firstWeekday` from `Calendar.current`. Cells ≥44pt. |
 | `SectionHeader` | `SectionHeader("Quitting")` | Adds the `.isHeader` accessibility trait |
@@ -56,6 +56,7 @@ Use Dynamic Type text styles only (`.largeTitle`, `.title2`, `.headline`, `.body
 
 ### 8.5 Motion and haptics
 
+- Urge countdown reaches 0: `.sensoryFeedback(.success)` plus `UrgeTimerChime` (`urge-timer-done.wav`, ambient so the silent switch is respected).
 - Check-in done: `.symbolEffect(.bounce)` on the checkmark + `.sensoryFeedback(.success, trigger:)`.
 - Habit toggle: `.sensoryFeedback(.selection, trigger:)`.
 - Slip saved: `.sensoryFeedback(.impact(weight: .light), trigger:)`.
@@ -82,7 +83,7 @@ Three layout signals (see `DesignSystem/AdaptiveLayout.swift`):
 
 **iPhone Duo chrome** (`DesignSystem/WindowChrome.swift`):
 
-- The window is painted with the Background color, and screen backgrounds ignore the safe area, so the trailing status-bar edge is not white.
+- The app's own windows are painted with the Background color, and screen backgrounds ignore the safe area, so the trailing status-bar edge is not white. Keyboard and input windows are left alone. If a presentation leaves the screen transparent, the content is restored after that presentation has finished.
 - On iOS 26 and later, navigation bars use `containerBackground` instead of an opaque toolbar fill. Liquid Glass would otherwise leave a white strip.
 - The Today SOS control stays centered above a bottom tab bar. When the tab bar is vertical (`toolbarVerticalEdge == .trailing`), it moves to the leading edge.
 - The urge Close control stays leading on iPhone and moves to the trailing edge with the vertical bar.

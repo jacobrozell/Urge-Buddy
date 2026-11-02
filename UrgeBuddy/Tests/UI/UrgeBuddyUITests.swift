@@ -87,7 +87,10 @@ final class UrgeBuddyUITests: UrgeBuddyUITestCase {
         app.buttons["urge.passed"].tap()
         app.buttons["urge.done"].tap()
         openProgressMetric(named: "Alcohol")
-        assertStaticTextExists("For my kids", timeout: 6)
+        let saved = app.descendants(matching: .any).matching(
+            NSPredicate(format: "identifier == 'detail.reason' AND label CONTAINS %@", "For my kids")
+        ).firstMatch
+        XCTAssertTrue(scrollUntilExists(saved), "Missing reason For my kids")
     }
 
     func testUrgeFlowResisted() {
@@ -176,7 +179,7 @@ final class UrgeBuddyUITests: UrgeBuddyUITestCase {
         launchApp()
         tab(named: "Settings", identifier: "tab.settings").tap()
         let replay = app.buttons["settings.viewOnboarding"]
-        XCTAssertTrue(replay.waitForExistence(timeout: 8))
+        XCTAssertTrue(scrollUntilExists(replay), "See the introduction is below the Settings fold")
         replay.tap()
         XCTAssertTrue(app.staticTexts["Quit what's hurting you. Build what helps."].waitForExistence(timeout: 4))
         app.buttons["onboarding.next"].tap()
@@ -196,5 +199,96 @@ final class UrgeBuddyUITests: UrgeBuddyUITestCase {
         XCTAssertTrue(app.staticTexts["What it is"].waitForExistence(timeout: 4))
         XCTAssertTrue(app.staticTexts["What you do"].exists)
         XCTAssertTrue(app.staticTexts["When an urge hits"].exists)
+    }
+
+    func testOnboardingCreatesViceAndLandsOnToday() {
+        launchFreshOnboarding()
+        advanceOnboarding(to: "What it is")
+        advanceOnboarding(to: "What do you want to quit?")
+        let alcohol = app.buttons["onboarding.vicePreset.alcohol"]
+        XCTAssertTrue(alcohol.waitForExistence(timeout: 4))
+        alcohol.tap()
+        advanceOnboarding(to: "When did you last drink?")
+        advanceOnboarding(to: "Why do you want to quit Alcohol?")
+        advanceOnboarding(to: "What helps you?")
+        advanceOnboarding(to: "Daily check-in time")
+        declineOptionalPromptsAndFinish()
+
+        XCTAssertTrue(tab(named: "Today", identifier: "tab.today").waitForExistence(timeout: 8))
+        assertStaticTextExists("Alcohol")
+    }
+
+    func testOnboardingHabitOnlyPath() {
+        launchFreshOnboarding()
+        advanceOnboarding(to: "What it is")
+        advanceOnboarding(to: "What do you want to quit?")
+        let habitsOnly = app.buttons["onboarding.habitOnly"]
+        XCTAssertTrue(habitsOnly.waitForExistence(timeout: 4))
+        habitsOnly.tap()
+        advanceOnboarding(to: "What helps you?")
+        let walk = app.buttons["onboarding.vicePreset.walk"]
+        XCTAssertTrue(walk.waitForExistence(timeout: 4))
+        walk.tap()
+        advanceOnboarding(to: "Daily check-in time")
+        declineOptionalPromptsAndFinish()
+
+        XCTAssertTrue(tab(named: "Today", identifier: "tab.today").waitForExistence(timeout: 8))
+        assertStaticTextExists("Go for a walk")
+        XCTAssertFalse(app.staticTexts["Alcohol"].waitForExistence(timeout: 1))
+    }
+
+    func testDeleteAllReturnsToOnboarding() {
+        launchApp()
+        tab(named: "Settings", identifier: "tab.settings").tap()
+        let delete = app.buttons["settings.deleteAll"]
+        XCTAssertTrue(scrollUntilExists(delete), "Delete all data is below the Settings fold")
+        delete.tap()
+        tapConfirmation("Continue")
+        XCTAssertTrue(app.staticTexts["This removes your vices, habits, and history. This can't be undone."].waitForExistence(timeout: 4))
+        tapConfirmation("Delete all data")
+
+        XCTAssertTrue(app.staticTexts["Quit what's hurting you. Build what helps."].waitForExistence(timeout: 8))
+        XCTAssertFalse(app.buttons["tab.today"].exists)
+    }
+
+    private func launchFreshOnboarding() {
+        app.launchArguments = ["-ui_testing"]
+        app.launch()
+        XCTAssertTrue(app.buttons["onboarding.next"].waitForExistence(timeout: 8))
+    }
+
+    private func advanceOnboarding(to text: String) {
+        let next = app.buttons["onboarding.next"]
+        XCTAssertTrue(next.waitForExistence(timeout: 4))
+        next.tap()
+        XCTAssertTrue(app.staticTexts[text].waitForExistence(timeout: 4), "Missing onboarding step \(text)")
+    }
+
+    /// Reminders, and privacy when the device can lock, both offer Not now. Turning either on would leave the test.
+    private func declineOptionalPromptsAndFinish() {
+        let notNow = app.buttons["Not now"]
+        let finish = app.buttons["onboarding.finish"]
+        for _ in 0..<3 {
+            if finish.waitForExistence(timeout: 2) {
+                finish.tap()
+                return
+            }
+            XCTAssertTrue(notNow.waitForExistence(timeout: 4))
+            notNow.tap()
+        }
+        XCTFail("Onboarding did not reach the disclaimer")
+    }
+
+    private func tapConfirmation(_ title: String) {
+        let candidates = [app.alerts.buttons[title], app.sheets.buttons[title], app.popovers.buttons[title]]
+        let deadline = Date().addingTimeInterval(4)
+        while Date() < deadline {
+            if let match = candidates.first(where: \.exists) {
+                match.tap()
+                return
+            }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.2))
+        }
+        XCTFail("Missing confirmation \(title)")
     }
 }

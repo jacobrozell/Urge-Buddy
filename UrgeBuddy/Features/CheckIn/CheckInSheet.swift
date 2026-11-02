@@ -94,7 +94,10 @@ struct CheckInSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(RecoveryCopy.close) { dismiss() }
+                    Button(RecoveryCopy.close) {
+                        guard slippingID == nil else { return }
+                        dismiss()
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Text(Date().formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
@@ -186,7 +189,7 @@ struct CheckInSheet: View {
             }
             moodSection(model)
             Button(RecoveryCopy.havingAnUrge) {
-                router.present(.urge(nil))
+                PresentationSequence.resignKeyboardThen { router.present(.urge(nil)) }
             }
             .frame(maxWidth: .infinity, minHeight: 44)
         }
@@ -249,7 +252,9 @@ struct CheckInSheet: View {
     }
 
     private func slippedButton(_ row: CheckInViceRow) -> some View {
-        Button(RecoveryCopy.iSlipped) { slippingID = row.id }
+        Button(RecoveryCopy.iSlipped) {
+            PresentationSequence.resignKeyboardThen { slippingID = row.id }
+        }
             .buttonStyle(.bordered)
             .tint(Color.tbSlip)
             .frame(maxWidth: .infinity, minHeight: 44)
@@ -279,6 +284,7 @@ struct CheckInSheet: View {
     }
 
     private func finish(_ model: CheckInViewModel) {
+        guard slippingID == nil else { return }
         if model.showComplete {
             dismiss()
         } else {

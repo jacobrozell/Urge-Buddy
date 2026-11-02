@@ -7,20 +7,26 @@ struct UrgeFlowView: View {
     var onClose: () -> Void
 
     @Environment(\.modelContext) private var modelContext
+    @Query private var entries: [MetricEntry]
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.persist) private var persist
     @State private var model: UrgeViewModel?
-    @State private var showSlip = false
+    @State private var rideSheet: RideSheet?
+    @State private var closeAfterSlip = false
+    @State private var afterClose: AfterClose?
+    @State private var keepJournalAfterDialog: Bool?
     @State private var askClose = false
     @State private var askSaveJournal = false
     @State private var pendingFinish: RideFinish?
     @State private var keepJournalForFinish = false
     @State private var focusedReasonID: UUID?
     @State private var newWhyText = ""
-    @State private var showSurfing = false
+    @State private var newInsteadText = ""
+    @State private var timerPinned = false
     @FocusState private var journalFocused: Bool
     @FocusState private var whyFocused: Bool
+    @FocusState private var insteadFocused: Bool
 
     private static let topID = "urge.top"
     private static let confirmID = "urge.journalConfirm"
@@ -28,6 +34,23 @@ struct UrgeFlowView: View {
     private enum RideFinish {
         case slipped
         case notSure
+    }
+
+    private enum RideSheet: Identifiable {
+        case surfing
+        case slip
+
+        var id: String {
+            switch self {
+            case .surfing: "surfing"
+            case .slip: "slip"
+            }
+        }
+    }
+
+    private enum AfterClose {
+        case passed
+        case finish(RideFinish)
     }
 
     var body: some View {
@@ -57,9 +80,14 @@ struct UrgeFlowView: View {
             .background(Color.tbCalm)
             .padding(.top, 44 + Spacing.m)
             .overlay(alignment: .top) {
-                UrgeCloseBar { closeButton }
-                    .padding(.horizontal, Spacing.l)
-                    .padding(.top, Spacing.xs)
+                ZStack {
+                    if timerPinned, model?.step == .ride {
+                        pinnedTimer
+                    }
+                    UrgeCloseBar { closeButton }
+                }
+                .padding(.horizontal, Spacing.l)
+                .padding(.top, Spacing.xs)
             }
             .background {
                 ZStack {
@@ -72,34 +100,64 @@ struct UrgeFlowView: View {
             }
             .toolbar(.hidden, for: .navigationBar)
             .confirmationDialog(RecoveryCopy.howDidItGo, isPresented: $askClose, titleVisibility: .visible) {
-                Button(RecoveryCopy.theUrgePassed) {
-                    journalFocused = false
-                    whyFocused = false
-                    persist("urge passed") { try model?.passed(now: Date()) }
-                }
-                Button(slipTitle) { beginFinish(.slipped) }
-                Button(RecoveryCopy.notSure) { beginFinish(.notSure) }
+                Button(RecoveryCopy.theUrgePassed) { afterClose = .passed }
+                Button(slipTitle) { afterClose = .finish(.slipped) }
+                Button(RecoveryCopy.notSure) { afterClose = .finish(.notSure) }
                 Button(RecoveryCopy.close, role: .cancel) {}
             }
             .confirmationDialog(RecoveryCopy.saveThisNote, isPresented: $askSaveJournal, titleVisibility: .visible) {
-                Button(RecoveryCopy.saveIt) { commitPassed(keep: true) }
-                Button(RecoveryCopy.deleteIt) { commitPassed(keep: false) }
+                Button(RecoveryCopy.saveIt) { keepJournalAfterDialog = true }
+                Button(RecoveryCopy.deleteIt) { keepJournalAfterDialog = false }
                 Button(RecoveryCopy.close, role: .cancel) {}
             } message: {
                 Text(RecoveryCopy.saveThisNoteMessage)
             }
-            .sheet(isPresented: $showSurfing) {
-                UrgeSurfingSheet()
-            }
-            .sheet(isPresented: $showSlip) {
-                if let metric = selectedMetric {
-                    SlipFlowView(metric: metric, prefilledTriggers: Array(model?.triggers ?? [])) {
-                        let saved = persist("urge slipped", { try model?.markSlipped(now: Date(), keepJournal: keepJournalForFinish) }) != nil
-                        showSlip = false
-                        if saved { onClose() }
+            .sheet(item: $rideSheet, onDismiss: {
+                guard closeAfterSlip else { return }
+                closeAfterSlip = false
+                onClose()
+            }) { sheet in
+                switch sheet {
+                case .surfing:
+                    UrgeSurfingSheet()
+                case .slip:
+                    if let metric = selectedMetric {
+                        SlipFlowView(metric: metric, prefilledTriggers: Array(model?.triggers ?? [])) {
+                            let saved = persist("urge slipped", { try model?.markSlipped(now: Date(), keepJournal: keepJournalForFinish) }) != nil
+                            if saved { closeAfterSlip = true }
+                            rideSheet = nil
+                        }
+                        .persistFailureAlert()
+                    } else {
+                        EmptyView()
                     }
-                    .persistFailureAlert()
                 }
+            }
+        }
+        .onChange(of: askClose) { _, open in
+            guard !open else { return }
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(50))
+                guard let next = afterClose else { return }
+                afterClose = nil
+                PresentationSequence.afterDismiss {
+                    switch next {
+                    case .passed:
+                        releaseTyping()
+                        persist("urge passed") { try model?.passed(now: Date()) }
+                    case .finish(let finish):
+                        beginFinish(finish)
+                    }
+                }
+            }
+        }
+        .onChange(of: askSaveJournal) { _, open in
+            guard !open else { return }
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(50))
+                guard let keep = keepJournalAfterDialog else { return }
+                keepJournalAfterDialog = nil
+                PresentationSequence.afterDismiss { commitPassed(keep: keep) }
             }
         }
         .background(Color.tbCalm.ignoresSafeArea())
@@ -111,7 +169,10 @@ struct UrgeFlowView: View {
         .onChange(of: model?.step) { _, step in
             guard step != .ride else { return }
             newWhyText = ""
+            newInsteadText = ""
+            timerPinned = false
             whyFocused = false
+            insteadFocused = false
         }
         .onChange(of: model?.selectedID) { _, _ in
             focusedReasonID = sortedReasons.first?.id
@@ -134,8 +195,7 @@ struct UrgeFlowView: View {
     }
 
     private func closeTapped() {
-        journalFocused = false
-        whyFocused = false
+        releaseTyping()
         if model?.step == .ride {
             askClose = true
         } else if model?.step == .passed {
@@ -197,11 +257,24 @@ struct UrgeFlowView: View {
     }
 
     private var surfingLink: some View {
-        Button(RecoveryCopy.whatIsUrgeSurfing) { showSurfing = true }
-            .font(.subheadline.weight(.semibold))
-            .frame(maxWidth: .infinity, minHeight: 44)
+        Button {
+            PresentationSequence.resignKeyboardThen { rideSheet = .surfing }
+        } label: {
+            HStack(spacing: Spacing.s) {
+                Text(RecoveryCopy.whatIsUrgeSurfing)
+                    .font(.subheadline.weight(.semibold))
+                Spacer(minLength: Spacing.s)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .accessibilityHidden(true)
+            }
             .foregroundStyle(Color.tbOnCalm)
-            .accessibilityIdentifier(AccessibilityIdentifiers.urgeSurfingLearn)
+            .padding(.horizontal, Spacing.l)
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .background(Color.tbOnCalm.opacity(0.12), in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(AccessibilityIdentifiers.urgeSurfingLearn)
     }
 
     private func calmChoice(_ title: String, action: @escaping () -> Void) -> some View {
@@ -259,6 +332,9 @@ struct UrgeFlowView: View {
                         .foregroundStyle(Color.tbOnCalm)
                         .contentTransition(.numericText(countsDown: true))
                         .urgeBuddyAnimation(UrgeBuddyMotion.quick, value: Int(remaining), reduceMotion: reduceMotion)
+                        .onScrollVisibilityChange(threshold: 0.5) { visible in
+                            timerPinned = !visible
+                        }
                     if remaining == 0 {
                         Text(RecoveryCopy.stillWithIt)
                             .font(.body)
@@ -267,12 +343,44 @@ struct UrgeFlowView: View {
                             .transition(.opacity)
                     }
                 }
+                addFiveButton(model)
+            }
+            .onChange(of: remaining == 0) { _, done in
+                if done { UrgeTimerChime.play() }
             }
             .sensoryFeedback(.success, trigger: remaining == 0) { _, done in done }
         }
-        Button(RecoveryCopy.addFiveMinutes) { model.addFiveMinutes(now: Date()) }
-            .frame(minHeight: 44)
-            .foregroundStyle(Color.tbOnCalm)
+    }
+
+    private var pinnedTimer: some View {
+        TimelineView(.periodic(from: .now, by: 1)) { context in
+            let remaining = model?.remaining(at: context.date) ?? 0
+            Text(clock(remaining))
+                .font(.system(.title3, design: .rounded).weight(.bold))
+                .monospacedDigit()
+                .foregroundStyle(Color.tbOnCalm)
+                .contentTransition(.numericText(countsDown: true))
+                .urgeBuddyAnimation(UrgeBuddyMotion.quick, value: Int(remaining), reduceMotion: reduceMotion)
+                .padding(.horizontal, Spacing.m)
+                .frame(minHeight: 44)
+                .accessibilityLabel(clock(remaining))
+        }
+        .allowsHitTesting(false)
+    }
+
+    private func addFiveButton(_ model: UrgeViewModel) -> some View {
+        Button { model.addFiveMinutes(now: Date()) } label: {
+            Text(RecoveryCopy.addFiveMinutes)
+                .font(.headline)
+                .foregroundStyle(Color.tbOnCalm)
+                .padding(.horizontal, Spacing.l)
+                .frame(minWidth: 120, minHeight: 44)
+                .background(Color.tbOnCalm.opacity(0.14), in: Capsule())
+                .overlay {
+                    Capsule().strokeBorder(Color.tbOnCalm.opacity(0.55), lineWidth: 1.5)
+                }
+        }
+        .buttonStyle(.plain)
     }
 
     @ViewBuilder
@@ -283,8 +391,10 @@ struct UrgeFlowView: View {
             Text(RecoveryCopy.urgeIntro)
                 .font(.body)
                 .foregroundStyle(Color.tbOnCalm)
-                .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(Spacing.l)
+                .background(Color.tbOnCalm.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
             surfingLink
             journalEditor(model)
             if let plan = selectedMetric?.ifThenPlan, !plan.isEmpty {
@@ -293,7 +403,9 @@ struct UrgeFlowView: View {
                     Text(plan).font(.body)
                 }
                 .foregroundStyle(Color.tbOnCalm)
+                .padding(Spacing.l)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.tbOnCalm.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
             }
             whySection(showAddField: true)
             habitChips
@@ -302,10 +414,20 @@ struct UrgeFlowView: View {
                 whyFocused = false
                 persist("urge passed") { try model.passed(now: Date()) }
             }
-            Button(slipTitle) { beginFinish(.slipped) }
-                .frame(minHeight: 44)
-                .foregroundStyle(Color.tbOnCalm)
-                .accessibilityIdentifier(AccessibilityIdentifiers.urgeSlipped)
+            Button { beginFinish(.slipped) } label: {
+                Text(slipTitle)
+                    .font(.headline)
+                    .foregroundStyle(Color.tbOnCalm)
+                    .frame(maxWidth: .infinity, minHeight: 52)
+                    .padding(.horizontal, Spacing.l)
+                    .background(Color.tbOnCalm.opacity(0.14), in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
+                            .strokeBorder(Color.tbOnCalm.opacity(0.45), lineWidth: 1.5)
+                    }
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier(AccessibilityIdentifiers.urgeSlipped)
         }
     }
 
@@ -330,12 +452,14 @@ struct UrgeFlowView: View {
             .textFieldStyle(.plain)
             .focused($journalFocused)
             .padding(Spacing.m)
-            .background(Color.tbOnCalm.opacity(0.12), in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
+            .background(Color.tbOnCalm.opacity(0.16), in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
             .foregroundStyle(Color.tbOnCalm)
             .tint(Color.tbOnCalm)
             .accessibilityIdentifier(AccessibilityIdentifiers.urgeJournal)
         }
+        .padding(Spacing.l)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.tbOnCalm.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
     }
 
     private func journalConfirm(_ finish: RideFinish, _ model: UrgeViewModel) -> some View {
@@ -456,11 +580,7 @@ struct UrgeFlowView: View {
                     .fixedSize(horizontal: false, vertical: true)
             } else if reduceMotion || reasons.count == 1 {
                 ForEach(reasons) { reason in
-                    Text(reason.text)
-                        .font(.title2)
-                        .foregroundStyle(Color.tbOnCalm)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    reasonQuote(reason.text)
                 }
             } else {
                 whyPager(reasons)
@@ -469,7 +589,9 @@ struct UrgeFlowView: View {
                 addWhyField
             }
         }
+        .padding(Spacing.l)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.tbOnCalm.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
         .onChange(of: reasons.map(\.id)) { _, ids in
             syncFocusedReason(with: ids)
         }
@@ -498,14 +620,9 @@ struct UrgeFlowView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(alignment: .top, spacing: 0) {
                     ForEach(reasons) { reason in
-                        Text(reason.text)
-                            .font(.title2)
-                            .foregroundStyle(Color.tbOnCalm)
-                            .multilineTextAlignment(.leading)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .frame(maxWidth: .infinity, alignment: .topLeading)
-                            .containerRelativeFrame(.horizontal)
-                            .padding(.trailing, Spacing.m)
+                        reasonQuote(reason.text)
+                            .padding(.horizontal, Spacing.xs)
+                            .containerRelativeFrame(.horizontal, alignment: .leading)
                             .id(reason.id)
                             .accessibilityLabel(
                                 pageLabel(for: reason, in: reasons)
@@ -514,13 +631,29 @@ struct UrgeFlowView: View {
                 }
                 .scrollTargetLayout()
             }
-            .scrollTargetBehavior(.paging)
-            .scrollPosition(id: $focusedReasonID)
+            .contentMargins(.horizontal, 0, for: .scrollContent)
+            .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
+            .scrollPosition(id: $focusedReasonID, anchor: .leading)
             .accessibilityIdentifier(AccessibilityIdentifiers.urgeWhyPager)
             .accessibilityElement(children: .contain)
             .accessibilityLabel(
                 page.map { RecoveryCopy.whyPageIndicator(current: $0, total: reasons.count) } ?? RecoveryCopy.yourWhy
             )
+        }
+    }
+
+    private func reasonQuote(_ text: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.s) {
+            Image(systemName: "quote.opening")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.tbOnCalm.opacity(0.55))
+                .accessibilityHidden(true)
+            Text(text)
+                .font(.title3)
+                .foregroundStyle(Color.tbOnCalm)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -590,22 +723,120 @@ struct UrgeFlowView: View {
         }
     }
 
-    @ViewBuilder
     private var habitChips: some View {
         let habits = metrics.filter { $0.habitType == .positive && !$0.isArchived }
-        if !habits.isEmpty {
-            VStack(alignment: .leading, spacing: Spacing.s) {
-                Text(RecoveryCopy.tryOneInstead)
-                    .font(.headline)
-                    .foregroundStyle(Color.tbOnCalm)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                ForEach(habits) { habit in
-                    calmChoice(habit.name) {
-                        persist("habit done") { try RecoveryStore(context: modelContext).setHabitDone(habit, on: Date(), done: true, now: Date()) }
-                    }
-                }
+        return VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(RecoveryCopy.tryOneInstead)
+                .font(.headline)
+                .foregroundStyle(Color.tbOnCalm)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            ForEach(habits) { habit in
+                insteadRow(habit)
             }
+            addInsteadField
         }
+        .padding(Spacing.l)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.tbOnCalm.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+    }
+
+    private func insteadRow(_ habit: Metric) -> some View {
+        let done = habitDoneToday(habit.id)
+        return Button {
+            persist("habit done") {
+                try RecoveryStore(context: modelContext).setHabitDone(habit, on: Date(), done: !done, now: Date())
+            }
+        } label: {
+            HStack(spacing: Spacing.m) {
+                Image(systemName: habit.iconName)
+                    .font(.body.weight(.semibold))
+                    .frame(width: 36, height: 36)
+                    .background(Color.tbOnCalm.opacity(0.12), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .accessibilityHidden(true)
+                Text(habit.name)
+                    .font(.body)
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: done ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .accessibilityHidden(true)
+            }
+            .foregroundStyle(Color.tbOnCalm.opacity(done ? 1 : 0.92))
+            .frame(minHeight: 44)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(done ? "\(habit.name), done" : habit.name)
+        .sensoryFeedback(done ? .success : .selection, trigger: done)
+    }
+
+    private func habitDoneToday(_ id: UUID) -> Bool {
+        let calendar = Calendar.current
+        let start = calendar.startOfDay(for: Date())
+        guard let end = calendar.date(byAdding: .day, value: 1, to: start) else { return false }
+        return entries.contains {
+            $0.metricID == id && $0.day >= start && $0.day < end && $0.status == .done
+        }
+    }
+
+    private var insteadTextIsEmpty: Bool {
+        newInsteadText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private var addInsteadField: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            TextField(
+                "",
+                text: $newInsteadText,
+                prompt: Text(RecoveryCopy.addInstead).foregroundStyle(Color.tbOnCalm.opacity(0.55)),
+                axis: .vertical
+            )
+            .lineLimit(1...3)
+            .textFieldStyle(.plain)
+            .focused($insteadFocused)
+            .padding(Spacing.m)
+            .background(Color.tbOnCalm.opacity(0.12), in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
+            .foregroundStyle(Color.tbOnCalm)
+            .tint(Color.tbOnCalm)
+            .accessibilityIdentifier(AccessibilityIdentifiers.urgeAddInstead)
+            .submitLabel(.done)
+            .onSubmit { addInstead() }
+            Button(RecoveryCopy.saveInstead) { addInstead() }
+                .buttonStyle(.plain)
+                .font(.headline)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .accessibilityIdentifier(AccessibilityIdentifiers.urgeSaveInstead)
+                .foregroundStyle(Color.tbOnCalm)
+                .background(
+                    Color.tbOnCalm.opacity(insteadTextIsEmpty ? 0.08 : 0.16),
+                    in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
+                )
+                .disabled(insteadTextIsEmpty)
+        }
+    }
+
+    private func addInstead() {
+        let text = newInsteadText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        let alreadyThere = metrics.contains {
+            $0.habitType == .positive && !$0.isArchived && $0.name.localizedCaseInsensitiveCompare(text) == .orderedSame
+        }
+        if alreadyThere {
+            newInsteadText = ""
+            insteadFocused = false
+            return
+        }
+        guard persist("add instead", {
+            try RecoveryStore(context: modelContext).addMetric(
+                name: text,
+                habitType: .positive,
+                iconName: Presets.iconName(matching: text),
+                startedAt: Date(),
+                costPerDay: nil,
+                firstReason: nil
+            )
+        }) != nil else { return }
+        newInsteadText = ""
+        insteadFocused = false
     }
 
     private var triggerGrid: some View {
@@ -628,8 +859,7 @@ struct UrgeFlowView: View {
     }
 
     private func beginFinish(_ finish: RideFinish) {
-        journalFocused = false
-        whyFocused = false
+        releaseTyping()
         if model?.hasJournal == true {
             pendingFinish = finish
         } else {
@@ -669,9 +899,15 @@ struct UrgeFlowView: View {
     }
 
     /// Quit opens the slip flow. Cut back logs one more for today and closes.
+    private func releaseTyping() {
+        journalFocused = false
+        whyFocused = false
+        insteadFocused = false
+    }
+
     private func slipped() {
         guard let metric = selectedMetric, metric.isCuttingBack else {
-            showSlip = true
+            PresentationSequence.resignKeyboardThen { rideSheet = .slip }
             return
         }
         guard persist("cut-back slip", { () throws -> Void in

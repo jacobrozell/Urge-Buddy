@@ -38,7 +38,14 @@ struct SlipFlowView: View {
                     .padding(.top, Spacing.m)
                     .padding(.bottom, Spacing.l)
                 }
-                if model?.summary == nil, !pinsActionInToolbar {
+                if model?.summary != nil, !pinsActionInToolbar {
+                    ReadableColumn {
+                        summaryActions()
+                    }
+                    .padding(.top, Spacing.s)
+                    .padding(.bottom, Spacing.s)
+                    .background(Color.tbBackground)
+                } else if model?.summary == nil, !pinsActionInToolbar {
                     ReadableColumn {
                         PrimaryButton(title: RecoveryCopy.save, systemImage: nil, accessibilityID: AccessibilityIdentifiers.slipSave) {
                             persist("save slip") { try model?.save(metric: metric, now: Date()) }
@@ -56,6 +63,11 @@ struct SlipFlowView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(RecoveryCopy.close) { dismiss() }
+                }
+                if model?.summary != nil, pinsActionInToolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(RecoveryCopy.backToToday, action: onFinish)
+                    }
                 }
                 if model?.summary == nil, pinsActionInToolbar {
                     ToolbarItem(placement: .confirmationAction) {
@@ -130,17 +142,116 @@ struct SlipFlowView: View {
 
     private func summaryView(_ summary: SlipSummary) -> some View {
         VStack(alignment: .leading, spacing: Spacing.l) {
-            Text(summary.title).font(.title2).foregroundStyle(Color.tbTextPrimary)
-            Text(summary.body).font(.body).foregroundStyle(Color.tbTextSecondary)
-            if let reason = summary.reason {
-                Text(reason).font(.body).foregroundStyle(Color.tbTextPrimary)
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                Image(systemName: "clock.arrow.circlepath")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(Color.tbSlip)
+                    .accessibilityHidden(true)
+                Text(summary.title)
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(Color.tbTextPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            Button(RecoveryCopy.needSupport) { showHelp = true }
-                .frame(minHeight: 44)
-            PrimaryButton(title: RecoveryCopy.backToToday, systemImage: nil, action: onFinish)
+
+            summaryStats(summary)
+
+            Text(summary.body)
+                .font(.body)
+                .foregroundStyle(Color.tbTextSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let reason = summary.reason {
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    SectionHeader(RecoveryCopy.yourWhy)
+                    Text(reason)
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(Color.tbTextPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(Spacing.l)
+                .background(Color.tbBrandSoft, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+            }
+
+            if pinsActionInToolbar {
+                summaryActions()
+            }
         }
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier(AccessibilityIdentifiers.slipSummary)
+    }
+
+    private func summaryActions() -> some View {
+        VStack(spacing: Spacing.s) {
+            Button { showHelp = true } label: {
+                Text(RecoveryCopy.needSupport)
+                    .font(.headline)
+                    .foregroundStyle(Color.tbBrand)
+                    .frame(maxWidth: .infinity, minHeight: 52)
+                    .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
+                            .strokeBorder(Color.tbBrand.opacity(0.35), lineWidth: 1)
+                    }
+            }
+            .buttonStyle(.plain)
+            if !pinsActionInToolbar {
+                PrimaryButton(title: RecoveryCopy.backToToday, systemImage: nil, action: onFinish)
+            }
+        }
+    }
+
+    private func summaryStats(_ summary: SlipSummary) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .top, spacing: Spacing.m) {
+                summaryStatTiles(summary)
+            }
+            VStack(alignment: .leading, spacing: Spacing.m) {
+                summaryStatTiles(summary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func summaryStatTiles(_ summary: SlipSummary) -> some View {
+        summaryStat(
+            value: "\(summary.freeDays)",
+            label: RecoveryCopy.slipRecentDaysFree,
+            caption: RecoveryCopy.slipOfCounted(summary.countedDays),
+            systemImage: "sun.max"
+        )
+        if let saved = summary.saved {
+            summaryStat(value: saved, label: RecoveryCopy.slipStillSaved, systemImage: "dollarsign.circle")
+        }
+    }
+
+    private func summaryStat(value: String, label: String, caption: String? = nil, systemImage: String) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Image(systemName: systemImage)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.tbBrand)
+                .accessibilityHidden(true)
+            Text(value)
+                .font(.title.weight(.bold))
+                .monospacedDigit()
+                .foregroundStyle(Color.tbTextPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+            Text(label)
+                .font(.footnote)
+                .foregroundStyle(Color.tbTextSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if let caption {
+                Text(caption)
+                    .font(.caption)
+                    .foregroundStyle(Color.tbTextSecondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Spacing.m)
+        .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+        .accessibilityHidden(true)
     }
 
     @ViewBuilder

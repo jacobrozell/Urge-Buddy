@@ -19,8 +19,11 @@ struct SettingsScreen: View {
 
     @State private var confirmDelete = false
     @State private var confirmDeleteAgain = false
+    @State private var queueSecondDelete = false
     @State private var showImporter = false
     @State private var confirmImport = false
+    @State private var queueImportConfirm = false
+    @State private var queueImportError = false
     @State private var pendingImport: URL?
     @State private var exportURL: URL?
     @State private var showShare = false
@@ -60,8 +63,17 @@ struct SettingsScreen: View {
                 Text(message ?? "")
             }
             .confirmationDialog(RecoveryCopy.deleteAllConfirm, isPresented: $confirmDelete, titleVisibility: .visible) {
-                Button(RecoveryCopy.continueDelete, role: .destructive) { confirmDeleteAgain = true }
+                Button(RecoveryCopy.continueDelete, role: .destructive) { queueSecondDelete = true }
                 Button(RecoveryCopy.close, role: .cancel) {}
+            }
+            .onChange(of: confirmDelete) { _, open in
+                guard !open else { return }
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(50))
+                    guard queueSecondDelete else { return }
+                    queueSecondDelete = false
+                    PresentationSequence.afterDismiss { confirmDeleteAgain = true }
+                }
             }
             .confirmationDialog(RecoveryCopy.deleteAllSecond, isPresented: $confirmDeleteAgain, titleVisibility: .visible) {
                 Button(RecoveryCopy.deleteAll, role: .destructive) { deleteAll() }
@@ -75,9 +87,24 @@ struct SettingsScreen: View {
                 switch result {
                 case .success(let url):
                     pendingImport = url
-                    confirmImport = true
+                    queueImportConfirm = true
                 case .failure:
-                    message = RecoveryCopy.invalidBackup
+                    queueImportError = true
+                }
+            }
+            .onChange(of: showImporter) { _, open in
+                guard !open else { return }
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(50))
+                    let confirm = queueImportConfirm
+                    let failed = queueImportError
+                    queueImportConfirm = false
+                    queueImportError = false
+                    guard confirm || failed else { return }
+                    PresentationSequence.afterDismiss {
+                        if failed { message = RecoveryCopy.invalidBackup }
+                        if confirm { confirmImport = true }
+                    }
                 }
             }
             .sheet(isPresented: $showShare) {

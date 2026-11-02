@@ -15,7 +15,6 @@ struct TodayScreen: View {
     @State private var sheet: TodaySheet?
     @State private var dismissedYesterday = Preferences.dismissedYesterdayPromptDay
     @State private var didPresentSlip = false
-    @State private var showSurfing = false
 
     var body: some View {
         NavigationStack {
@@ -40,7 +39,7 @@ struct TodayScreen: View {
                                 .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
                         }
                         if model.showsSOS {
-                            UrgeSurfingRow { showSurfing = true }
+                            UrgeSurfingRow { sheet = .surfing }
                                 .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
                         }
                         if model.isEmpty {
@@ -71,7 +70,14 @@ struct TodayScreen: View {
                 if model.showsSOS {
                     VerticalBarFloatingBar {
                         SOSButton {
-                            router.present(.urge(nil))
+                            let sheetWasUp = sheet != nil
+                            sheet = nil
+                            let present = { router.present(.urge(nil)) }
+                            if sheetWasUp {
+                                PresentationSequence.afterDismiss(present)
+                            } else {
+                                PresentationSequence.resignKeyboardThen(present)
+                            }
                         }
                     }
                 }
@@ -96,12 +102,11 @@ struct TodayScreen: View {
             refresh()
             presentSlipIfNeeded()
         }
-        .sheet(isPresented: $showSurfing) {
-            UrgeSurfingSheet()
-        }
         .sheet(item: $sheet) { sheet in
             Group {
                 switch sheet {
+                case .surfing:
+                    UrgeSurfingSheet()
                 case .slip(let id):
                     if let metric = metrics.first(where: { $0.id == id }) {
                         SlipFlowView(
@@ -227,12 +232,14 @@ private enum TodaySheet: Identifiable {
     case slip(UUID)
     case add
     case detail(UUID)
+    case surfing
 
     var id: String {
         switch self {
         case .slip(let id): "slip-\(id.uuidString)"
         case .add: "add"
         case .detail(let id): id.uuidString
+        case .surfing: "surfing"
         }
     }
 }

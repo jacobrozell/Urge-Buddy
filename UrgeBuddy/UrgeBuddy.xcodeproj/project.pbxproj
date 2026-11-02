@@ -17,6 +17,7 @@
 		084421D25CE22B77CF639BD8 /* BreathingCircle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8062580E410F83391BBCA6E6 /* BreathingCircle.swift */; };
 		0929FC506CB8478C596A4021 /* AmountStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AFF4850B5AB1AAB0DD431C3 /* AmountStepper.swift */; };
 		09DC75ABD9381B6D639980CC /* AppLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06133D409E76BD199E0D0298 /* AppLock.swift */; };
+		0A54AE38B565D8B541160B0E /* UrgeTimerChime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78FB9B1E80E03BD8558989F4 /* UrgeTimerChime.swift */; };
 		0B168DD042AE6DE57A92C09E /* RecoveryMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 035B20D0933C3D121A607D4E /* RecoveryMathTests.swift */; };
 		0CCC5E6A7ECC34820BD8C32E /* AmountMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12AE6A8D37E90C070CABA71C /* AmountMathTests.swift */; };
 		0CDCE66F34B20C815F3A5E60 /* BackupV5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A3D47BB7B10E6BB092B9BA2 /* BackupV5.swift */; };
@@ -30,6 +31,7 @@
 		17CABB6B7E67F56FEBDFF468 /* UrgeBuddySchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 694DA9CA3E7C25F7774DF021 /* UrgeBuddySchema.swift */; };
 		1AC36F650EF4B4EE8128587D /* legacy-v1.json in Resources */ = {isa = PBXBuildFile; fileRef = B09457A9DAE1A1B0D2FBD60F /* legacy-v1.json */; };
 		1C4C0EB2F3ACAE865A257023 /* PersistActionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8BFE565B72E3795661F4C6CB /* PersistActionTests.swift */; };
+		1D4C5EC5FF9D63277978D713 /* urge-timer-done.wav in Resources */ = {isa = PBXBuildFile; fileRef = B56B16C31DC8CF0486E2E7B5 /* urge-timer-done.wav */; };
 		20D17C97214F3BED70215D10 /* HabitCheckRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F02DAA767101B248C324D4F3 /* HabitCheckRow.swift */; };
 		226847D9C08B07B7A54C5762 /* OnboardingViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 073936CE164182B3A94E5A2F /* OnboardingViewModelTests.swift */; };
 		255046A74E50C62ED0F42752 /* TodayViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76773E1F7FF14F6387D82DED /* TodayViewModelTests.swift */; };
@@ -231,6 +233,7 @@
 		750E434D392FA92500B58497 /* UrgeBuddyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UrgeBuddyApp.swift; sourceTree = "<group>"; };
 		75B9CF699FA5B13B707882FB /* BrandMark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrandMark.swift; sourceTree = "<group>"; };
 		76773E1F7FF14F6387D82DED /* TodayViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayViewModelTests.swift; sourceTree = "<group>"; };
+		78FB9B1E80E03BD8558989F4 /* UrgeTimerChime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UrgeTimerChime.swift; sourceTree = "<group>"; };
 		79ACAE7A46378AF0D2574F45 /* BackupServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupServiceTests.swift; sourceTree = "<group>"; };
 		7A391E27045392A346295013 /* TodayScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayScreen.swift; sourceTree = "<group>"; };
 		8062580E410F83391BBCA6E6 /* BreathingCircle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreathingCircle.swift; sourceTree = "<group>"; };
@@ -257,6 +260,7 @@
 		B270332937F1F7EB97642F9D /* RecoveryCopy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecoveryCopy.swift; sourceTree = "<group>"; };
 		B3CCABC6F34DCF6A367EF0A4 /* PersistAction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistAction.swift; sourceTree = "<group>"; };
 		B52661BA2A85497EB3310F10 /* DayVisualState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayVisualState.swift; sourceTree = "<group>"; };
+		B56B16C31DC8CF0486E2E7B5 /* urge-timer-done.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "urge-timer-done.wav"; sourceTree = "<group>"; };
 		B58BB0690B0EA82742A5CE25 /* TestStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestStore.swift; sourceTree = "<group>"; };
 		B691AAA338A377A6E2164FD0 /* UrgeBuddyUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = UrgeBuddyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B6E676A711C64B3414882DA9 /* CheckInSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckInSheet.swift; sourceTree = "<group>"; };
@@ -420,6 +424,7 @@
 				33E3DF61E7A7495EE0B34DB7 /* Preferences.swift */,
 				720F2C56A774A0B21B377EE5 /* ReminderPlan.swift */,
 				70FEA23E0C4B0BEB3914F048 /* ReminderScheduler.swift */,
+				78FB9B1E80E03BD8558989F4 /* UrgeTimerChime.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -745,6 +750,7 @@
 			children = (
 				FB77FA70ED149C7766FE09E0 /* Assets.xcassets */,
 				C07786D6A99988D3CF2381B9 /* PrivacyInfo.xcprivacy */,
+				B56B16C31DC8CF0486E2E7B5 /* urge-timer-done.wav */,
 				4B1B878777F5E1967662F97B /* UrgeBuddy-Info.plist */,
 			);
 			path = Resources;
@@ -875,6 +881,7 @@
 			files = (
 				C9F32DFDD748FE66E1E4A063 /* Assets.xcassets in Resources */,
 				F8153C677910E31CF38A4F2D /* PrivacyInfo.xcprivacy in Resources */,
+				1D4C5EC5FF9D63277978D713 /* urge-timer-done.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1036,6 +1043,7 @@
 				38A946AF3D213EC59EF197E5 /* UrgeFlowView.swift in Sources */,
 				60890CF9F50E9C4108D84259 /* UrgeOutcome.swift in Sources */,
 				955F332100CC23E97987C347 /* UrgeSurfingExplainer.swift in Sources */,
+				0A54AE38B565D8B541160B0E /* UrgeTimerChime.swift in Sources */,
 				6F3BA64B19726501D3CC1843 /* UrgeViewModel.swift in Sources */,
 				1377278F8FDB620FF5F365A7 /* ViceCard.swift in Sources */,
 				0431B95E9F5F7D8D74B0A3D1 /* WCAGContrast.swift in Sources */,

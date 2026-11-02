@@ -21,9 +21,35 @@ extension View {
         }
     }
 
-    /// Paints every window with the Background asset so Duo's uncovered edges are not white.
+    /// Paints the app's windows with the Background asset so Duo's uncovered edges are not white.
     func tbWindowChrome() -> some View {
         background(TrackBothWindowBackground())
+    }
+}
+
+enum PresentationSequence {
+    /// Drops the keyboard, then runs `action` once it has had time to leave.
+    /// A sheet that starts while the keyboard scene is still up is what blanks Duo.
+    @MainActor
+    static func resignKeyboardThen(_ action: @escaping @MainActor () -> Void) {
+        let wasTyping = UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil
+        )
+        Task { @MainActor in
+            if wasTyping {
+                try? await Task.sleep(for: .milliseconds(350))
+            }
+            action()
+        }
+    }
+
+    /// Runs after a sheet, cover, or dialog has finished dismissing.
+    @MainActor
+    static func afterDismiss(_ action: @escaping @MainActor () -> Void) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(400))
+            action()
+        }
     }
 }
 
@@ -43,22 +69,59 @@ private final class TrackBothWindowBackgroundView: UIView {
         applyBackground()
     }
 
+    private var alphaRestore: DispatchWorkItem?
+
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         applyBackground()
+        // UIKit drops the hosting view to alpha 0 for a presentation and, on Duo,
+        // sometimes never brings it back. Wait until that presentation is gone
+        // before restoring, or the restore fights the animation.
+        alphaRestore?.cancel()
+        let work = DispatchWorkItem { [weak self] in self?.restoreHostAlpha() }
+        alphaRestore = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: work)
     }
 
     func applyBackground() {
         backgroundColor = .clear
         let color = UIColor(named: "Background") ?? .systemBackground
-        window?.backgroundColor = color
         for scene in UIApplication.shared.connectedScenes {
             guard let windowScene = scene as? UIWindowScene else { continue }
-            for sceneWindow in windowScene.windows {
+            for sceneWindow in windowScene.windows where Self.isAppWindow(sceneWindow) {
                 sceneWindow.backgroundColor = color
-                sceneWindow.rootViewController?.view.backgroundColor = color
             }
         }
+    }
+
+    private func restoreHostAlpha() {
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+            for sceneWindow in windowScene.windows where Self.isAppWindow(sceneWindow) {
+                guard let root = sceneWindow.rootViewController else { continue }
+                guard root.presentedViewController == nil else { continue }
+                guard !root.isBeingPresented, !root.isBeingDismissed else { continue }
+                guard root.view.alpha < 1 else { continue }
+                root.view.alpha = 1
+            }
+        }
+    }
+
+    /// Keyboard and input hosts are their own windows. Painting them, or a
+    /// collapsed Duo display, is what blanks the visible screen.
+    private static func isAppWindow(_ window: UIWindow) -> Bool {
+        guard window.windowLevel == .normal else { return false }
+        guard window.bounds.width > 20, window.bounds.height > 20 else { return false }
+        let name = NSStringFromClass(type(of: window))
+        if name.contains("TextEffects") || name.contains("Keyboard") || name.contains("Remote") {
+            return false
+        }
+        if let rootName = window.rootViewController.map({ NSStringFromClass(type(of: $0)) }) {
+            if rootName.contains("Input") || rootName.contains("Keyboard") || rootName.contains("Text") {
+                return false
+            }
+        }
+        return true
     }
 }
 

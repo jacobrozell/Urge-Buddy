@@ -1,7 +1,7 @@
 # Urge Buddy — App Store copy (1.0)
 
 **Last updated:** 2026-11-02
-**Status:** Ready to paste into App Store Connect. Age rating result is still blank until the questionnaire is submitted.
+**Status:** Pasted into App Store Connect on 2026-11-02 for version 1.0 (Prepare for Submission). What's New is not accepted until the first release is live. Age rating result is still blank until the questionnaire is submitted.
 **Monetization:** Free. No IAP.
 
 Store copy follows the app. An urge is a wave that crests and fades. Most pass in a few minutes. Some take longer. The ride timer starts at 5 minutes, and the user can add 5. Do not cite a study, name a clinician, or promise that an urge ends in a set number of minutes.
@@ -99,4 +99,4 @@ Order: Today, urge ride, slip summary, progress detail, cut back.
 
 ## iPhone Duo badge
 
-The product page shows the iPhone Duo badge after Connect has iPhone Duo screenshots. Upload the outer set to the outer display slot and the inner set to the inner display slot before submit.
+Uploaded 2026-11-02 as one `APP_IPHONE_DUO` set: five outer (1398×2034) then five inner (2853×2007). The product page shows the iPhone Duo badge once Connect has both sizes.

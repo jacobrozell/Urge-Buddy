@@ -118,8 +118,10 @@ final class AdaptiveLayoutUITests: UrgeBuddyUITestCase {
         tab(named: "Progress", identifier: "tab.progress").tap()
         openProgressMetric(named: "Alcohol")
 
-        if app.staticTexts["Social media"].waitForExistence(timeout: 2) {
-            XCTAssertTrue(app.staticTexts["Social media"].exists)
-        }
+        let sidebar = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'progress.metricCard.' AND label CONTAINS %@", "Social media")
+        ).firstMatch
+        XCTAssertTrue(sidebar.waitForExistence(timeout: 4), "The list stays beside the detail on a wide window")
+        XCTAssertTrue(app.navigationBars["Alcohol"].exists)
     }
 }

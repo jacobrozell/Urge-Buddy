@@ -170,7 +170,7 @@ Building
  ○ Go for a walk
  ○ Call a friend
 
-Having an urge right now? →            (opens Urge flow)
+Having an urge right now? →            (closes this sheet, opens Urge, then brings check-in back)
 
 [ Done ]                                 (enabled once every vice has an answer)
 ```
@@ -189,12 +189,12 @@ Having an urge right now? →            (opens Urge flow)
 2. **How strong?** Five big buttons (1 Mild … 5 Intense), default 3, with a "Skip" option. Creates an `UrgeEvent(outcome: .inProgress)`.
 3. **Ride it out**
    - A `BreathingCircle`: a soft orb grows for 4s ("Breathe in") and shrinks for 6s ("Breathe out"), with a glow and ripples across the full breath. A slow light wash sits behind this screen. Under Reduce Motion it shows only the text cue, switching every 4s/6s, and the wash is hidden.
-   - Countdown starting at **5:00**, with a "+5 min" button. Copy above it: *"This is urge surfing. The urge rises, peaks, and passes, like a wave. Breathe, and watch it."* A **What is urge surfing?** button (also on the strength step, on a Today card, and in Settings → Support) opens a short explainer: what an urge wave is, how to watch it instead of acting on it, and what to do on this screen. After the urge passes, one line names what they just did: "You stayed with the wave until it fell. That's urge surfing."
-   - **Your why** card: rotates through the vice's Reasons every 8s (or shows them as a list under Reduce Motion).
+   - Countdown starting at **5:00**, with a "+5 min" button. Once that countdown scrolls off the screen, the time stays in the top bar. Copy above it: *"This is urge surfing. The urge rises, peaks, and passes, like a wave. Breathe, and watch it."* A **What is urge surfing?** button (also on the strength step, on a Today card, and in Settings → Support) opens a short explainer: what an urge wave is, how to watch it instead of acting on it, and what to do on this screen. After the urge passes, one line names what they just did: "You stayed with the wave until it fell. That's urge surfing."
+   - **Your why** card: a short quote for each reason. Swipe between them (or a list under Reduce Motion).
    - **Your plan** card, if `ifThenPlan` is set: "When I feel the urge, I will: …"
-   - **Try one instead:** chips for active habits. Tapping one marks it done today (checkmark plus haptic).
+   - **Try one instead:** each habit is a row with its icon and an open circle. Tapping marks it done today (the circle fills, plus a haptic). Tap again to clear it. A field on the card adds another habit. It shows up in the list immediately and on Today. A name that is already there is not added again.
    - Buttons: **[The urge passed]** (primary) and **[I slipped]** (secondary, plain text style). The X in the corner asks "How did it go?" → passed / slipped / not sure.
-   - When the timer hits 0: a soft haptic and "Still with it? You can add 5 minutes, or check in with yourself."
+   - When the timer hits 0: a soft haptic, the short `urge-timer-done` tone (Mixkit's unlock notification; silent switch wins), and "Still with it? You can add 5 minutes, or check in with yourself." Adding 5 minutes and letting it run out plays the tone again. It does not play when the ride opens already at 0.
 4. **Outcome**
    - *Passed* → `outcome = .resisted` → screen: "You rode it out." + "That's **N** urges you've beaten." + optional "What set it off?" trigger chips → **Done**.
    - *Slipped* → `outcome = .slipped` → Slip flow, prefilled with the triggers picked here. The urge's triggers are copied onto the slip entry.

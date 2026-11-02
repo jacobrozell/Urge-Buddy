@@ -108,26 +108,43 @@ struct BreathingCircle: View {
 }
 
 /// A slow color field for the ride screen. Stays dark enough for white text.
+/// The top band is solid Calm so the close control and status area are not tinted.
 struct RideAtmosphere: View {
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
-            let t = context.date.timeIntervalSinceReferenceDate
-            MeshGradient(width: 3, height: 3, points: points(t), colors: colors)
-        }
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
+        Color.tbCalm
+            .overlay {
+                TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { context in
+                    let t = context.date.timeIntervalSinceReferenceDate
+                    MeshGradient(width: 3, height: 3, points: points(t), colors: colors)
+                }
+                .allowsHitTesting(false)
+            }
+            .overlay(alignment: .top) {
+                LinearGradient(
+                    stops: [
+                        .init(color: Color.tbCalm, location: 0),
+                        .init(color: Color.tbCalm, location: 0.62),
+                        .init(color: Color.tbCalm.opacity(0), location: 1)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 180)
+                .allowsHitTesting(false)
+            }
+            .accessibilityHidden(true)
     }
 
     private var colors: [Color] {
         [
             Color.tbCalm,
             Color.tbCalm,
-            Color.tbBrand.opacity(0.34),
             Color.tbCalm,
-            Color.tbOnCalm.opacity(0.07),
             Color.tbCalm,
-            Color.tbBrand.opacity(0.18),
+            Color.tbBrand.opacity(0.28),
             Color.tbCalm,
+            Color.tbCalm,
+            Color.tbBrand.opacity(0.16),
             Color.tbCalm
         ]
     }

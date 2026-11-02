@@ -35,6 +35,9 @@ struct SlipSummary: Equatable {
     var title: String
     var body: String
     var reason: String?
+    var freeDays: Int
+    var countedDays: Int
+    var saved: String?
 }
 
 @MainActor
@@ -92,7 +95,10 @@ final class SlipViewModel {
         return SlipSummary(
             title: RecoveryCopy.slipSummaryTitle,
             body: RecoveryCopy.slipSummaryBody(free: window.free, counted: window.counted, saved: saved),
-            reason: reason
+            reason: reason,
+            freeDays: window.free,
+            countedDays: window.counted,
+            saved: saved
         )
     }
 }

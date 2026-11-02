@@ -18,6 +18,8 @@ enum AccessibilityIdentifiers {
     static let urgeWhyPager = "urge.whyPager"
     static let urgeAddWhy = "urge.addWhy"
     static let urgeSaveWhy = "urge.saveWhy"
+    static let urgeAddInstead = "urge.addInstead"
+    static let urgeSaveInstead = "urge.saveInstead"
     static let urgeJournal = "urge.journal"
     static let urgeJournalSave = "urge.journal.save"
     static let urgeJournalDelete = "urge.journal.delete"

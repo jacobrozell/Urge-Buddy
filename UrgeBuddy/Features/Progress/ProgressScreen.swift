@@ -13,8 +13,7 @@ struct ProgressScreen: View {
     @Environment(\.persist) private var persist
     @State private var model = ProgressViewModel()
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @State private var showAdd = false
-    @State private var showJournal = false
+    @State private var progressSheet: ProgressSheet?
     @State private var showArchived = false
     @State private var selection: UUID?
     @State private var didOpenDetail = false
@@ -84,7 +83,7 @@ struct ProgressScreen: View {
                 }
                 if !model.journal.isEmpty {
                     Section {
-                        Button { showJournal = true } label: {
+                        Button { progressSheet = .journal } label: {
                             HStack(spacing: Spacing.m) {
                                 Image(systemName: "book.closed")
                                     .foregroundStyle(Color.tbBrand)
@@ -131,7 +130,7 @@ struct ProgressScreen: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) { EditButton() }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { showAdd = true } label: {
+                    Button { progressSheet = .add } label: {
                         Image(systemName: "plus")
                     }
                     .accessibilityLabel(RecoveryCopy.addSomething)
@@ -152,13 +151,16 @@ struct ProgressScreen: View {
         .navigationSplitViewStyle(.balanced)
         .environment(\.horizontalSizeClass, usesSplitNavigation ? .regular : .compact)
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { containerWidth = $0 }
-        .sheet(isPresented: $showAdd) {
-            MetricFormView(metric: nil)
-                .persistFailureAlert()
-        }
-        .sheet(isPresented: $showJournal) {
-            JournalScreen(entries: model.journal)
-                .persistFailureAlert()
+        .sheet(item: $progressSheet) { sheet in
+            Group {
+                switch sheet {
+                case .add:
+                    MetricFormView(metric: nil)
+                case .journal:
+                    JournalScreen(entries: model.journal)
+                }
+            }
+            .persistFailureAlert()
         }
         .onAppear {
             refresh()
@@ -236,5 +238,17 @@ struct ProgressScreen: View {
         guard LaunchConfiguration.opensFirstDetail, !didOpenDetail, let id = model.active.first?.id else { return }
         didOpenDetail = true
         selection = id
+    }
+}
+
+private enum ProgressSheet: Identifiable {
+    case add
+    case journal
+
+    var id: String {
+        switch self {
+        case .add: "add"
+        case .journal: "journal"
+        }
     }
 }

@@ -603,4 +603,5 @@ Commit: `Add landscape, iPad, and resize UI tests and a device QA matrix.`
 |------|-------|--------|-------|
 | 2026-10-31 | 0 | Started | Build 7 in pbxproj; Duo sim available (91C5CAC3). Baseline tests pending. |
 | 2026-10-31 | 1–9 | f9b1494+ | Green | Foundation + all screen phases; UI tests on iPhone 17 (12 tests, 1 skipped). iPad split uses container width ≥744 when TabView reports compact horizontal. |
-| 2026-11-02 | Duo chrome | In tree | Window fill, Liquid Glass nav background, SOS and urge Close avoid the vertical bar. Badge still needs Connect screenshots from `Scripts/capture-duo-marketing-screenshots.sh`. |
+| 2026-11-02 | Duo chrome | In tree | Window fill, Liquid Glass nav background, SOS and urge Close avoid the vertical bar. |
+| 2026-11-02 | Duo screenshots | In Connect | Five outer (1398×2034) and five inner (2853×2007) on `APP_IPHONE_DUO`. |

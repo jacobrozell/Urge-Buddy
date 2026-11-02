@@ -74,6 +74,12 @@ enum RecoveryCopy {
     static let slipTitle = "Thanks for being honest."
     static let slipSubtitle = "A slip is information, not failure. Let's learn from it."
     static let slipSummaryTitle = "Your free clock restarts from here."
+    static let slipRecentDaysFree = "Recent days free"
+    static let slipStillSaved = "Still saved"
+
+    static func slipOfCounted(_ counted: Int) -> String {
+        "of \(counted)"
+    }
 
     static func slipSummaryBody(free: Int, counted: Int, saved: String?) -> String {
         let savings = saved.map { " and \($0) saved" } ?? ""
@@ -157,6 +163,8 @@ enum RecoveryCopy {
     static let saveReason = "Save reason"
     static let yourPlanPrefix = "When I feel the urge, I will:"
     static let tryOneInstead = "Try one instead"
+    static let addInstead = "Add something to try"
+    static let saveInstead = "Add it"
     static let whatSetItOff = "What set it off?"
     static let whenQuestion = "When?"
     static let justNow = "Just now"

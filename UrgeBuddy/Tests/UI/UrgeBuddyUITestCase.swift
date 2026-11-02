@@ -32,11 +32,12 @@ class UrgeBuddyUITestCase: XCTestCase {
     }
 
     func tab(named label: String, identifier: String) -> XCUIElement {
-        let identified = app.buttons[identifier]
+        // iPad's floating tab bar exposes the same identifier on the cell and its child.
+        let identified = app.buttons.matching(NSPredicate(format: "identifier == %@", identifier)).firstMatch
         if identified.waitForExistence(timeout: 2) { return identified }
-        let tabButton = app.tabBars.buttons[label]
+        let tabButton = app.tabBars.buttons[label].firstMatch
         if tabButton.waitForExistence(timeout: 2) { return tabButton }
-        return app.buttons[label]
+        return app.buttons[label].firstMatch
     }
 
     func openProgressMetric(named name: String) {
@@ -79,8 +80,37 @@ class UrgeBuddyUITestCase: XCTestCase {
         dayButton.tap()
     }
 
-    func assertStaticTextExists(_ text: String, timeout: TimeInterval = 10) {
-        let match = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
-        XCTAssertTrue(match.waitForExistence(timeout: timeout))
+    func assertStaticTextExists(_ text: String, timeout: TimeInterval = 10, scroll: Bool = false) {
+        if scroll {
+            XCTAssertTrue(scrollUntilLabel(text), "Missing text \(text)")
+        } else {
+            let match = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
+            XCTAssertTrue(match.waitForExistence(timeout: timeout))
+        }
+    }
+
+    @discardableResult
+    func scrollUntilExists(_ element: XCUIElement, maxSwipes: Int = 12) -> Bool {
+        if element.waitForExistence(timeout: 2) { return true }
+        for _ in 0..<maxSwipes {
+            app.swipeUp(velocity: .fast)
+            if element.waitForExistence(timeout: 0.5) { return true }
+        }
+        return false
+    }
+
+    /// Reasons on a metric sit in a button below the calendar, so either element type can hold the label.
+    func scrollUntilLabel(_ text: String, maxSwipes: Int = 14) -> Bool {
+        func found() -> Bool {
+            let pred = NSPredicate(format: "label CONTAINS %@", text)
+            return app.staticTexts.matching(pred).firstMatch.exists
+                || app.buttons.matching(pred).firstMatch.exists
+        }
+        if found() { return true }
+        for _ in 0..<maxSwipes {
+            app.swipeUp(velocity: .fast)
+            if found() { return true }
+        }
+        return false
     }
 }
