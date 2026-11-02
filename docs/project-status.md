@@ -1,4 +1,4 @@
-# TrackBoth — Project status
+# Urge Buddy — Project status
 
 > Last updated: 2026-11-01
 

@@ -1,51 +1,50 @@
-# Contributing to TrackBoth
+# Contributing to Urge Buddy
 
 ## Project generation
 
-The Xcode project is generated from `TrackBoth/project.yml` via [XcodeGen](https://github.com/yonaskolb/XcodeGen). **Do not hand-edit** `TrackBoth.xcodeproj`. Change `project.yml` or source folders, then regenerate:
+The Xcode project is generated from `UrgeBuddy/project.yml` via [XcodeGen](https://github.com/yonaskolb/XcodeGen). **Do not hand-edit** `UrgeBuddy.xcodeproj`. Change `project.yml` or source folders, then regenerate:
 
 ```bash
-cd TrackBoth
+cd UrgeBuddy
 brew install xcodegen   # once
 xcodegen generate
-open TrackBoth.xcodeproj
+open UrgeBuddy.xcodeproj
 ```
 
 ## Schemes
 
 | Scheme | Purpose |
 |--------|---------|
-| `TrackBoth` | Local dev — run the app and unit + UI tests |
-| `TrackBothCI` | CI — builds the app and both test targets |
-| `TrackBothScreenshots` | App Store screenshots — `-skip_onboarding -seed_demo -ui_testing` |
+| `UrgeBuddy` | Local dev — run the app and unit + UI tests |
+| `UrgeBuddyCI` | CI — builds the app and both test targets |
+| `UrgeBuddyScreenshots` | App Store screenshots — `-skip_onboarding -seed_demo -ui_testing` |
 
 ## Running tests locally
 
 ```bash
-cd TrackBoth
+cd UrgeBuddy
 
 xcodebuild test \
-  -project TrackBoth.xcodeproj \
-  -scheme TrackBoth \
+  -project UrgeBuddy.xcodeproj \
+  -scheme UrgeBuddy \
   -destination 'platform=iOS Simulator,name=iPhone 17' \
-  -only-testing:TrackBothTests \
+  -only-testing:UrgeBuddyTests \
   CODE_SIGNING_ALLOWED=NO
 
 xcodebuild test \
-  -project TrackBoth.xcodeproj \
-  -scheme TrackBoth \
+  -project UrgeBuddy.xcodeproj \
+  -scheme UrgeBuddy \
   -destination 'platform=iOS Simulator,name=iPhone 17' \
-  -only-testing:TrackBothUITests \
+  -only-testing:UrgeBuddyUITests \
   CODE_SIGNING_ALLOWED=NO
 ```
 
-## Specs
+Coverage gate (after a unit test run with `-enableCodeCoverage YES`):
 
-Behavior changes require updating the matching spec in [`Specs/`](Specs/) in the same commit. See [`Specs/README.md`](Specs/README.md).
+```bash
+../Scripts/check-coverage.sh /path/to/UrgeBuddyTestResults.xcresult 50
+```
 
-## Architecture
+## Conventions
 
-- `Domain/` — pure Foundation. Pass `now` and `calendar` in. Tests use `Calendar.testNY`.
-- `Data/` — SwiftData models and `RecoveryStore`, the only place that writes.
-- `Features/` — SwiftUI screens. Reads may use `@Query`. Writes go through the store.
-- No new packages, analytics, or network calls.
+See [`Specs/README.md`](Specs/README.md) and [`docs/project-status.md`](docs/project-status.md). Bundle ID and URL scheme stay `com.jacobrozell.TrackBoth` / `trackboth` for App Store Connect; the Swift module is `UrgeBuddy`.

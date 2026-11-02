@@ -1,45 +1,45 @@
-# TrackBoth
+# Urge Buddy
 
 Quit vices. Build habits.
 
-TrackBoth helps you quit what's hurting you and build what helps: a 10-second daily check-in, a tool for riding out urges, and progress a slip can't erase.
+Urge Buddy helps you quit what's hurting you and build what helps: a 10-second daily check-in, a tool for riding out urges, and progress a slip can't erase.
 
 ## Tabs
 
 | Tab | What it's for |
 |-----|----------------|
 | **Today** | Check in, see days free, tick helper habits, open "I'm having an urge" |
-| **Progress** | Saved, urges beaten, and a calendar per metric |
+| **Progress** | Saved, urges beaten, journal, and a calendar per metric |
 | **Settings** | Reminders, app lock, backup, and get help now |
 
 Universal iPhone and iPad app with portrait and landscape. Layout adapts via size classes (see `Specs/DesignSystemSpec.md` §8.7).
 
 ## Build and test
 
-From `TrackBoth/` (the folder that contains `project.yml`):
+From `UrgeBuddy/` (the folder that contains `project.yml`):
 
 ```bash
 xcodegen generate
 ```
 
 ```bash
-xcodebuild build -project TrackBoth.xcodeproj -scheme TrackBothCI -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO
+xcodebuild build -project UrgeBuddy.xcodeproj -scheme UrgeBuddyCI -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO
 ```
 
 ```bash
-xcodebuild test -project TrackBoth.xcodeproj -scheme TrackBoth -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:TrackBothTests CODE_SIGNING_ALLOWED=NO
+xcodebuild test -project UrgeBuddy.xcodeproj -scheme UrgeBuddy -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:UrgeBuddyTests CODE_SIGNING_ALLOWED=NO
 ```
 
 ```bash
-xcodebuild test -project TrackBoth.xcodeproj -scheme TrackBoth -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:TrackBothUITests CODE_SIGNING_ALLOWED=NO
+xcodebuild test -project UrgeBuddy.xcodeproj -scheme UrgeBuddy -destination 'platform=iOS Simulator,name=iPhone 17' -only-testing:UrgeBuddyUITests CODE_SIGNING_ALLOWED=NO
 ```
 
-Requires Xcode 26. Do not hand-edit `TrackBoth.xcodeproj`.
+Requires Xcode 26. Do not hand-edit `UrgeBuddy.xcodeproj`.
 
 ## Layout
 
 ```
-TrackBoth/TrackBoth/
+UrgeBuddy/UrgeBuddy/
 ├── App/            shell, router, lock gate
 ├── DesignSystem/   palette, type, components
 ├── Features/       Today, Check-in, Urge, Slip, Progress, Onboarding, Settings
@@ -50,14 +50,14 @@ TrackBoth/TrackBoth/
 └── Resources/      assets, Info.plist, privacy manifest
 ```
 
-The tree above is the target. During the overhaul, older folders remain until the cut phase removes them.
+## Repo
+
+GitHub: [jacobrozell/Urge-Buddy](https://github.com/jacobrozell/Urge-Buddy)
+
+The Xcode module is **UrgeBuddy**. App Store bundle ID remains `com.jacobrozell.TrackBoth` (unchanged Connect record).
 
 ## Docs
 
-| Doc | Purpose |
-|-----|---------|
-| [Specs/](Specs/) | Behavior contract |
-| [docs/project-status.md](docs/project-status.md) | Where the app stands |
-| [docs/feature-inventory.md](docs/feature-inventory.md) | What ships, what's cut |
-| [ongoing/recovery-overhaul-plan.md](ongoing/recovery-overhaul-plan.md) | Approved implementation plan |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Project generation and tests |
+- [`docs/project-status.md`](docs/project-status.md) — current release focus
+- [`Specs/ProductSpec.md`](Specs/ProductSpec.md) — product rules
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — agent and contributor conventions

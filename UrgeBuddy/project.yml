@@ -1,0 +1,127 @@
+name: UrgeBuddy
+attributes:
+  ORGANIZATIONNAME: Jacob Rozell
+options:
+  minimumXcodeGenVersion: 2.44.0
+  bundleIdPrefix: com.jacobrozell
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: 7JT2JB89AV
+    CODE_SIGN_STYLE: Automatic
+targets:
+  UrgeBuddy:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+      - path: DesignSystem
+      - path: Features
+      - path: Domain
+      - path: Data
+      - path: Services
+      - path: Support
+      - path: Resources
+        excludes:
+          - UrgeBuddy-Info.plist
+          - UrgeBuddy.entitlements
+          - PrivacyInfo.xcprivacy
+      - path: Resources/PrivacyInfo.xcprivacy
+        type: file
+        buildPhase: resources
+      - path: Resources/UrgeBuddy-Info.plist
+        type: file
+        buildPhase: none
+    entitlements:
+      path: Resources/UrgeBuddy.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.jacobrozell.TrackBoth
+        APP_STORE_APPLE_ID: "6752591094"
+        APP_STORE_SKU: com.jacobrozell.TrackBoth
+        MARKETING_VERSION: 1.0.0
+        CURRENT_PROJECT_VERSION: 7
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_FILE: Resources/UrgeBuddy-Info.plist
+        CODE_SIGN_ENTITLEMENTS: Resources/UrgeBuddy.entitlements
+        INFOPLIST_KEY_CFBundleDisplayName: Urge Buddy
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.healthcare-fitness
+        INFOPLIST_KEY_NSFaceIDUsageDescription: Use Face ID to keep your progress private.
+        INFOPLIST_KEY_UIRequiresFullScreen: NO
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        TARGETED_DEVICE_FAMILY: "1,2"
+        IPHONEOS_DEPLOYMENT_TARGET: "18.0"
+        ENABLE_PREVIEWS: YES
+        SWIFT_EMIT_LOC_STRINGS: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UILaunchScreen_BackgroundColor: LaunchBackground
+  UrgeBuddyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Tests/Unit
+    dependencies:
+      - target: UrgeBuddy
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.jacobrozell.UrgeBuddyTests
+        IPHONEOS_DEPLOYMENT_TARGET: "18.0"
+  UrgeBuddyUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: Tests/UI
+    dependencies:
+      - target: UrgeBuddy
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: UrgeBuddy
+        PRODUCT_BUNDLE_IDENTIFIER: com.jacobrozell.UrgeBuddyUITests
+        IPHONEOS_DEPLOYMENT_TARGET: "18.0"
+schemes:
+  UrgeBuddy:
+    build:
+      targets:
+        UrgeBuddy: all
+    test:
+      targets:
+        - UrgeBuddyTests
+        - UrgeBuddyUITests
+    run:
+      config: Debug
+    archive:
+      config: Release
+  UrgeBuddyCI:
+    build:
+      targets:
+        UrgeBuddy: all
+        UrgeBuddyTests: all
+        UrgeBuddyUITests: all
+    run:
+      config: Debug
+  UrgeBuddyScreenshots:
+    build:
+      targets:
+        UrgeBuddy: all
+    run:
+      config: Debug
+      commandLineArguments:
+        "-skip_onboarding": true
+        "-seed_demo": true
+        "-ui_testing": true

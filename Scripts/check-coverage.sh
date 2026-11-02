@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Reports TrackBoth core-logic line coverage from an xcodebuild xcresult bundle.
+# Reports UrgeBuddy core-logic line coverage from an xcodebuild xcresult bundle.
 set -euo pipefail
 
 RESULT_BUNDLE="${1:?Usage: check-coverage.sh <path-to.xcresult> [min-percent]}"
@@ -24,7 +24,7 @@ CORE_FILES = {
 
 data = json.load(sys.stdin)
 targets = data.get("targets", [])
-app = next((t for t in targets if t.get("name", "").endswith("TrackBoth.app")), None)
+app = next((t for t in targets if t.get("name", "").endswith("UrgeBuddy.app")), None)
 if not app:
     print("0")
     sys.exit(0)
@@ -42,20 +42,20 @@ else:
     print(f"{(covered / executable) * 100:.2f}")
 ')
 
-echo "TrackBoth core-logic line coverage: ${COVERAGE_LINE}% (minimum ${MIN_COVERAGE}%)"
+echo "UrgeBuddy core-logic line coverage: ${COVERAGE_LINE}% (minimum ${MIN_COVERAGE}%)"
 
 OVERALL_LINE=$(xcrun xccov view --report --json "$RESULT_BUNDLE" \
   | python3 -c '
 import json, sys
 data = json.load(sys.stdin)
-app = next((t for t in data.get("targets", []) if t.get("name", "").endswith("TrackBoth.app")), None)
+app = next((t for t in data.get("targets", []) if t.get("name", "").endswith("UrgeBuddy.app")), None)
 if not app:
     print("0")
 else:
     line_cov = app.get("lineCoverage", 0) * 100
     print(f"{line_cov:.2f}")
 ')
-echo "TrackBoth overall app line coverage: ${OVERALL_LINE}% (informational — UI-heavy; core logic is gated)"
+echo "UrgeBuddy overall app line coverage: ${OVERALL_LINE}% (informational — UI-heavy; core logic is gated)"
 
 python3 - "$COVERAGE_LINE" "$MIN_COVERAGE" <<'PY'
 import sys

@@ -10,8 +10,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CI_XCODE_PROJECT: TrackBoth/TrackBoth.xcodeproj
-  CI_XCODE_SCHEME: TrackBothCI
+  CI_XCODE_PROJECT: UrgeBuddy/UrgeBuddy.xcodeproj
+  CI_XCODE_SCHEME: UrgeBuddyCI
   SIM_DESTINATION: platform=iOS Simulator,name=iPhone 17
 
 jobs:
@@ -33,31 +33,31 @@ jobs:
         run: brew install xcodegen xcbeautify
 
       - name: Generate Xcode project
-        working-directory: TrackBoth
+        working-directory: UrgeBuddy
         run: xcodegen generate
 
       - name: Build app and test targets
-        working-directory: TrackBoth
+        working-directory: UrgeBuddy
         run: |
           set -eo pipefail
           xcodebuild build \
-            -project TrackBoth.xcodeproj \
+            -project UrgeBuddy.xcodeproj \
             -scheme "$CI_XCODE_SCHEME" \
             -destination "$SIM_DESTINATION" \
             CODE_SIGNING_ALLOWED=NO \
             | xcbeautify --renderer github-actions
 
       - name: Run unit tests with coverage
-        working-directory: TrackBoth
+        working-directory: UrgeBuddy
         run: |
           set -eo pipefail
-          RESULT_BUNDLE="$RUNNER_TEMP/TrackBothTestResults.xcresult"
+          RESULT_BUNDLE="$RUNNER_TEMP/UrgeBuddyTestResults.xcresult"
           rm -rf "$RESULT_BUNDLE"
           xcodebuild test \
-            -project TrackBoth.xcodeproj \
-            -scheme TrackBoth \
+            -project UrgeBuddy.xcodeproj \
+            -scheme UrgeBuddy \
             -destination "$SIM_DESTINATION" \
-            -only-testing:TrackBothTests \
+            -only-testing:UrgeBuddyTests \
             -enableCodeCoverage YES \
             -resultBundlePath "$RESULT_BUNDLE" \
             CODE_SIGNING_ALLOWED=NO \
@@ -66,17 +66,17 @@ jobs:
       - name: Check coverage gate
         run: |
           chmod +x Scripts/check-coverage.sh
-          Scripts/check-coverage.sh "$RUNNER_TEMP/TrackBothTestResults.xcresult" 50
+          Scripts/check-coverage.sh "$RUNNER_TEMP/UrgeBuddyTestResults.xcresult" 50
 
       - name: Run UI tests
-        working-directory: TrackBoth
+        working-directory: UrgeBuddy
         timeout-minutes: 45
         run: |
           set -eo pipefail
           xcodebuild test \
-            -project TrackBoth.xcodeproj \
-            -scheme TrackBoth \
+            -project UrgeBuddy.xcodeproj \
+            -scheme UrgeBuddy \
             -destination "$SIM_DESTINATION" \
-            -only-testing:TrackBothUITests \
+            -only-testing:UrgeBuddyUITests \
             CODE_SIGNING_ALLOWED=NO \
             | xcbeautify --renderer github-actions

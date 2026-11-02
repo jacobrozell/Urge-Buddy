@@ -1,7 +1,9 @@
 # Code health and analytics plan
 
+> Repo folder renamed to `UrgeBuddy/` (2026-11-02). Replace `TrackBoth/` in paths below.
+
 **Goal:** Stop silent data loss before 1.0, then pay down structure after launch. Measure the app without collecting any data.
-**Repo:** `/Users/jrozell/Desktop/personal/TrackBoth` (Xcode project lives in the inner `TrackBoth/` folder)
+**Repo:** `/Users/jrozell/Desktop/personal/UrgeBuddy` (Xcode project lives in the inner `UrgeBuddy/` folder)
 **Branch:** `claude/dazzling-albattani-7mg4uh`
 **Status legend:** `[ ]` not started · `[~]` in progress · `[x]` done · `[>]` deferred
 
