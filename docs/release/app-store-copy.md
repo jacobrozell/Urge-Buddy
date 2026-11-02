@@ -50,18 +50,33 @@ Urge Buddy is a self-help tool. It does not treat, cure, or diagnose anything. I
 
 ### Review notes
 
-No account or login. Everything is stored on the device. To see populated screens, complete onboarding, choose Alcohol, and set the last use to 10 days ago. Quit or cut back is on that vice step. The urge tool is the "I'm having an urge" button on Today, or a long-press on the app icon.
+Urge Buddy 1.0.0 is a free self-help tracker. There is no account, no in-app purchase, and no ads. Everything is stored on the device. App Privacy is Data Not Collected. The app uses no non-exempt encryption. Backup is a JSON file the user exports and shares.
+
+The app does not treat, cure, or diagnose. Onboarding cannot finish until the user taps I understand on the notice that stopping alcohol, benzodiazepines, or opioids suddenly can be dangerous. The same notice is in Settings → About. Settings → Get help now links to 911, 988, SAMHSA 1-800-662-4357, and https://findahelpline.com. Please do not tap Call 911 unless you intend to place that call.
+
+Presets name Alcohol, Smoking, Vaping, Cannabis, Gambling, and Porn as things to quit or cut back. The app does not sell them, does not show sexual imagery, and does not offer gambling.
+
+To see a populated app, complete onboarding, choose Alcohol, and set last use to 10 days ago. The urge tool is I'm having an urge on Today, or a long-press on the Home Screen icon. Quit or cut back is on that vice step. Lock, export, and delete are in Settings.
+
+Minimum OS is iOS 18. iPhone and iPad.
+
+### What's New
+
+First release. Check in once a day, surf an urge when it hits, and quit or cut back. Your data stays on your device.
 
 ### Age rating notes
 
-Answer Infrequent/Mild for:
+Expect 13+. Answer:
 
-- Alcohol, Tobacco, or Drug Use or References (presets name substances)
-- Gambling references (the Gambling preset names it)
-- Sexual content references (the Porn preset names it; the app shows no imagery)
-- Medical or treatment information (the disclaimer and crisis links)
+- Alcohol, Tobacco, or Drug Use or References: Infrequent (preset names only; no pictures of use)
+- Medical or Treatment Information: Infrequent (the withdrawal warning and crisis links)
+- Health or Wellness Topics: Yes
+- Mature or Suggestive Themes: Infrequent (the word Porn; no imagery)
+- Gambling, Simulated Gambling, and Contests: None. The Gambling preset names a thing to quit. It is not wagering.
+- Sexual Content or Nudity, and Graphic Sexual Content: None
+- Unrestricted web access, user-generated content, messaging, social, and ads: None
 
-Expect 13+. Record the Connect result here after the questionnaire is submitted.
+Record the Connect result here after the questionnaire is submitted.
 
 App Privacy: Data Not Collected. The app uses no non-exempt encryption.
 
