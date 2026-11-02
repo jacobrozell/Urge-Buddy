@@ -10,9 +10,11 @@ struct ProgressScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.persist) private var persist
     @State private var model = ProgressViewModel()
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var showAdd = false
+    @State private var showJournal = false
     @State private var showArchived = false
     @State private var selection: UUID?
     @State private var didOpenDetail = false
@@ -54,7 +56,7 @@ struct ProgressScreen: View {
                         .accessibilityIdentifier(AccessibilityIdentifiers.progressMetricCard(card.id))
                     }
                     .onMove { offsets, destination in
-                        try? model.moveActive(from: offsets, to: destination, metrics: metrics, store: RecoveryStore(context: modelContext))
+                        persist("reorder") { try model.moveActive(from: offsets, to: destination, metrics: metrics, store: RecoveryStore(context: modelContext)) }
                     }
                 }
                 if !model.recentDays.isEmpty {
@@ -78,6 +80,34 @@ struct ProgressScreen: View {
                             .accessibilityElement(children: .combine)
                             .listRowBackground(Color.tbSurface)
                         }
+                    }
+                }
+                if !model.journal.isEmpty {
+                    Section {
+                        Button { showJournal = true } label: {
+                            HStack(spacing: Spacing.m) {
+                                Image(systemName: "book.closed")
+                                    .foregroundStyle(Color.tbBrand)
+                                    .frame(width: 24)
+                                    .accessibilityHidden(true)
+                                VStack(alignment: .leading, spacing: Spacing.xs) {
+                                    Text(RecoveryCopy.journal)
+                                        .font(.headline)
+                                        .foregroundStyle(Color.tbTextPrimary)
+                                    Text(RecoveryCopy.journalCount(model.journal.count))
+                                        .font(.subheadline)
+                                        .foregroundStyle(Color.tbTextSecondary)
+                                }
+                                Spacer(minLength: Spacing.s)
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote.weight(.semibold))
+                                    .foregroundStyle(Color.tbTextSecondary)
+                                    .accessibilityHidden(true)
+                            }
+                            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                        }
+                        .accessibilityIdentifier(AccessibilityIdentifiers.progressJournal)
+                        .listRowBackground(Color.tbSurface)
                     }
                 }
                 if !model.archived.isEmpty {
@@ -120,6 +150,11 @@ struct ProgressScreen: View {
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { containerWidth = $0 }
         .sheet(isPresented: $showAdd) {
             MetricFormView(metric: nil)
+                .persistFailureAlert()
+        }
+        .sheet(isPresented: $showJournal) {
+            JournalScreen(entries: model.journal)
+                .persistFailureAlert()
         }
         .onAppear {
             refresh()
@@ -179,13 +214,13 @@ struct ProgressScreen: View {
 
     private func restore(_ id: UUID) {
         guard let metric = metrics.first(where: { $0.id == id }) else { return }
-        try? RecoveryStore(context: modelContext).setArchived(metric, false)
+        persist("restore") { try RecoveryStore(context: modelContext).setArchived(metric, false) }
     }
 
     private var snapshot: String {
         metrics.map { "\($0.id.uuidString):\($0.sortOrder):\($0.isArchived):\($0.name):\($0.viceModeRaw):\($0.dailyTarget ?? -1)" }.joined()
             + entries.map { "\($0.statusRaw):\($0.amount ?? -1)" }.joined()
-            + urges.map(\.outcomeRaw).joined()
+            + urges.map { "\($0.outcomeRaw):\($0.note ?? ""):\($0.triggersRaw)" }.joined()
             + dayNotes.map { "\($0.moodRaw):\($0.text ?? "")" }.joined()
     }
 

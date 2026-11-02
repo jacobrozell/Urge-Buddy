@@ -10,6 +10,7 @@ Specs in this folder are **not** in scope for lean 1.0.0. Do not implement or ex
 |------|----------------|--------------|
 | [`CompetitiveFeaturesSpec.md`](CompetitiveFeaturesSpec.md) | 1.1–1.2 | [`docs/product/competitive-strategy.md`](../../docs/product/competitive-strategy.md) |
 | [`WidgetSpec.md`](WidgetSpec.md) | 1.2 (phased) | 8 focused widgets + snapshot schema; `TODOs/todo_widget.md`, `TrackBoth-Widget/` |
+| [`LiveActivitySpec.md`](LiveActivitySpec.md) | 1.1 | — |
 | [`AppleWatchSpec.md`](AppleWatchSpec.md) | 1.2 | `Specs/apple-watch-spec.md`, `Views/WatchViews/` |
 | [`MotivationGameSpec.md`](MotivationGameSpec.md) | TBD | `Specs/motivation-game-spec.md` |
 | [`NotificationsSpec.md`](NotificationsSpec.md) | 1.2 | `TODOs/TODO.md` |

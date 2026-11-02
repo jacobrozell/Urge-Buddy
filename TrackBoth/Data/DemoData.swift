@@ -153,7 +153,8 @@ enum DemoData {
         for (index, outcome) in outcomes.enumerated() {
             let started = calendar.date(byAdding: .day, value: -(index + 1), to: now) ?? now
             let urge = try store.startUrge(for: alcohol, intensity: (index % 5) + 1, now: started)
-            try store.finishUrge(urge, outcome: outcome, triggers: index.isMultiple(of: 2) ? [.stressed] : [], note: nil, now: started)
+            let note = index == 0 ? "The wave peaked and passed. I stayed because I want mornings back." : nil
+            try store.finishUrge(urge, outcome: outcome, triggers: index.isMultiple(of: 2) ? [.stressed] : [], note: note, now: started)
         }
         let seededMetrics = try context.fetch(FetchDescriptor<Metric>())
         let seededEntries = try context.fetch(FetchDescriptor<MetricEntry>())

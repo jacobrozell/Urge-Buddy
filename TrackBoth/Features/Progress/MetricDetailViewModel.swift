@@ -296,9 +296,21 @@ final class MetricDetailViewModel {
         let tags = triggers.map(\.title)
         if !tags.isEmpty { parts.append(tags.joined(separator: ", ")) }
         if let note = note?.trimmingCharacters(in: .whitespacesAndNewlines), !note.isEmpty {
-            parts.append(note)
+            parts.append(noteSnippet(note))
         }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
+    }
+
+    /// Keeps a long ride note from taking over the recent row. The full text lives in Journal.
+    private func noteSnippet(_ note: String) -> String {
+        let single = note
+            .components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        let limit = 80
+        guard single.count > limit else { return single }
+        let end = single.index(single.startIndex, offsetBy: limit)
+        return single[..<end].trimmingCharacters(in: .whitespaces) + "…"
     }
 
     private func formattedDay(_ date: Date) -> String {

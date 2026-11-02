@@ -8,9 +8,9 @@ enum BackupError: LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .newerVersion:
-            "This backup is from a newer version of TrackBoth."
+            "This backup is from a newer version of Urge Buddy."
         case .invalid:
-            "This file isn't a TrackBoth backup."
+            "This file isn't an Urge Buddy backup."
         }
     }
 }
@@ -42,7 +42,7 @@ enum BackupService {
 
     static func fileName(for date: Date, calendar: Calendar = .current) -> String {
         let parts = calendar.dateComponents([.year, .month, .day], from: date)
-        return String(format: "TrackBoth-Backup-%04d-%02d-%02d.json", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
+        return String(format: "UrgeBuddy-Backup-%04d-%02d-%02d.json", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
     }
 
     @MainActor
@@ -176,7 +176,9 @@ enum BackupService {
             guard let id = UUID(uuidString: record.id), let metricID = UUID(uuidString: record.metricID), ids.contains(metricID) else {
                 throw BackupError.invalid
             }
-            let reason = Reason(metricID: metricID, text: record.text, sortOrder: record.sortOrder)
+            let text = record.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else { continue }
+            let reason = Reason(metricID: metricID, text: text, sortOrder: record.sortOrder)
             reason.id = id
             reason.createdAt = record.createdAt
             reasons.append(reason)

@@ -58,6 +58,22 @@ final class MetricDetailViewModelTests: XCTestCase {
         XCTAssertFalse(model.stats.recent.contains { $0.title == RecoveryCopy.notSureOutcome })
     }
 
+    func testALongUrgeNoteIsShortenedOnTheRecentRow() throws {
+        let harness = try TestHarness()
+        let store = harness.store
+        let alcohol = try store.addMetric(
+            name: "Alcohol", habitType: .vice, iconName: "wineglass", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil
+        )
+        let urge = try store.startUrge(for: alcohol, intensity: 3, now: date(2026, 10, 11, 18))
+        let note = String(repeating: "word ", count: 30)
+        try store.finishUrge(urge, outcome: .resisted, triggers: [], note: note, now: date(2026, 10, 11, 18, 5))
+        let model = MetricDetailViewModel(calendar: calendar, locale: locale, now: date(2026, 10, 13, 10))
+        model.update(metric: alcohol, entries: [], urges: [urge], now: date(2026, 10, 13, 10))
+        let detail = try XCTUnwrap(model.stats.recent.first?.detail)
+        XCTAssertTrue(detail.hasSuffix("…"))
+        XCTAssertLessThan(detail.count, note.count)
+    }
+
     func testPatternsAppearOnceThreeMomentsShareATimeAndDay() throws {
         let harness = try TestHarness()
         let store = harness.store

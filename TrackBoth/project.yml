@@ -48,7 +48,7 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_FILE: Resources/TrackBoth-Info.plist
         CODE_SIGN_ENTITLEMENTS: Resources/TrackBoth.entitlements
-        INFOPLIST_KEY_CFBundleDisplayName: TrackBoth
+        INFOPLIST_KEY_CFBundleDisplayName: Urge Buddy
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.healthcare-fitness
         INFOPLIST_KEY_NSFaceIDUsageDescription: Use Face ID to keep your progress private.
         INFOPLIST_KEY_UIRequiresFullScreen: NO

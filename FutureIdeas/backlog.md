@@ -13,6 +13,7 @@ Ordered by how much they help in the moment of need.
 | **App Intents: urge** | 1.1 | "I'm having an urge" as an App Intent: Siri, Shortcuts, Action button, and a Control Center control. Opens the urge flow on the chosen vice. |
 | **App Intents: log and check in** | 1.1 | "Log one cigarette", "Mark today free", "Did I drink water?" Intents that write through `RecoveryStore` without opening the app. Cut-back +1 and amount-habit +1 are the most used. |
 | **Urge-first widgets** | 1.1 | Lock-screen urge button (opens `trackboth://urge`), days-free widget, cut-back "3 of 8 today" with an interactive +1 (iOS 17 `Button(intent:)`). Respect discreet mode. |
+| **Urge timer Live Activity** | 1.1 | Countdown and ring on the Lock Screen and Dynamic Island after leaving the app mid-urge. Shares the widget extension. [`LiveActivitySpec.md`](../Specs/archive/planned/LiveActivitySpec.md) |
 | **Notification check-in buttons** | 1.1 | Actions on the daily reminder: "Free today" for quit vices, "Log amount" for cut backs. One reminder a day still. |
 | **Neutral app icon** | 1.1 | Alternate icon that doesn't look like a recovery app. Pairs with discreet notifications and app lock. |
 | **Multi-day catch-up** | 1.1 | When check-in was missed for a few days, one sheet to confirm each missed day instead of opening the calendar. |

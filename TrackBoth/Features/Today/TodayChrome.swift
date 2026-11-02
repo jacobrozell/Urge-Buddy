@@ -78,17 +78,64 @@ struct YesterdayPrompt: View {
     }
 }
 
-struct SOSButton: View {
-    var isCompact = false
+struct UrgeSurfingRow: View {
     var action: () -> Void
 
     var body: some View {
-        PrimaryButton(title: RecoveryCopy.sosButton, systemImage: "wind", accessibilityID: AccessibilityIdentifiers.todaySOSButton, action: action)
+        Button(action: action) {
+            HStack(spacing: Spacing.m) {
+                Image(systemName: "wind")
+                    .font(.title2)
+                    .foregroundStyle(Color.tbBrand)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(RecoveryCopy.urgeSurfingTitle)
+                        .font(.headline)
+                        .foregroundStyle(Color.tbTextPrimary)
+                    Text(RecoveryCopy.urgeSurfingRow)
+                        .font(.subheadline)
+                        .foregroundStyle(Color.tbTextSecondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(Color.tbTextSecondary)
+                    .accessibilityHidden(true)
+            }
+            .padding(Spacing.l)
+            .frame(minHeight: 44)
+            .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(RecoveryCopy.urgeSurfingTitle). \(RecoveryCopy.urgeSurfingRow)")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier(AccessibilityIdentifiers.todayUrgeSurfing)
+    }
+}
+
+struct SOSButton: View {
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.s) {
+                Image(systemName: "wind")
+                    .accessibilityHidden(true)
+                Text(RecoveryCopy.sosButton)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Color.tbOnBrand)
             .padding(.horizontal, Spacing.l)
-            .padding(.top, isCompact ? Spacing.xs : Spacing.s)
-            .padding(.bottom, isCompact ? Spacing.xs : Spacing.s)
-            .frame(maxWidth: 640)
-            .frame(maxWidth: .infinity)
-            .background(Color.tbBackground)
+            .padding(.vertical, Spacing.xs)
+            .frame(minHeight: 44)
+            .frame(maxWidth: 320)
+            .background(Color.tbBrand, in: Capsule())
+            .shadow(color: .black.opacity(0.18), radius: 8, y: 3)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(RecoveryCopy.sosButton)
+        .accessibilityIdentifier(AccessibilityIdentifiers.todaySOSButton)
     }
 }

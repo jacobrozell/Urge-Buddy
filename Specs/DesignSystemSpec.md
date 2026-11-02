@@ -45,7 +45,7 @@ Use Dynamic Type text styles only (`.largeTitle`, `.title2`, `.headline`, `.body
 | `StatTile` | `StatTile(value:, label:, systemImage:)` | VoiceOver reads "label, value" |
 | `Chip` / `ChipGrid` | `ChipGrid(items:, selection: Binding<Set<…>>)` | Adaptive grid, min 44pt height, selected = `Brand` fill |
 | `EmptyState` | `EmptyState(systemImage:, title:, message:, actionTitle:, action:)` | |
-| `BreathingCircle` | `BreathingCircle(inhale: 4, exhale: 6)` | Reduce Motion → text-only cue |
+| `BreathingCircle` | `BreathingCircle(inhale: 4, exhale: 6)` | Orb, glow, and ripples ease across the full inhale and exhale. `RideAtmosphere` is the slow wash behind the ride screen. Reduce Motion → text-only cue, no wash motion |
 | `DayDots` | `DayDots(states: [DayVisualState])` | 7 dots. Each dot has a VoiceOver label ("Monday, free"). Shape and color both encode state (solid, ring, triangle for slip) so it works without color. |
 | `MonthCalendar` | `MonthCalendar(month:, stateFor: (Date) -> DayVisualState, onSelect:)` | `firstWeekday` from `Calendar.current`. Cells ≥44pt. |
 | `SectionHeader` | `SectionHeader("Quitting")` | Adds the `.isHeader` accessibility trait |

@@ -16,6 +16,7 @@ struct MetricDetailScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.persist) private var persist
     @State private var model = MetricDetailViewModel()
     @State private var sheet: DetailSheet?
     @State private var pendingSlipDay: Date?
@@ -68,14 +69,17 @@ struct MetricDetailScreen: View {
                 sheet = .slip(day)
             }
         }) { sheet in
-            switch sheet {
-            case .editor(let day):
-                DayEditorSheet(metric: metric, day: day) { pendingSlipDay = day }
-            case .slip(let day):
-                SlipFlowView(metric: metric, prefilledTriggers: [], occurredOn: day) { self.sheet = nil }
-            case .form:
-                MetricFormView(metric: metric)
+            Group {
+                switch sheet {
+                case .editor(let day):
+                    DayEditorSheet(metric: metric, day: day) { pendingSlipDay = day }
+                case .slip(let day):
+                    SlipFlowView(metric: metric, prefilledTriggers: [], occurredOn: day) { self.sheet = nil }
+                case .form:
+                    MetricFormView(metric: metric)
+                }
             }
+            .persistFailureAlert()
         }
         .alert(RecoveryCopy.editReason, isPresented: reasonEditorPresented) {
             TextField(RecoveryCopy.addReason, text: $reasonDraft)
@@ -110,7 +114,7 @@ struct MetricDetailScreen: View {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 if metric.isArchived {
                     PrimaryButton(title: RecoveryCopy.restore) {
-                        try? RecoveryStore(context: modelContext).setArchived(metric, false)
+                        persist("restore") { try RecoveryStore(context: modelContext).setArchived(metric, false) }
                     }
                 }
                 HStack(alignment: .center, spacing: Spacing.m) {
@@ -428,7 +432,7 @@ struct MetricDetailScreen: View {
                     Button(RecoveryCopy.moveDown) { moveReason(reason, by: 1) }
                 }
                 Button(RecoveryCopy.delete, role: .destructive) {
-                    try? RecoveryStore(context: modelContext).deleteReason(reason)
+                    persist("delete reason") { try RecoveryStore(context: modelContext).deleteReason(reason) }
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
@@ -446,7 +450,7 @@ struct MetricDetailScreen: View {
         .accessibilityAction(named: RecoveryCopy.moveUp) { moveReason(reason, by: -1) }
         .accessibilityAction(named: RecoveryCopy.moveDown) { moveReason(reason, by: 1) }
         .accessibilityAction(named: RecoveryCopy.delete) {
-            try? RecoveryStore(context: modelContext).deleteReason(reason)
+            persist("delete reason") { try RecoveryStore(context: modelContext).deleteReason(reason) }
         }
     }
 
@@ -498,13 +502,13 @@ struct MetricDetailScreen: View {
     }
 
     private func addReason() {
-        try? RecoveryStore(context: modelContext).addReason(newReason, to: metric)
+        guard persist("add reason", { try RecoveryStore(context: modelContext).addReason(newReason, to: metric) }) != nil else { return }
         newReason = ""
     }
 
     private func saveReasonEdit() {
         guard let editingReason else { return }
-        try? RecoveryStore(context: modelContext).updateReason(editingReason, text: reasonDraft)
+        guard persist("edit reason", { try RecoveryStore(context: modelContext).updateReason(editingReason, text: reasonDraft) }) != nil else { return }
         self.editingReason = nil
     }
 
@@ -514,12 +518,12 @@ struct MetricDetailScreen: View {
         let target = index + delta
         guard ordered.indices.contains(target) else { return }
         ordered.move(fromOffsets: IndexSet(integer: index), toOffset: delta > 0 ? target + 1 : target)
-        try? RecoveryStore(context: modelContext).reorderReasons(ordered)
+        persist("reorder reasons") { try RecoveryStore(context: modelContext).reorderReasons(ordered) }
     }
 
     private func savePlan() {
         let trimmed = planText.trimmingCharacters(in: .whitespacesAndNewlines)
-        try? RecoveryStore(context: modelContext).setPlan(metric, plan: trimmed.isEmpty ? nil : trimmed)
+        persist("save plan") { try RecoveryStore(context: modelContext).setPlan(metric, plan: trimmed.isEmpty ? nil : trimmed) }
         planText = metric.ifThenPlan ?? ""
     }
 }
@@ -545,6 +549,7 @@ struct DayEditorSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.persist) private var persist
     @State private var amount = 0
     @State private var mood: Mood?
     @State private var noteText = ""
@@ -616,12 +621,12 @@ struct DayEditorSheet: View {
     }
 
     private func saveAmount() {
-        try? RecoveryStore(context: modelContext).setAmount(metric, on: day, amount: amount, now: Date())
+        guard persist("set amount", { try RecoveryStore(context: modelContext).setAmount(metric, on: day, amount: amount, now: Date()) }) != nil else { return }
         dismiss()
     }
 
     private func saveNote() {
-        try? RecoveryStore(context: modelContext).setDayNote(on: day, mood: mood, text: noteText, now: Date())
+        guard persist("save day note", { try RecoveryStore(context: modelContext).setDayNote(on: day, mood: mood, text: noteText, now: Date()) }) != nil else { return }
         dismiss()
     }
 
@@ -642,20 +647,24 @@ struct DayEditorSheet: View {
 
     private func markFree() {
         let store = RecoveryStore(context: modelContext)
-        if let existing = try? store.entry(for: metric.id, on: day), existing.status == .slipped {
-            try? store.clearDay(metric, on: day)
-        }
-        try? store.markFree(metric, on: day, now: Date())
+        guard persist("mark day free", { try self.markFreeDay(using: store) }) != nil else { return }
         dismiss()
     }
 
+    private func markFreeDay(using store: RecoveryStore) throws {
+        if let existing = try store.entry(for: metric.id, on: day), existing.status == .slipped {
+            try store.clearDay(metric, on: day)
+        }
+        try store.markFree(metric, on: day, now: Date())
+    }
+
     private func clear() {
-        try? RecoveryStore(context: modelContext).clearDay(metric, on: day)
+        guard persist("clear day", { try RecoveryStore(context: modelContext).clearDay(metric, on: day) }) != nil else { return }
         dismiss()
     }
 
     private func setDone(_ done: Bool) {
-        try? RecoveryStore(context: modelContext).setHabitDone(metric, on: day, done: done, now: Date())
+        guard persist("habit done", { try RecoveryStore(context: modelContext).setHabitDone(metric, on: day, done: done, now: Date()) }) != nil else { return }
         dismiss()
     }
 }

@@ -5,7 +5,7 @@ import XCTest
 final class OnboardingViewModelTests: XCTestCase {
     func testNeedsAViceOrTheHabitOnlyPath() {
         let model = OnboardingViewModel()
-        model.pageIndex = 1
+        model.pageIndex = model.pages.firstIndex(of: .chooseVices) ?? -1
         XCTAssertEqual(model.page, .chooseVices)
         XCTAssertFalse(model.canAdvance)
         model.chooseHabitsOnly()
@@ -50,6 +50,24 @@ final class OnboardingViewModelTests: XCTestCase {
         XCTAssertEqual(drafts[0].startedAt, now)
         XCTAssertEqual(drafts[0].tracking, MetricTracking(viceMode: .cutBack, unit: "cigarettes", dailyTarget: 20, baselinePerDay: 20))
         XCTAssertEqual(drafts[1].tracking, MetricTracking(unit: "glasses", dailyTarget: 8))
+    }
+
+    func testUrgeSurfingFollowsWelcome() {
+        let model = OnboardingViewModel()
+        XCTAssertEqual(Array(model.pages.prefix(3)), [.welcome, .urgeSurfing, .chooseVices])
+    }
+
+    func testCutBackNeedsALimitBeforeContinuing() {
+        let model = OnboardingViewModel()
+        model.toggleVice("smoking")
+        model.pageIndex = model.pages.firstIndex(of: .viceWhen("smoking")) ?? -1
+        var detail = model.detail(for: "smoking", now: Date())
+        detail.mode = .cutBack
+        model.setDetail(detail, for: "smoking")
+        XCTAssertFalse(model.canAdvance)
+        detail.limitText = "0"
+        model.setDetail(detail, for: "smoking")
+        XCTAssertTrue(model.canAdvance)
     }
 
     func testHabitOnlySkipsVicePages() {

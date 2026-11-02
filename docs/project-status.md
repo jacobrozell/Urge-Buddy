@@ -6,7 +6,7 @@
 
 | Field | Value |
 |-------|-------|
-| **App Store name** | TrackBoth |
+| **App Store name** | Urge Buddy |
 | **Subtitle** | Quit vices. Build habits. |
 | **Stage** | **Overhaul in progress** |
 | **Latest submitted** | — |

@@ -48,6 +48,7 @@ struct CheckInSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppRouter.self) private var router
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.persist) private var persist
 
     private var pinsActionInToolbar: Bool {
         AdaptiveLayout.isShortHeight(vertical: verticalSizeClass)
@@ -111,11 +112,18 @@ struct CheckInSheet: View {
         .presentationDetents([.medium, .large], selection: $detent)
         .adaptiveFormSheet()
         .onAppear { prepare() }
-        .onDisappear { try? model?.saveDayNote(now: Date()) }
+        .onDisappear {
+            do {
+                try model?.saveDayNote(now: Date())
+            } catch {
+                logger.logError(error, context: "Couldn't save: day note on dismiss")
+            }
+        }
         .onChange(of: entryToken) { prepare() }
         .sheet(isPresented: slippingPresented) {
             if let slippingID, let metric = metrics.first(where: { $0.id == slippingID }) {
                 SlipFlowView(metric: metric, prefilledTriggers: []) { self.slippingID = nil }
+                    .persistFailureAlert()
             }
         }
     }
@@ -192,7 +200,7 @@ struct CheckInSheet: View {
                 .font(.subheadline)
                 .foregroundStyle(Color.tbTextSecondary)
             AmountStepper(value: row.amount, unit: row.unit, step: row.step, label: row.name) { value in
-                try? model.setAmount(row.id, value, metrics: metrics, now: Date())
+                persist("set amount") { try model.setAmount(row.id, value, metrics: metrics, now: Date()) }
             }
             .accessibilityIdentifier(AccessibilityIdentifiers.checkInAmount(row.id))
         }
@@ -206,7 +214,7 @@ struct CheckInSheet: View {
             SectionHeader(RecoveryCopy.howAreYouFeeling)
             MoodPicker(selection: model.mood) { mood in
                 model.mood = mood
-                try? model.saveDayNote(now: Date())
+                persist("save day note") { try model.saveDayNote(now: Date()) }
             }
             .accessibilityIdentifier(AccessibilityIdentifiers.checkInMood)
             TextField(RecoveryCopy.noteField, text: Bindable(model).noteText, axis: .vertical)
@@ -257,12 +265,12 @@ struct CheckInSheet: View {
 
     private func markFree(_ id: UUID) {
         guard let model else { return }
-        try? model.markFree(id, metrics: metrics, now: Date())
+        persist("mark free") { try model.markFree(id, metrics: metrics, now: Date()) }
     }
 
     private func toggleHabit(_ id: UUID) {
         guard let model else { return }
-        try? model.toggleHabit(id, metrics: metrics, now: Date())
+        persist("toggle habit") { try model.toggleHabit(id, metrics: metrics, now: Date()) }
     }
 
     private func doneTitle(_ model: CheckInViewModel) -> String {
@@ -276,7 +284,7 @@ struct CheckInSheet: View {
             let celebrated = Dictionary(uniqueKeysWithValues: metrics.map { metric in
                 (metric.id, MilestoneLedger.highestCelebrated(for: metric.id))
             })
-            try? model.finish(metrics: metrics, now: Date(), celebrated: celebrated)
+            persist("finish check-in") { try model.finish(metrics: metrics, now: Date(), celebrated: celebrated) }
         }
     }
 

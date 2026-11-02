@@ -8,6 +8,7 @@ struct SettingsScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppLock.self) private var appLock
     @Environment(\.requestReview) private var requestReview
+    @Environment(\.persist) private var persist
 
     @AppStorage("pref.remindersEnabled") private var remindersEnabled = false
     @AppStorage("pref.milestoneNotificationsEnabled") private var milestonesEnabled = true
@@ -24,6 +25,7 @@ struct SettingsScreen: View {
     @State private var exportURL: URL?
     @State private var showShare = false
     @State private var message: String?
+    @State private var showIntroduction = false
 
     var body: some View {
         NavigationStack {
@@ -80,6 +82,16 @@ struct SettingsScreen: View {
             .sheet(isPresented: $showShare) {
                 if let exportURL {
                     ActivityShare(url: exportURL)
+                }
+            }
+            .fullScreenCover(isPresented: $showIntroduction) {
+                NavigationStack {
+                    OnboardingFlow(onFinished: { showIntroduction = false }, review: true)
+                        .toolbar {
+                            ToolbarItem(placement: .cancellationAction) {
+                                Button(RecoveryCopy.close) { showIntroduction = false }
+                            }
+                        }
                 }
             }
         }
@@ -141,11 +153,15 @@ struct SettingsScreen: View {
 
     private var support: some View {
         Section(RecoveryCopy.supportSection) {
+            Button(RecoveryCopy.viewOnboarding) { showIntroduction = true }
+                .accessibilityIdentifier(AccessibilityIdentifiers.settingsViewOnboarding)
+            NavigationLink(RecoveryCopy.whatIsUrgeSurfing) { UrgeSurfingExplainer() }
+                .accessibilityIdentifier(AccessibilityIdentifiers.settingsUrgeSurfing)
             NavigationLink(RecoveryCopy.getHelpNow) { CrisisResourcesView() }
                 .accessibilityIdentifier(AccessibilityIdentifiers.settingsCrisisResources)
             Link(RecoveryCopy.contactSupport, destination: AppLinks.support)
             Link(RecoveryCopy.privacyPolicy, destination: AppLinks.privacy)
-            Button(RecoveryCopy.rateTrackBoth) { requestReview() }
+            Button(RecoveryCopy.rateUrgeBuddy) { requestReview() }
         }
     }
 
@@ -226,7 +242,7 @@ struct SettingsScreen: View {
     }
 
     private func deleteAll() {
-        try? RecoveryStore(context: modelContext).deleteAllData()
+        guard persist("delete all data", { try RecoveryStore(context: modelContext).deleteAllData() }) != nil else { return }
         ReminderScheduler.cancelAll()
         appLock.isEnabled = false
         appLock.isLocked = false

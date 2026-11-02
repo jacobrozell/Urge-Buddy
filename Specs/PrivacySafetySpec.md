@@ -25,8 +25,8 @@
   4. Stay well under iOS's 64-pending limit: at most 7 + 2 × (active vices, max 10).
 - Copy (in `RecoveryCopy`):
   - Check-in: title "Daily check-in", body "How did today go? It takes 10 seconds."
-  - Milestone: title "7 days free", body "You reached 7 days free from Alcohol. Open TrackBoth to celebrate."
-  - **Discreet:** check-in title "TrackBoth", body "Time for your check-in." Milestone body "You reached a new milestone."
+  - Milestone: title "7 days free", body "You reached 7 days free from Alcohol. Open Urge Buddy to celebrate."
+  - **Discreet:** check-in title "Urge Buddy", body "Time for your check-in." Milestone body "You reached a new milestone."
 - Tapping a notification: set `UNUserNotificationCenter.current().delegate` (in `AppDelegate`). The check-in ID opens the check-in flow; a milestone opens Today.
 
 
@@ -65,7 +65,7 @@ final class AppLock {
         }
         do {
             if try await context.evaluatePolicy(.deviceOwnerAuthentication,
-                                                localizedReason: "Unlock TrackBoth") {
+                                                localizedReason: "Unlock Urge Buddy") {
                 isLocked = false
             }
         } catch {
@@ -77,7 +77,7 @@ final class AppLock {
 
 - Add `INFOPLIST_KEY_NSFaceIDUsageDescription: "Use Face ID to keep your progress private."` to `project.yml`.
 - **Only lock on `.background`, never on `.inactive`.** The Face ID prompt itself makes the scene inactive, so locking there would loop forever.
-- `LockScreen`: `BrandMark`, "TrackBoth is locked", [Unlock] button. Call `unlock()` automatically on appear.
+- `LockScreen`: `BrandMark`, "Urge Buddy is locked", [Unlock] button. Call `unlock()` automatically on appear.
 
 
 ## Preferences

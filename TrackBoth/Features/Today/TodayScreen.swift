@@ -10,62 +10,69 @@ struct TodayScreen: View {
     @Environment(AppRouter.self) private var router
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.persist) private var persist
     @State private var model = TodayViewModel()
     @State private var sheet: TodaySheet?
     @State private var dismissedYesterday = Preferences.dismissedYesterdayPromptDay
     @State private var didPresentSlip = false
+    @State private var showSurfing = false
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-                ScrollView {
-                    ReadableColumn(width: .wide) {
-                        VStack(alignment: .leading, spacing: Spacing.m) {
-                            if dynamicTypeSize.usesAccessibilityLayout {
-                                dateLabel
-                            }
-                            if let prompt = model.yesterdayPrompt {
-                                YesterdayPrompt(name: prompt.name) {
-                                    confirmYesterday(prompt.metricID)
-                                } onSlipped: {
-                                    sheet = .slip(prompt.metricID)
-                                } onDismiss: {
-                                    dismissYesterday()
-                                }
-                                .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
-                            }
-                            if model.checkInRemaining > 0 {
-                                CheckInBanner(remaining: model.checkInRemaining) { router.present(.checkIn) }
-                                    .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
-                            }
-                            if model.isEmpty {
-                                EmptyState(
-                                    systemImage: "sun.max",
-                                    title: RecoveryCopy.startWithOneThing,
-                                    message: RecoveryCopy.startWithOneThingMessage,
-                                    actionTitle: RecoveryCopy.addSomething
-                                ) { sheet = .add }
-                                .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
-                            }
-                            if model.hasViceSection && !model.habits.isEmpty {
-                                AdaptiveColumns {
-                                    viceSections
-                                } trailing: {
-                                    buildingSection
-                                }
-                            } else {
-                                if model.hasViceSection { viceSections }
-                                if !model.habits.isEmpty { buildingSection }
-                            }
+            ScrollView {
+                ReadableColumn(width: .wide) {
+                    VStack(alignment: .leading, spacing: Spacing.m) {
+                        if dynamicTypeSize.usesAccessibilityLayout {
+                            dateLabel
                         }
-                        .padding(.top, Spacing.s)
-                        .padding(.bottom, Spacing.m)
+                        if let prompt = model.yesterdayPrompt {
+                            YesterdayPrompt(name: prompt.name) {
+                                confirmYesterday(prompt.metricID)
+                            } onSlipped: {
+                                sheet = .slip(prompt.metricID)
+                            } onDismiss: {
+                                dismissYesterday()
+                            }
+                            .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
+                        }
+                        if model.checkInRemaining > 0 {
+                            CheckInBanner(remaining: model.checkInRemaining) { router.present(.checkIn) }
+                                .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
+                        }
+                        if model.showsSOS {
+                            UrgeSurfingRow { showSurfing = true }
+                                .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
+                        }
+                        if model.isEmpty {
+                            EmptyState(
+                                systemImage: "sun.max",
+                                title: RecoveryCopy.startWithOneThing,
+                                message: RecoveryCopy.startWithOneThingMessage,
+                                actionTitle: RecoveryCopy.addSomething
+                            ) { sheet = .add }
+                            .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
+                        }
+                        if model.hasViceSection && !model.habits.isEmpty {
+                            AdaptiveColumns {
+                                viceSections
+                            } trailing: {
+                                buildingSection
+                            }
+                        } else {
+                            if model.hasViceSection { viceSections }
+                            if !model.habits.isEmpty { buildingSection }
+                        }
                     }
+                    .padding(.top, Spacing.s)
+                    .padding(.bottom, model.showsSOS ? 72 : Spacing.m)
                 }
+            }
+            .overlay(alignment: .bottom) {
                 if model.showsSOS {
-                    SOSButton(isCompact: AdaptiveLayout.isShortHeight(vertical: verticalSizeClass)) {
+                    SOSButton {
                         router.present(.urge(nil))
                     }
+                    .padding(Spacing.s)
                 }
             }
             .background(Color.tbBackground)
@@ -87,20 +94,26 @@ struct TodayScreen: View {
             refresh()
             presentSlipIfNeeded()
         }
+        .sheet(isPresented: $showSurfing) {
+            UrgeSurfingSheet()
+        }
         .sheet(item: $sheet) { sheet in
-            switch sheet {
-            case .slip(let id):
-                if let metric = metrics.first(where: { $0.id == id }) {
-                    SlipFlowView(metric: metric, prefilledTriggers: []) { self.sheet = nil }
-                }
-            case .add:
-                MetricFormView(metric: nil)
-            case .detail(let id):
-                if let metric = metrics.first(where: { $0.id == id }) {
-                    NavigationStack { MetricDetailScreen(metric: metric) }
-                        .adaptivePageSheet()
+            Group {
+                switch sheet {
+                case .slip(let id):
+                    if let metric = metrics.first(where: { $0.id == id }) {
+                        SlipFlowView(metric: metric, prefilledTriggers: []) { self.sheet = nil }
+                    }
+                case .add:
+                    MetricFormView(metric: nil)
+                case .detail(let id):
+                    if let metric = metrics.first(where: { $0.id == id }) {
+                        NavigationStack { MetricDetailScreen(metric: metric) }
+                            .adaptivePageSheet()
+                    }
                 }
             }
+            .persistFailureAlert()
         }
     }
 
@@ -181,19 +194,19 @@ struct TodayScreen: View {
         guard let metric = metrics.first(where: { $0.id == id }) else { return }
         let store = RecoveryStore(context: modelContext)
         let done = model.habits.first { $0.id == id }?.isDoneToday == false
-        try? store.setHabitDone(metric, on: Date(), done: done, now: Date())
+        persist("habit done") { try store.setHabitDone(metric, on: Date(), done: done, now: Date()) }
     }
 
     private func setAmount(_ id: UUID, _ amount: Int) {
         guard let metric = metrics.first(where: { $0.id == id }) else { return }
-        try? RecoveryStore(context: modelContext).setAmount(metric, on: Date(), amount: amount, now: Date())
+        persist("set amount") { try RecoveryStore(context: modelContext).setAmount(metric, on: Date(), amount: amount, now: Date()) }
     }
 
     private func confirmYesterday(_ id: UUID) {
         guard let metric = metrics.first(where: { $0.id == id }),
               let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: Date()) else { return }
         let store = RecoveryStore(context: modelContext)
-        try? store.markFree(metric, on: yesterday, now: Date())
+        persist("mark yesterday free") { try store.markFree(metric, on: yesterday, now: Date()) }
     }
 
     private func dismissYesterday() {

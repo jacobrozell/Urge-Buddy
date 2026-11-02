@@ -23,6 +23,7 @@ struct RootView: View {
                 OnboardingFlow { onboarded = true }
             }
         }
+        .persistFailureAlert()
         .background(Color.tbBackground)
         .preferredColorScheme(colorScheme)
         .overlay {
@@ -36,7 +37,7 @@ struct RootView: View {
             }
         }
         .task {
-            await SnapshotOrientationLock.applyIfNeeded()
+            SnapshotOrientationLock.applyIfNeeded()
             if let tab = LaunchConfiguration.initialTab {
                 router.selectedTab = tab
             }
@@ -53,13 +54,19 @@ struct RootView: View {
             if phase == .background {
                 appLock.lockIfEnabled()
                 router.holdForLock()
+                dismissCoverForLock()
             }
             guard phase == .active else { return }
-            try? RecoveryStore(context: modelContext).resolveAbandonedUrges()
+            do {
+                try RecoveryStore(context: modelContext).resolveAbandonedUrges()
+            } catch {
+                logger.logError(error, context: "Couldn't save: resolve abandoned urges")
+            }
             if onboarded { router.flushPending() }
             refreshCelebration()
         }
         .onChange(of: appLock.isLocked) { _, locked in
+            if locked { dismissCoverForLock() }
             guard !locked, onboarded else { return }
             router.flushPending()
             refreshCelebration()
@@ -88,12 +95,14 @@ struct RootView: View {
         .fullScreenCover(item: urgeBinding) { flow in
             if case .urge(let id) = flow {
                 UrgeFlowView(metrics: metrics, preferredID: id) { router.finishUrge() }
+                    .persistFailureAlert()
             }
         }
         .sheet(item: $cover) { item in
             switch item {
             case .checkIn:
                 CheckInSheet(metrics: metrics, entries: entries)
+                    .persistFailureAlert()
             case .celebration(let request):
                 CelebrationView(request: request) {
                     celebration = nil
@@ -142,6 +151,12 @@ struct RootView: View {
         case .light: .light
         case .dark: .dark
         }
+    }
+
+    /// Sheets (check-in, celebration) sit outside `AppRouter.presented`; hide them while the lock is active.
+    private func dismissCoverForLock() {
+        guard appLock.shouldHoldPresentations else { return }
+        cover = nil
     }
 
     private func refreshCelebration() {

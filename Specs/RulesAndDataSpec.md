@@ -592,9 +592,9 @@ When to check: on Today `onAppear`, after the check-in Done, after an urge resol
 }
 ```
 
-- Dates: ISO 8601 (`JSONEncoder.DateEncodingStrategy.iso8601`). File name: `TrackBoth-Backup-YYYY-MM-DD.json`. Share with `ShareLink` on a temp file URL.
+- Dates: ISO 8601 (`JSONEncoder.DateEncodingStrategy.iso8601`). File name: `UrgeBuddy-Backup-YYYY-MM-DD.json`. Share with `ShareLink` on a temp file URL.
 - Import = **replace all** (confirm first: "This replaces everything on this device with the backup."). Validate everything before deleting anything. Do it in one transaction: decode → validate → `deleteAllData()` → insert → save.
-- Unknown `schemaVersion` > 6 → error "This backup is from a newer version of TrackBoth."
+- Unknown `schemaVersion` > 6 → error "This backup is from a newer version of Urge Buddy."
 - **v6** (current export) adds optional fields, so v5 and v6 decode with the same struct: metric `viceMode`, `unit`, `dailyTarget`, `baselinePerDay`; entry `amount`; top-level `dayNotes: [{ id, day, mood, text, updatedAt }]`. An unknown `viceMode` or two notes on the same day fail validation.
 
 **Legacy import (schema 1–4, from the old app).** Decode with the old structs (rename them `LegacyExportV4` and keep them in `Data/Export/LegacyExportV4.swift`):

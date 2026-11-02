@@ -38,6 +38,7 @@ final class ProgressViewModel {
     private(set) var active: [ProgressCardModel] = []
     private(set) var archived: [ProgressCardModel] = []
     private(set) var recentDays: [DayNoteRow] = []
+    private(set) var journal: [JournalEntry] = []
 
     init(calendar: Calendar = .current, locale: Locale = .current) {
         self.calendar = calendar
@@ -45,6 +46,7 @@ final class ProgressViewModel {
     }
 
     func update(metrics: [Metric], entries: [MetricEntry], urges: [UrgeEvent], dayNotes: [DayNote] = [], now: Date) {
+        journal = JournalEntry.make(urges: urges, metrics: metrics, locale: locale)
         recentDays = dayNotes
             .sorted { $0.day > $1.day }
             .prefix(5)

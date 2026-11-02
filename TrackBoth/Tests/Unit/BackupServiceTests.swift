@@ -27,6 +27,60 @@ final class BackupServiceTests: XCTestCase {
         XCTAssertTrue(Preferences.hasCompletedOnboarding)
     }
 
+    func testImportSkipsBlankReasonText() throws {
+        let harness = try TestHarness()
+        _ = try harness.store.addMetric(
+            name: "Alcohol",
+            habitType: .vice,
+            iconName: "wineglass",
+            startedAt: date(2026, 10, 1, 9),
+            costPerDay: nil,
+            firstReason: "Real why"
+        )
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        var backup = try decoder.decode(
+            TrackBothBackup.self,
+            from: try BackupService.exportData(from: harness.store.context, now: date(2026, 10, 28, 12))
+        )
+        backup.reasons.append(
+            TrackBothBackup.ReasonRecord(
+                id: UUID().uuidString,
+                metricID: backup.metrics[0].id,
+                text: "   ",
+                createdAt: date(2026, 10, 2, 9),
+                sortOrder: 99
+            )
+        )
+        let data = try encoder.encode(backup)
+        try harness.store.deleteAllData()
+        try BackupService.importData(data, into: harness.store)
+        let reasons = try harness.store.context.fetch(FetchDescriptor<Reason>())
+        XCTAssertEqual(reasons.map(\.text), ["Real why"])
+    }
+
+    func testRoundTripKeepsReasonsAddedAfterMetric() throws {
+        let harness = try TestHarness()
+        let alcohol = try harness.store.addMetric(
+            name: "Alcohol",
+            habitType: .vice,
+            iconName: "wineglass",
+            startedAt: date(2026, 10, 1, 9),
+            costPerDay: nil,
+            firstReason: nil
+        )
+        try harness.store.addReason("First why", to: alcohol)
+        try harness.store.addReason("Second why", to: alcohol)
+        let data = try BackupService.exportData(from: harness.store.context, now: date(2026, 10, 28, 12))
+        try harness.store.deleteAllData()
+        try BackupService.importData(data, into: harness.store)
+        let reasons = try harness.store.context.fetch(FetchDescriptor<Reason>(sortBy: [SortDescriptor(\.sortOrder)]))
+        XCTAssertEqual(reasons.map(\.text), ["First why", "Second why"])
+        XCTAssertEqual(reasons.map(\.sortOrder), [0, 1])
+    }
+
     func testRoundTripKeepsAmountsModesAndDayNotes() throws {
         let harness = try TestHarness()
         let store = harness.store

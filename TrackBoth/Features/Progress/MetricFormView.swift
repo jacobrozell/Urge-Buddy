@@ -6,6 +6,7 @@ struct MetricFormView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.persist) private var persist
     @State private var model: MetricFormViewModel?
     @State private var confirmDelete = false
 
@@ -125,13 +126,13 @@ struct MetricFormView: View {
 
     private func save() {
         guard let model else { return }
-        _ = try? model.save(metric: metric, store: RecoveryStore(context: modelContext), now: Date())
+        guard persist("save metric", { try model.save(metric: metric, store: RecoveryStore(context: modelContext), now: Date()) }) != nil else { return }
         if model.canSave { dismiss() }
     }
 
     private func deleteMetric() {
         guard let model, let metric else { return }
-        try? model.delete(metric, store: RecoveryStore(context: modelContext))
+        guard persist("delete metric", { try model.delete(metric, store: RecoveryStore(context: modelContext)) }) != nil else { return }
         dismiss()
     }
 }

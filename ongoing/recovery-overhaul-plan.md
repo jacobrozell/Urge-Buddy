@@ -90,9 +90,9 @@ The overhaul fixes this by **cutting about 60% of the surface** and rebuilding a
 
 ### 2.1 One-sentence product
 
-> **TrackBoth helps you quit what's hurting you and build what helps: a 10-second daily check-in, a tool for riding out urges, and progress a slip can't erase.**
+> **Urge Buddy helps you quit what's hurting you and build what helps: a 10-second daily check-in, a tool for riding out urges, and progress a slip can't erase.**
 
-Positioning: *"Quit vices. Build habits."* The "Both" in the name now means **quit one thing and build its replacement**. That's grounded in habit-reversal research: a behavior you remove leaves a gap, and a competing behavior should fill it.
+Positioning: *"Quit vices. Build habits."* The name is the moment you need the app. Quit one thing and build its replacement stays the product, carried by the subtitle. That's grounded in habit-reversal research: a behavior you remove leaves a gap, and a competing behavior should fill it.
 
 ### 2.2 The psychology the design is built on
 
@@ -163,7 +163,7 @@ The agent proceeds with the **Default** unless the owner has written something d
 | D6 | Devices | **1.0: iPhone, portrait only.** Every screen is built **adaptive-ready** (§8.7) so iPad and portrait + landscape on both devices can be added later without a redesign. | ✅ iPhone + iPad, portrait + landscape, in a future release → Phase 15 |
 | D7 | Widget | **Post-launch** (Phase 14, optional) | |
 | D8 | App lock (Face ID/passcode) | **Ship it, off by default, offered during onboarding** | |
-| D9 | App Store name/subtitle | Name **TrackBoth**. Subtitle **"Quit vices. Build habits."** (25/30 chars) | ✅ Yes |
+| D9 | App Store name/subtitle | Name **Urge Buddy**. Subtitle **"Quit vices. Build habits."** (25/30 chars) | ✅ Urge Buddy, 2026-11-01 |
 | D10 | Version | **Stays 1.0.0** (never shipped). Build number continues from **6**. | |
 | D11 | Monetization | **Free**, no IAP (existing decision) | |
 | D12 | Telemetry | **None** | |
@@ -345,8 +345,8 @@ Notification copy is never guilt-based. In **discreet mode** it never names the 
 | 4 | **Why do you want to quit [first vice]?** Multiline text with prompt chips that insert a starter ("For my health…", "For my family…", "To save money…", "To feel in control…"). Skippable. | first `Reason` |
 | 5 | **What helps you?** Helper habit presets (§13.3) + custom, multi-select, max 3. Skippable. | draft habits |
 | 6 | **Daily check-in time.** Time picker, default 8:00 PM. Copy: "We'll send one gentle reminder a day. Nothing else." [Turn on reminders] → *then* call the system permission prompt. [Not now]. | reminder prefs |
-| 7 | **Keep it private?** "Lock TrackBoth with Face ID." [Turn on] [Not now]. Hidden if the device has no passcode set. | lock pref |
-| 8 | **Important.** "TrackBoth is a self-help tool, not medical treatment. Stopping some substances suddenly, like alcohol, benzodiazepines, or opioids, can be dangerous. Talk to a doctor. If you're in crisis, help is in Settings → Get help now." [I understand] | `hasAcceptedDisclaimer` |
+| 7 | **Keep it private?** "Lock Urge Buddy with Face ID." [Turn on] [Not now]. Hidden if the device has no passcode set. | lock pref |
+| 8 | **Important.** "Urge Buddy is a self-help tool, not medical treatment. Stopping some substances suddenly, like alcohol, benzodiazepines, or opioids, can be dangerous. Talk to a doctor. If you're in crisis, help is in Settings → Get help now." [I understand] | `hasAcceptedDisclaimer` |
 
 Finish → create everything in one `RecoveryStore` transaction → land on Today with the CheckInBanner showing.
 
@@ -358,7 +358,7 @@ Finish → create everything in one `RecoveryStore` transaction → land on Toda
 | Privacy | Lock with Face ID / Touch ID / Passcode (label adapts to `LAContext.biometryType`) |
 | Appearance | System / Light / Dark (segmented) |
 | Your data | Export backup (.json) · Import backup · Delete all data (destructive, double-confirm) |
-| Support | **Get help now** (→ `CrisisResourcesView`) · Contact support (`AppLinks.support`) · Privacy policy (`AppLinks.privacy`) · Rate TrackBoth |
+| Support | **Get help now** (→ `CrisisResourcesView`) · Contact support (`AppLinks.support`) · Privacy policy (`AppLinks.privacy`) · Rate Urge Buddy |
 | About | Version (build) · Disclaimer text · Accessibility statement (`AppLinks.accessibility`) |
 | Debug (DEBUG builds only, `ProductSurface.showsDebugTools`) | Seed demo data · Clear data · Reset onboarding · Fire test milestone · Schedule test reminder in 10s |
 
@@ -981,9 +981,9 @@ When to check: on Today `onAppear`, after the check-in Done, after an urge resol
 }
 ```
 
-- Dates: ISO 8601 (`JSONEncoder.DateEncodingStrategy.iso8601`). File name: `TrackBoth-Backup-YYYY-MM-DD.json`. Share with `ShareLink` on a temp file URL.
+- Dates: ISO 8601 (`JSONEncoder.DateEncodingStrategy.iso8601`). File name: `UrgeBuddy-Backup-YYYY-MM-DD.json`. Share with `ShareLink` on a temp file URL.
 - Import = **replace all** (confirm first: "This replaces everything on this device with the backup."). Validate everything before deleting anything. Do it in one transaction: decode → validate → `deleteAllData()` → insert → save.
-- Unknown `schemaVersion` > 5 → error "This backup is from a newer version of TrackBoth."
+- Unknown `schemaVersion` > 5 → error "This backup is from a newer version of Urge Buddy."
 
 **Legacy import (schema 1–4, from the old app).** Decode with the old structs (rename them `LegacyExportV4` and keep them in `Data/Export/LegacyExportV4.swift`):
 
@@ -1171,8 +1171,8 @@ That's it. Anything not ready doesn't get merged.
   4. Stay well under iOS's 64-pending limit: at most 7 + 2 × (active vices, max 10).
 - Copy (in `RecoveryCopy`):
   - Check-in: title "Daily check-in", body "How did today go? It takes 10 seconds."
-  - Milestone: title "7 days free", body "You reached 7 days free from Alcohol. Open TrackBoth to celebrate."
-  - **Discreet:** check-in title "TrackBoth", body "Time for your check-in." Milestone body "You reached a new milestone."
+  - Milestone: title "7 days free", body "You reached 7 days free from Alcohol. Open Urge Buddy to celebrate."
+  - **Discreet:** check-in title "Urge Buddy", body "Time for your check-in." Milestone body "You reached a new milestone."
 - Tapping a notification: set `UNUserNotificationCenter.current().delegate` (in `AppDelegate`). The check-in ID opens the check-in flow; a milestone opens Today.
 
 ### 7.6 App lock (`Services/AppLock.swift`)
@@ -1208,7 +1208,7 @@ final class AppLock {
         }
         do {
             if try await context.evaluatePolicy(.deviceOwnerAuthentication,
-                                                localizedReason: "Unlock TrackBoth") {
+                                                localizedReason: "Unlock Urge Buddy") {
                 isLocked = false
             }
         } catch {
@@ -1220,7 +1220,7 @@ final class AppLock {
 
 - Add `INFOPLIST_KEY_NSFaceIDUsageDescription: "Use Face ID to keep your progress private."` to `project.yml`.
 - **Only lock on `.background`, never on `.inactive`.** The Face ID prompt itself makes the scene inactive, so locking there would loop forever.
-- `LockScreen`: `BrandMark`, "TrackBoth is locked", [Unlock] button. Call `unlock()` automatically on appear.
+- `LockScreen`: `BrandMark`, "Urge Buddy is locked", [Unlock] button. Call `unlock()` automatically on appear.
 
 ### 7.7 Preferences (`Services/Preferences.swift`)
 

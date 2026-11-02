@@ -70,6 +70,26 @@ final class TrackBothUITests: TrackBothUITestCase {
         XCTAssertTrue(greatRow.waitForExistence(timeout: 6))
     }
 
+    func testUrgeAddWhyDuringRide() {
+        launchApp()
+        app.buttons["today.sosButton"].tap()
+        app.buttons["Alcohol"].tap()
+        app.buttons["urge.intensity.3"].tap()
+        let field = app.textFields["urge.addWhy"].exists ? app.textFields["urge.addWhy"] : app.textViews["urge.addWhy"]
+        for _ in 0..<8 where !field.exists {
+            app.swipeUp()
+        }
+        XCTAssertTrue(field.waitForExistence(timeout: 6))
+        field.tap()
+        field.typeText("For my kids")
+        app.buttons["urge.saveWhy"].tap()
+        assertStaticTextExists("For my kids", timeout: 4)
+        app.buttons["urge.passed"].tap()
+        app.buttons["urge.done"].tap()
+        openProgressMetric(named: "Alcohol")
+        assertStaticTextExists("For my kids", timeout: 6)
+    }
+
     func testUrgeFlowResisted() {
         launchApp()
         let sos = app.buttons["today.sosButton"]
@@ -83,6 +103,39 @@ final class TrackBothUITests: TrackBothUITestCase {
         app.buttons["urge.done"].tap()
         tab(named: "Progress", identifier: "tab.progress").tap()
         assertStaticTextExists("Urges beaten", timeout: 8)
+    }
+
+    func testUrgeJournalNoteSavesToJournal() {
+        launchApp()
+        let sos = app.buttons["today.sosButton"]
+        XCTAssertTrue(sos.waitForExistence(timeout: 8))
+        sos.tap()
+        app.buttons["Alcohol"].tap()
+        app.buttons["urge.intensity.3"].tap()
+        let field = app.textFields["urge.journal"].exists ? app.textFields["urge.journal"] : app.textViews["urge.journal"]
+        XCTAssertTrue(field.waitForExistence(timeout: 4))
+        field.tap()
+        field.typeText("Rough call at work")
+        XCTAssertEqual(field.value as? String, "Rough call at work")
+        let passed = app.buttons["urge.passed"]
+        for _ in 0..<6 where !passed.isHittable {
+            app.swipeUp()
+        }
+        passed.tap()
+        app.buttons["urge.journal.save"].tap()
+        app.buttons["urge.done"].tap()
+        tab(named: "Progress", identifier: "tab.progress").tap()
+        let journal = app.buttons["progress.journal"]
+        for _ in 0..<6 where !journal.isHittable {
+            app.swipeUp()
+        }
+        journal.tap()
+        assertStaticTextExists("Rough call at work", timeout: 6)
+        app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Rough call at work'")).firstMatch.tap()
+        app.navigationBars.buttons["Delete"].tap()
+        app.sheets.buttons["Delete"].firstMatch.tap()
+        let gone = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Rough call at work'")).firstMatch
+        XCTAssertTrue(gone.waitForNonExistence(timeout: 4))
     }
 
     func testSlipFlowShowsCompassionateSummary() {
@@ -117,5 +170,31 @@ final class TrackBothUITests: TrackBothUITestCase {
         save.tap()
 
         assertStaticTextExists("0 days free", timeout: 12)
+    }
+
+    func testSettingsReplaysOnboarding() {
+        launchApp()
+        tab(named: "Settings", identifier: "tab.settings").tap()
+        let replay = app.buttons["settings.viewOnboarding"]
+        XCTAssertTrue(replay.waitForExistence(timeout: 8))
+        replay.tap()
+        XCTAssertTrue(app.staticTexts["Quit what's hurting you. Build what helps."].waitForExistence(timeout: 4))
+        app.buttons["onboarding.next"].tap()
+        XCTAssertTrue(app.staticTexts["What it is"].waitForExistence(timeout: 4))
+        app.buttons["Close"].tap()
+        XCTAssertTrue(replay.waitForExistence(timeout: 4))
+    }
+
+    func testOnboardingTeachesUrgeSurfing() {
+        app.launchArguments = ["-ui_testing"]
+        app.launch()
+
+        let next = app.buttons["onboarding.next"]
+        XCTAssertTrue(next.waitForExistence(timeout: 8))
+        next.tap()
+
+        XCTAssertTrue(app.staticTexts["What it is"].waitForExistence(timeout: 4))
+        XCTAssertTrue(app.staticTexts["What you do"].exists)
+        XCTAssertTrue(app.staticTexts["When an urge hits"].exists)
     }
 }

@@ -33,6 +33,78 @@ final class UrgeViewModelTests: XCTestCase {
         XCTAssertEqual(model.beaten, 1)
         let urge = try XCTUnwrap(try store.context.fetch(FetchDescriptor<UrgeEvent>()).first)
         XCTAssertEqual(urge.outcome, .resisted)
+        XCTAssertNil(urge.note)
+    }
+
+    func testSavedJournalKeepsTheNoteAndTriggersPickedAfterward() throws {
+        let harness = try TestHarness()
+        let store = harness.store
+        let alcohol = try store.addMetric(name: "Alcohol", habitType: .vice, iconName: "wineglass", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil)
+        let model = UrgeViewModel(store: store)
+        let now = date(2026, 10, 13, 10)
+        model.start(metrics: [alcohol], preferredID: nil, now: now)
+        try model.begin(metrics: [alcohol], now: now)
+        model.journalText = "  I want mornings back.  "
+        try model.passed(now: now)
+        model.triggers = [.tired, .stressed]
+        model.journalChoice = .save
+        try model.commitReflection(keepJournal: true)
+
+        let urge = try XCTUnwrap(try store.context.fetch(FetchDescriptor<UrgeEvent>()).first)
+        XCTAssertEqual(urge.note, "I want mornings back.")
+        XCTAssertEqual(Set(urge.triggers), [.tired, .stressed])
+        XCTAssertEqual(urge.outcome, .resisted)
+        XCTAssertEqual(urge.endedAt, now)
+    }
+
+    func testDiscardedJournalIsCleared() throws {
+        let harness = try TestHarness()
+        let store = harness.store
+        let alcohol = try store.addMetric(name: "Alcohol", habitType: .vice, iconName: "wineglass", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil)
+        let model = UrgeViewModel(store: store)
+        let now = date(2026, 10, 13, 10)
+        model.start(metrics: [alcohol], preferredID: nil, now: now)
+        try model.begin(metrics: [alcohol], now: now)
+        model.journalText = "Let this go"
+        try model.passed(now: now)
+        try model.commitReflection(keepJournal: false)
+        let urge = try XCTUnwrap(try store.context.fetch(FetchDescriptor<UrgeEvent>()).first)
+        XCTAssertNil(urge.note)
+        XCTAssertEqual(model.journalText, "Let this go")
+    }
+
+    func testBlankJournalIsNotAChoice() throws {
+        let harness = try TestHarness()
+        let store = harness.store
+        let alcohol = try store.addMetric(name: "Alcohol", habitType: .vice, iconName: "wineglass", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil)
+        let model = UrgeViewModel(store: store)
+        let now = date(2026, 10, 13, 10)
+        model.start(metrics: [alcohol], preferredID: nil, now: now)
+        try model.begin(metrics: [alcohol], now: now)
+        model.journalText = "   \n"
+        XCTAssertFalse(model.hasJournal)
+        XCTAssertFalse(model.needsJournalChoice)
+        try model.markNotSure(now: now, keepJournal: true)
+        let urge = try XCTUnwrap(try store.context.fetch(FetchDescriptor<UrgeEvent>()).first)
+        XCTAssertNil(urge.note)
+        XCTAssertEqual(urge.outcome, .unknown)
+    }
+
+    func testSlippedJournalIsStoredWithTheUrge() throws {
+        let harness = try TestHarness()
+        let store = harness.store
+        let alcohol = try store.addMetric(name: "Alcohol", habitType: .vice, iconName: "wineglass", startedAt: date(2026, 10, 1, 9), costPerDay: nil, firstReason: nil)
+        let model = UrgeViewModel(store: store)
+        let now = date(2026, 10, 13, 10, 4)
+        model.start(metrics: [alcohol], preferredID: nil, now: now)
+        try model.begin(metrics: [alcohol], now: now)
+        model.journalText = "I was tired and it won."
+        try model.markSlipped(now: now.addingTimeInterval(120), keepJournal: true)
+        let urge = try XCTUnwrap(try store.context.fetch(FetchDescriptor<UrgeEvent>()).first)
+        XCTAssertEqual(urge.outcome, .slipped)
+        XCTAssertEqual(urge.note, "I was tired and it won.")
+        XCTAssertEqual(urge.startedAt, now)
+        XCTAssertEqual(urge.endedAt, now.addingTimeInterval(120))
     }
 }
 

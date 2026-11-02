@@ -215,6 +215,21 @@ final class RecoveryStore {
         try persist(operation: "finishUrge", entity: "UrgeEvent")
     }
 
+    /// Writes the ride-out note and the triggers picked after the timer. Does not change the outcome.
+    func updateUrgeReflection(_ urge: UrgeEvent, triggers: [TriggerTag], note: String?) throws {
+        urge.triggers = triggers
+        urge.note = trimmed(note)
+        try persist(operation: "updateUrgeReflection", entity: "UrgeEvent")
+    }
+
+    /// Removes a saved ride note. The urge and its outcome stay in the record.
+    func deleteUrgeNote(id: UUID) throws {
+        let predicate = #Predicate<UrgeEvent> { $0.id == id }
+        guard let urge = try context.fetch(FetchDescriptor<UrgeEvent>(predicate: predicate)).first else { return }
+        urge.note = nil
+        try persist(operation: "deleteUrgeNote", entity: "UrgeEvent")
+    }
+
     /// In-progress urges older than two hours become unknown. Called when the app becomes active.
     func resolveAbandonedUrges(now: Date = Date(), maxAge: TimeInterval = 2 * 60 * 60) throws {
         let cutoff = now.addingTimeInterval(-maxAge)

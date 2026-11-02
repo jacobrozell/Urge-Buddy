@@ -9,9 +9,9 @@ This spec is the product contract for the recovery overhaul. It was copied from 
 
 ### 2.1 One-sentence product
 
-> **TrackBoth helps you quit what's hurting you and build what helps: a 10-second daily check-in, a tool for riding out urges, and progress a slip can't erase.**
+> **Urge Buddy helps you quit what's hurting you and build what helps: a 10-second daily check-in, a tool for riding out urges, and progress a slip can't erase.**
 
-Positioning: *"Quit vices. Build habits."* The "Both" in the name now means **quit one thing and build its replacement**. That's grounded in habit-reversal research: a behavior you remove leaves a gap, and a competing behavior should fill it.
+Positioning: *"Quit vices. Build habits."* The name is the moment you need the app. Quit one thing and build its replacement stays the product, carried by the subtitle. That's grounded in habit-reversal research: a behavior you remove leaves a gap, and a competing behavior should fill it.
 
 ### 2.2 The psychology the design is built on
 
@@ -82,7 +82,7 @@ The agent proceeds with the **Default** unless the owner has written something d
 | D6 | Devices | **iPhone and iPad, portrait and landscape, iPhone Duo-ready** via size-class adaptive layout (§8.7). | ✅ Shipped on branch (adaptive-layout plan, 2026-10-31) |
 | D7 | Widget | **Post-launch** (Phase 14, optional) | |
 | D8 | App lock (Face ID/passcode) | **Ship it, off by default, offered during onboarding** | |
-| D9 | App Store name/subtitle | Name **TrackBoth**. Subtitle **"Quit vices. Build habits."** (25/30 chars) | ✅ Yes |
+| D9 | App Store name/subtitle | Name **Urge Buddy**. Subtitle **"Quit vices. Build habits."** (25/30 chars) | ✅ Urge Buddy, 2026-11-01 |
 | D10 | Version | **Stays 1.0.0** (never shipped). Build number continues from **6**. | |
 | D11 | Monetization | **Free**, no IAP (existing decision) | |
 | D12 | Telemetry | **None** | |
@@ -115,6 +115,10 @@ Entry points into the **Urge** flow: the Today button, the home-screen quick act
 │ ┌──────────────────────────────────┐ │
 │ │ ◉  Daily check-in             ›  │ │  CheckInBanner — only while today
 │ │    3 to go · about 10 seconds    │ │  isn't fully checked in
+│ └──────────────────────────────────┘ │
+│ ┌──────────────────────────────────┐ │
+│ │ [wind]  Urge surfing          ›  │ │  opens the urge-surfing explainer
+│ │ An urge rises and passes…        │ │  while a vice is active
 │ └──────────────────────────────────┘ │
 │                                      │
 │ QUITTING                             │  section header
@@ -184,8 +188,8 @@ Having an urge right now? →            (opens Urge flow)
 1. **Which one?** Skipped when there's only one active vice. A list of active vices.
 2. **How strong?** Five big buttons (1 Mild … 5 Intense), default 3, with a "Skip" option. Creates an `UrgeEvent(outcome: .inProgress)`.
 3. **Ride it out**
-   - A `BreathingCircle`: grows for 4s ("Breathe in"), shrinks for 6s ("Breathe out"), loops. Under Reduce Motion it shows only the text cue, switching every 4s/6s.
-   - Countdown starting at **5:00**, with a "+5 min" button. Copy above it: *"Urges rise, peak, and pass, like a wave. Let's ride this one out."*
+   - A `BreathingCircle`: a soft orb grows for 4s ("Breathe in") and shrinks for 6s ("Breathe out"), with a glow and ripples across the full breath. A slow light wash sits behind this screen. Under Reduce Motion it shows only the text cue, switching every 4s/6s, and the wash is hidden.
+   - Countdown starting at **5:00**, with a "+5 min" button. Copy above it: *"This is urge surfing. The urge rises, peaks, and passes, like a wave. Breathe, and watch it."* A **What is urge surfing?** button (also on the strength step, on a Today card, and in Settings → Support) opens a short explainer: what an urge wave is, how to watch it instead of acting on it, and what to do on this screen. After the urge passes, one line names what they just did: "You stayed with the wave until it fell. That's urge surfing."
    - **Your why** card: rotates through the vice's Reasons every 8s (or shows them as a list under Reduce Motion).
    - **Your plan** card, if `ifThenPlan` is set: "When I feel the urge, I will: …"
    - **Try one instead:** chips for active habits. Tapping one marks it done today (checkmark plus haptic).
@@ -253,18 +257,19 @@ Notification copy is never guilt-based. In **discreet mode** it never names the 
 5. **Your plan:** the if-then prefix and the plan text. **Save** appears when the text differs from what's stored.
 6. Toolbar → **Edit** (MetricForm: name, icon, start date, cost per day, archive, delete). The name is the navigation title.
 
-### 4.8 Onboarding (8 short steps, all skippable except step 2)
+### 4.8 Onboarding (9 short steps, all skippable except choosing a vice)
 
 | Step | Screen | Saves |
 |------|--------|-------|
 | 1 | **Welcome.** "Quit what's hurting you. Build what helps." Three lines on how it works. [Get started] | — |
-| 2 | **What do you want to quit?** Preset grid (§13.2) plus "Something else…" (text field). Multi-select, max 3. A "I only want to build habits" link skips to step 5. **Need ≥1 vice or the habit-only link.** | draft vices |
-| 3 | For each chosen vice (one page each): **When did you last [use/do] it?** [Today] [Yesterday] [Pick a date] → `startedAt` (Today = now; Yesterday/Pick = that day at 23:59:59, as with slips). **What does it cost you per day?** Optional currency field. | `startedAt`, `costPerDay` |
-| 4 | **Why do you want to quit [first vice]?** Multiline text with prompt chips that insert a starter ("For my health…", "For my family…", "To save money…", "To feel in control…"). Skippable. | first `Reason` |
-| 5 | **What helps you?** Helper habit presets (§13.3) + custom, multi-select, max 3. Skippable. | draft habits |
-| 6 | **Daily check-in time.** Time picker, default 8:00 PM. Copy: "We'll send one gentle reminder a day. Nothing else." [Turn on reminders] → *then* call the system permission prompt. [Not now]. | reminder prefs |
-| 7 | **Keep it private?** "Lock TrackBoth with Face ID." [Turn on] [Not now]. Hidden if the device has no passcode set. | lock pref |
-| 8 | **Important.** "TrackBoth is a self-help tool, not medical treatment. Stopping some substances suddenly, like alcohol, benzodiazepines, or opioids, can be dangerous. Talk to a doctor. If you're in crisis, help is in Settings → Get help now." [I understand] | `hasAcceptedDisclaimer` |
+| 2 | **Urge surfing.** The same lesson as `UrgeSurfingExplainer`: what an urge wave is, how to watch it, and what to do when one hits. [Next] | — |
+| 3 | **What do you want to quit?** Preset grid (§13.2) plus "Something else…" (text field). Multi-select, max 3. A "I only want to build habits" link skips to the habits step. **Need ≥1 vice or the habit-only link.** | draft vices |
+| 4 | For each chosen vice (one page each): **Quit or cut back.** Quit asks **When did you last [use/do] it?** [Today] [Yesterday] [Pick a date] → `startedAt` (Today = now; Yesterday/Pick = that day at 23:59:59, as with slips). Cut back asks usual amount and a daily limit (required; zero is fine). **What does it cost you per day?** Optional currency field. Number pads get a keyboard **Done** button. | `startedAt`, `costPerDay`, tracking |
+| 5 | **Why do you want to quit [first vice]?** Multiline text with prompt chips that insert a starter ("For my health…", "For my family…", "To save money…", "To feel in control…"). Skippable. | first `Reason` |
+| 6 | **What helps you?** Helper habit presets (§13.3) + custom, multi-select, max 3. Skippable. | draft habits |
+| 7 | **Daily check-in time.** Time picker, default 8:00 PM. Copy: "We'll send one gentle reminder a day. Nothing else." [Turn on reminders] → *then* call the system permission prompt. [Not now]. | reminder prefs |
+| 8 | **Keep it private?** "Lock Urge Buddy with Face ID." [Turn on] [Not now]. Hidden if the device has no passcode set. | lock pref |
+| 9 | **Important.** "Urge Buddy is a self-help tool, not medical treatment. Stopping some substances suddenly, like alcohol, benzodiazepines, or opioids, can be dangerous. Talk to a doctor. If you're in crisis, help is in Settings → Get help now." [I understand] | `hasAcceptedDisclaimer` |
 
 Finish → create everything in one `RecoveryStore` transaction → land on Today with the CheckInBanner showing.
 
@@ -276,7 +281,7 @@ Finish → create everything in one `RecoveryStore` transaction → land on Toda
 | Privacy | Lock with Face ID / Touch ID / Passcode (label adapts to `LAContext.biometryType`) |
 | Appearance | System / Light / Dark (segmented) |
 | Your data | Export backup (.json) · Import backup · Delete all data (destructive, double-confirm) |
-| Support | **Get help now** (→ `CrisisResourcesView`) · Contact support (`AppLinks.support`) · Privacy policy (`AppLinks.privacy`) · Rate TrackBoth |
+| Support | **See the introduction** (replays onboarding; does not save) · **What is urge surfing?** (→ `UrgeSurfingExplainer`) · **Get help now** (→ `CrisisResourcesView`) · Contact support (`AppLinks.support`) · Privacy policy (`AppLinks.privacy`) · Rate Urge Buddy |
 | About | Version (build) · Disclaimer text · Accessibility statement (`AppLinks.accessibility`) |
 | Debug (DEBUG builds only, `ProductSurface.showsDebugTools`) | Seed demo data · Clear data · Reset onboarding · Fire test milestone · Schedule test reminder in 10s |
 
@@ -318,7 +323,8 @@ Finish → create everything in one `RecoveryStore` transaction → land on Toda
 | `nextMilestone(t, inDays)` | "Next: \(t) days (in \(inDays) \(inDays == 1 ? "day" : "days"))" |
 | `checkInBanner(left)` | "\(left) to go · about 10 seconds" |
 | `sosButton` | "I'm having an urge" |
-| `urgeIntro` | "Urges rise, peak, and pass, like a wave. Let's ride this one out." |
+| `urgeIntro` | "This is urge surfing. The urge rises, peaks, and passes, like a wave. Breathe, and watch it." |
+| `whatIsUrgeSurfing` | "What is urge surfing?" |
 | `urgePassed(n)` | "You rode it out. That's \(n) \(n == 1 ? "urge" : "urges") you've beaten." |
 | `slipTitle` | "Thanks for being honest." |
 | `slipSubtitle` | "A slip is information, not failure. Let's learn from it." |

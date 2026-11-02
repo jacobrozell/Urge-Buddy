@@ -8,7 +8,7 @@ enum AppSupport {
     }
 
     static var versionLabel: String {
-        "TrackBoth · Version \(installedVersion)"
+        "Urge Buddy · Version \(installedVersion)"
     }
 
     static var feedbackMailtoURL: URL {
@@ -16,10 +16,10 @@ enum AppSupport {
         components.scheme = "mailto"
         components.path = feedbackEmail
         components.queryItems = [
-            URLQueryItem(name: "subject", value: "TrackBoth Feedback"),
+            URLQueryItem(name: "subject", value: "Urge Buddy Feedback"),
             URLQueryItem(
                 name: "body",
-                value: "\n\n---\nTrackBoth \(installedVersion)"
+                value: "\n\n---\nUrge Buddy \(installedVersion)"
             )
         ]
         return components.url ?? URL(string: "mailto:\(feedbackEmail)")!

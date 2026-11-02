@@ -38,6 +38,7 @@ final class OnboardingViewModel {
 
     enum Page: Equatable {
         case welcome
+        case urgeSurfing
         case chooseVices
         case viceWhen(String)
         case why
@@ -65,7 +66,7 @@ final class OnboardingViewModel {
     private let maxChoices = 3
 
     var pages: [Page] {
-        var result: [Page] = [.welcome, .chooseVices]
+        var result: [Page] = [.welcome, .urgeSurfing, .chooseVices]
         if !habitOnly {
             result.append(contentsOf: viceChoices.map { .viceWhen($0.id) })
             result.append(.why)
@@ -110,8 +111,10 @@ final class OnboardingViewModel {
         switch page {
         case .chooseVices:
             return habitOnly || !viceChoices.isEmpty
-        case .disclaimer:
-            return acceptedDisclaimer
+        case .viceWhen(let id):
+            let detail = detail(for: id, now: Date())
+            guard detail.mode == .cutBack else { return true }
+            return wholeNumber(detail.limitText) != nil
         default:
             return true
         }

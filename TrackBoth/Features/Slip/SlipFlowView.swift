@@ -11,6 +11,7 @@ struct SlipFlowView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.persist) private var persist
 
     private var pinsActionInToolbar: Bool {
         AdaptiveLayout.isShortHeight(vertical: verticalSizeClass)
@@ -38,7 +39,7 @@ struct SlipFlowView: View {
                 if model?.summary == nil, !pinsActionInToolbar {
                     ReadableColumn {
                         PrimaryButton(title: RecoveryCopy.save, systemImage: nil, accessibilityID: AccessibilityIdentifiers.slipSave) {
-                            try? model?.save(metric: metric, now: Date())
+                            persist("save slip") { try model?.save(metric: metric, now: Date()) }
                         }
                     }
                     .padding(.top, Spacing.s)
@@ -56,7 +57,7 @@ struct SlipFlowView: View {
                 if model?.summary == nil, pinsActionInToolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button(RecoveryCopy.save) {
-                            try? model?.save(metric: metric, now: Date())
+                            persist("save slip") { try model?.save(metric: metric, now: Date()) }
                         }
                         .accessibilityIdentifier(AccessibilityIdentifiers.slipSave)
                     }

@@ -3,11 +3,15 @@ import SwiftUI
 
 struct OnboardingFlow: View {
     var onFinished: () -> Void
+    /// Look through the pages again. Does not save vices, habits, or preferences.
+    var review = false
 
     @Environment(\.modelContext) private var modelContext
     @Environment(AppLock.self) private var appLock
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @Environment(\.persist) private var persist
     @State private var model = OnboardingViewModel()
+    @FocusState private var keyboard: Bool
 
     private var isShortHeight: Bool {
         AdaptiveLayout.isShortHeight(vertical: verticalSizeClass)
@@ -39,6 +43,12 @@ struct OnboardingFlow: View {
             }
         }
         .background(Color.tbBackground)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button(RecoveryCopy.done) { keyboard = false }
+            }
+        }
         .onAppear {
             model.lockAvailable = appLock.isAvailable
             if LaunchConfiguration.startsOnVices {
@@ -95,6 +105,8 @@ struct OnboardingFlow: View {
         switch page {
         case .welcome:
             welcome
+        case .urgeSurfing:
+            urgeSurfing
         case .chooseVices:
             chooseVices
         case .viceWhen(let id):
@@ -128,6 +140,16 @@ struct OnboardingFlow: View {
             .font(.body)
             .foregroundStyle(Color.tbTextSecondary)
         }
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var urgeSurfing: some View {
+        VStack(alignment: .leading, spacing: Spacing.l) {
+            Text(RecoveryCopy.urgeSurfingTitle)
+                .font(.title2.weight(.bold))
+                .foregroundStyle(Color.tbTextPrimary)
+            UrgeSurfingLesson()
+        }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -144,6 +166,7 @@ struct OnboardingFlow: View {
             }
             TextField(RecoveryCopy.somethingElse, text: customViceName)
                 .textFieldStyle(.roundedBorder)
+                .focused($keyboard)
                 .onChange(of: model.customViceName) { _, _ in model.habitOnly = false }
             Button(RecoveryCopy.habitOnlyLink) { model.chooseHabitsOnly() }
                 .frame(minHeight: 44)
@@ -172,6 +195,9 @@ struct OnboardingFlow: View {
                     .foregroundStyle(Color.tbTextSecondary)
                 numberField(RecoveryCopy.howManyNow, unit: vice.unit, text: textBinding(vice.id, \.baselineText))
                 numberField(RecoveryCopy.dailyLimitPrompt, unit: vice.unit, text: textBinding(vice.id, \.limitText))
+                Text(RecoveryCopy.limitRequired)
+                    .font(.footnote)
+                    .foregroundStyle(Color.tbTextSecondary)
             } else {
                 Text(RecoveryCopy.whenDidYouLast(vice.verb))
                     .font(.title2.weight(.bold))
@@ -181,9 +207,10 @@ struct OnboardingFlow: View {
             Text(RecoveryCopy.whatDoesItCost)
                 .font(.headline)
                 .foregroundStyle(Color.tbTextPrimary)
-            TextField(RecoveryCopy.costPerDay, text: costBinding(vice.id, detail: detail))
+            TextField(RecoveryCopy.costPerDay, text: textBinding(vice.id, \.costText))
                 .keyboardType(.decimalPad)
                 .textFieldStyle(.roundedBorder)
+                .focused($keyboard)
             Text(RecoveryCopy.optional)
                 .font(.footnote)
                 .foregroundStyle(Color.tbTextSecondary)
@@ -206,6 +233,7 @@ struct OnboardingFlow: View {
                 TextField("0", text: text)
                     .keyboardType(.numberPad)
                     .textFieldStyle(.roundedBorder)
+                    .focused($keyboard)
                 Text(unit.isEmpty ? AmountMath.defaultUnit : unit)
                     .foregroundStyle(Color.tbTextSecondary)
             }
@@ -235,7 +263,7 @@ struct OnboardingFlow: View {
                 update(viceID, detail) { $0.when = .picked }
             }
             if detail.when == .picked {
-                DatePicker(RecoveryCopy.pickADay, selection: pickedBinding(viceID, detail: detail), in: ...Date(), displayedComponents: .date)
+                DatePicker(RecoveryCopy.pickADay, selection: pickedBinding(viceID), in: ...Date(), displayedComponents: .date)
             }
         }
     }
@@ -259,6 +287,7 @@ struct OnboardingFlow: View {
             TextField(RecoveryCopy.yourWhy, text: reasonText, axis: .vertical)
                 .lineLimit(3...6)
                 .textFieldStyle(.roundedBorder)
+                .focused($keyboard)
             chipRow
         }
     }
@@ -291,6 +320,7 @@ struct OnboardingFlow: View {
             }
             TextField(RecoveryCopy.somethingElse, text: customHabitName)
                 .textFieldStyle(.roundedBorder)
+                .focused($keyboard)
         }
     }
 
@@ -325,35 +355,37 @@ struct OnboardingFlow: View {
             Text(RecoveryCopy.disclaimer)
                 .font(.body)
                 .foregroundStyle(Color.tbTextPrimary)
-            Toggle(RecoveryCopy.iUnderstand, isOn: acceptedDisclaimer)
-                .frame(minHeight: 44)
         }
     }
 
     private var controls: some View {
         VStack(spacing: Spacing.s) {
-            if case .reminders = model.page {
+            if !review, case .reminders = model.page {
                 PrimaryButton(title: RecoveryCopy.turnOnReminders, accessibilityID: AccessibilityIdentifiers.onboardingNext) {
                     Task { await turnOnReminders() }
                 }
                 SecondaryButton(title: RecoveryCopy.notNow) { model.advance() }
-            } else if case .privacy = model.page {
+            } else if !review, case .privacy = model.page {
                 PrimaryButton(title: RecoveryCopy.turnOn, accessibilityID: AccessibilityIdentifiers.onboardingNext) {
                     model.wantsLock = true
                     model.advance()
                 }
                 SecondaryButton(title: RecoveryCopy.notNow) { model.advance() }
             } else if model.isLastPage {
-                PrimaryButton(title: RecoveryCopy.iUnderstand, accessibilityID: AccessibilityIdentifiers.onboardingFinish) {
-                    finish()
+                PrimaryButton(title: review ? RecoveryCopy.done : RecoveryCopy.iUnderstand, accessibilityID: AccessibilityIdentifiers.onboardingFinish) {
+                    if review {
+                        onFinished()
+                    } else {
+                        model.acceptedDisclaimer = true
+                        finish()
+                    }
                 }
-                .disabled(!model.canAdvance)
             } else {
                 PrimaryButton(
                     title: model.page == .welcome ? RecoveryCopy.getStarted : RecoveryCopy.next,
                     accessibilityID: AccessibilityIdentifiers.onboardingNext
                 ) { model.advance() }
-                .disabled(!model.canAdvance)
+                .disabled(!review && !model.canAdvance)
             }
             if model.canGoBack {
                 Button(RecoveryCopy.back) { model.goBack() }
@@ -400,10 +432,6 @@ struct OnboardingFlow: View {
         Binding(get: { model.reasonText }, set: { model.reasonText = $0 })
     }
 
-    private var acceptedDisclaimer: Binding<Bool> {
-        Binding(get: { model.acceptedDisclaimer }, set: { model.acceptedDisclaimer = $0 })
-    }
-
     private var reminderDate: Binding<Date> {
         Binding(
             get: {
@@ -417,22 +445,11 @@ struct OnboardingFlow: View {
         )
     }
 
-    private func costBinding(_ id: String, detail: OnboardingViewModel.ViceDetail) -> Binding<String> {
-        Binding(
-            get: { model.detail(for: id, now: Date()).costText },
-            set: { text in
-                var next = detail
-                next.costText = text
-                model.setDetail(next, for: id)
-            }
-        )
-    }
-
-    private func pickedBinding(_ id: String, detail: OnboardingViewModel.ViceDetail) -> Binding<Date> {
+    private func pickedBinding(_ id: String) -> Binding<Date> {
         Binding(
             get: { model.detail(for: id, now: Date()).pickedDay },
             set: { day in
-                var next = detail
+                var next = model.detail(for: id, now: Date())
                 next.when = .picked
                 next.pickedDay = day
                 model.setDetail(next, for: id)
@@ -457,17 +474,20 @@ struct OnboardingFlow: View {
         guard model.acceptedDisclaimer else { return }
         let store = RecoveryStore(context: modelContext)
         let drafts = model.drafts(now: Date(), calendar: .current)
-        for draft in drafts {
-            _ = try? store.addMetric(
-                name: draft.name,
-                habitType: draft.habitType,
-                iconName: draft.iconName,
-                startedAt: draft.startedAt,
-                costPerDay: draft.costPerDay,
-                firstReason: draft.firstReason,
-                tracking: draft.tracking
-            )
+        let saved: Void? = persist("finish onboarding") {
+            for draft in drafts {
+                _ = try store.addMetric(
+                    name: draft.name,
+                    habitType: draft.habitType,
+                    iconName: draft.iconName,
+                    startedAt: draft.startedAt,
+                    costPerDay: draft.costPerDay,
+                    firstReason: draft.firstReason,
+                    tracking: draft.tracking
+                )
+            }
         }
+        guard saved != nil else { return }
         Preferences.reminderHour = model.reminderHour
         Preferences.reminderMinute = model.reminderMinute
         Preferences.remindersEnabled = model.wantsReminders

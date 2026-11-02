@@ -112,6 +112,41 @@ final class RecoveryStoreTests: XCTestCase {
         XCTAssertNil(try store.dayNote(on: day))
     }
 
+    func testUrgeReflectionUpdatesTheNoteWithoutChangingTheOutcome() throws {
+        let metric = try vice()
+        let urge = try store.startUrge(for: metric, intensity: 4, now: date(2026, 10, 11, 18))
+        try store.finishUrge(urge, outcome: .resisted, triggers: [], note: nil, now: date(2026, 10, 11, 18, 6))
+        try store.updateUrgeReflection(urge, triggers: [.lonely], note: "  Called someone.  ")
+        XCTAssertEqual(urge.outcome, .resisted)
+        XCTAssertEqual(urge.note, "Called someone.")
+        XCTAssertEqual(urge.triggers, [.lonely])
+        XCTAssertEqual(urge.endedAt, date(2026, 10, 11, 18, 6))
+        try store.updateUrgeReflection(urge, triggers: [.lonely], note: " ")
+        XCTAssertNil(urge.note)
+    }
+
+    func testDeleteUrgeNoteKeepsTheUrge() throws {
+        let metric = try vice()
+        let urge = try store.startUrge(for: metric, intensity: 2, now: date(2026, 10, 11, 18))
+        try store.finishUrge(urge, outcome: .resisted, triggers: [.bored], note: "Private", now: date(2026, 10, 11, 18, 6))
+        try store.deleteUrgeNote(id: urge.id)
+        XCTAssertNil(urge.note)
+        XCTAssertEqual(urge.outcome, .resisted)
+        XCTAssertEqual(urge.triggers, [.bored])
+        XCTAssertEqual(try store.urges(for: metric.id).count, 1)
+    }
+
+    func testAddReasonPersistsSortOrderAndSkipsBlank() throws {
+        let metric = try vice()
+        try store.addReason("For my health", to: metric)
+        try store.addReason("For my kids", to: metric)
+        try store.addReason("   ", to: metric)
+        let reasons = try store.reasons(for: metric.id)
+        XCTAssertEqual(reasons.map(\.text), ["For my health", "For my kids"])
+        XCTAssertEqual(reasons.map(\.sortOrder), [0, 1])
+        XCTAssertEqual(try store.context.fetchCount(FetchDescriptor<Reason>()), 2)
+    }
+
     func testDeleteCascadesEntriesUrgesAndReasons() throws {
         let metric = try vice()
         try store.addReason("For my health", to: metric)

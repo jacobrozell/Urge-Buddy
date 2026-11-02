@@ -50,7 +50,17 @@ enum RecoveryCopy {
     }
 
     static let sosButton = "I'm having an urge"
-    static let urgeIntro = "Urges rise, peak, and pass, like a wave. Let's ride this one out."
+    static let urgeSurfingTitle = "Urge surfing"
+    static let whatIsUrgeSurfing = "What is urge surfing?"
+    static let urgeSurfingRow = "An urge rises and passes, like a wave."
+    static let urgeIntro = "This is urge surfing. The urge rises, peaks, and passes, like a wave. Breathe, and watch it."
+    static let urgeSurfingWhatTitle = "What it is"
+    static let urgeSurfingWhat = "An urge is a wave. It gets stronger, crests, then fades on its own. Most pass in a few minutes. Some take longer."
+    static let urgeSurfingHowTitle = "What you do"
+    static let urgeSurfingHow = "Stay with it and watch it. Notice where you feel it in your body, and let it crest. You can let it pass without acting on it. Watching it makes the next one easier to ride."
+    static let urgeSurfingHereTitle = "When an urge hits"
+    static let urgeSurfingHere = "Open I'm having an urge. Breathe with the circle. Write down what's in your head. Read why this matters to you. The timer gives the wave time to fall. Add 5 minutes if it's still there."
+    static let urgeSurfedIt = "You stayed with the wave until it fell. That's urge surfing."
 
     static func urgePassed(_ count: Int) -> String {
         let noun = count == 1 ? "urge" : "urges"
@@ -74,7 +84,7 @@ enum RecoveryCopy {
         "\(threshold)-day run: \(name)."
     }
 
-    static let disclaimer = "TrackBoth is a self-help tool, not medical treatment. Stopping some substances suddenly, like alcohol, benzodiazepines, or opioids, can be dangerous. Talk to a doctor. If you're in crisis, help is in Settings → Get help now."
+    static let disclaimer = "Urge Buddy is a self-help tool, not medical treatment. Stopping some substances suddenly, like alcohol, benzodiazepines, or opioids, can be dangerous. Talk to a doctor. If you're in crisis, help is in Settings → Get help now."
 
     static let checkInTitle = "Daily check-in"
     static let freeToday = "Free today"
@@ -91,6 +101,9 @@ enum RecoveryCopy {
     static let done = "Done"
     static let backToToday = "Back to Today"
     static let close = "Close"
+    static let ok = "OK"
+    static let saveFailedTitle = "Couldn't save that"
+    static let saveFailedMessage = "Try again. If it keeps happening, close and reopen Urge Buddy."
 
     static func yesterdayPrompt(_ name: String) -> String {
         "Yesterday: were you free from \(name)?"
@@ -111,7 +124,33 @@ enum RecoveryCopy {
     static let howDidItGo = "How did it go?"
     static let addFiveMinutes = "+5 min"
     static let stillWithIt = "Still with it? You can add 5 minutes, or check in with yourself."
+    static let writeItDown = "Write it down"
+    static let writeItDownHint = "Thoughts, reasons, whatever is in your head. You can save it when you're done, or delete it."
+    static let journalPlaceholder = "What's on your mind?"
+    static let saveThisNote = "Save this note?"
+    static let saveThisNoteMessage = "Saved notes stay on this device. You can read them in Progress."
+    static let saveIt = "Save it"
+    static let deleteIt = "Delete it"
+    static let journal = "Journal"
+    static let journalEmpty = "Notes you save while riding out an urge show up here."
+    static let howItWent = "How it went"
+    static let strengthLabel = "Strength"
+    static let endedLabel = "Ended"
+    static let deleteNoteTitle = "Delete this note?"
+    static let deleteNoteMessage = "The note is removed from this device. The urge stays in your record."
+    static func strengthOutOfFive(_ level: Int) -> String {
+        "\(level) of 5"
+    }
+    static func journalCount(_ count: Int) -> String {
+        count == 1 ? "1 saved note" : "\(count) saved notes"
+    }
     static let yourWhy = "Your why"
+    static let swipeYourWhys = "Swipe to read each one."
+    static func whyPageIndicator(current: Int, total: Int) -> String {
+        "\(current) of \(total)"
+    }
+    static let noReasonsYet = "What are you doing this for?"
+    static let saveReason = "Save reason"
     static let yourPlanPrefix = "When I feel the urge, I will:"
     static let tryOneInstead = "Try one instead"
     static let whatSetItOff = "What set it off?"
@@ -221,7 +260,7 @@ enum RecoveryCopy {
 
     static let checkInNotificationTitle = "Daily check-in"
     static let checkInNotificationBody = "How did today go? It takes 10 seconds."
-    static let discreetCheckInTitle = "TrackBoth"
+    static let discreetCheckInTitle = "Urge Buddy"
     static let discreetCheckInBody = "Time for your check-in."
     static let discreetMilestoneBody = "You reached a new milestone."
 
@@ -230,12 +269,12 @@ enum RecoveryCopy {
     }
 
     static func milestoneNotificationBody(_ threshold: Int, name: String) -> String {
-        "You reached \(threshold) days free from \(name). Open TrackBoth to celebrate."
+        "You reached \(threshold) days free from \(name). Open Urge Buddy to celebrate."
     }
 
     static let welcomeTitle = "Quit what's hurting you. Build what helps."
     static let welcomeLine1 = "Check in once a day. It takes about 10 seconds."
-    static let welcomeLine2 = "When an urge hits, ride it out."
+    static let welcomeLine2 = "When an urge hits, surf it. It rises and passes, like a wave."
     static let welcomeLine3 = "A slip restarts the clock. It does not erase your progress."
     static let getStarted = "Get started"
     static let whatToQuit = "What do you want to quit?"
@@ -254,7 +293,7 @@ enum RecoveryCopy {
     static let turnOnReminders = "Turn on reminders"
     static let notNow = "Not now"
     static let keepPrivate = "Keep it private?"
-    static let lockPrompt = "Lock TrackBoth when you leave the app."
+    static let lockPrompt = "Lock Urge Buddy when you leave the app."
     static let turnOn = "Turn on"
     static let important = "Important"
     static let iUnderstand = "I understand"
@@ -279,7 +318,7 @@ enum RecoveryCopy {
     static let lockTouchID = "Lock with Touch ID"
     static let lockOpticID = "Lock with Optic ID"
     static let lockPasscode = "Lock with passcode"
-    static let noPasscodeNote = "Set a device passcode to lock TrackBoth."
+    static let noPasscodeNote = "Set a device passcode to lock Urge Buddy."
     static let appearanceSection = "Appearance"
     static let systemAppearance = "System"
     static let lightAppearance = "Light"
@@ -292,19 +331,20 @@ enum RecoveryCopy {
     static let deleteAllSecond = "This removes your vices, habits, and history. This can't be undone."
     static let continueDelete = "Continue"
     static let supportSection = "Support"
+    static let viewOnboarding = "See the introduction"
     static let contactSupport = "Contact support"
     static let privacyPolicy = "Privacy policy"
-    static let rateTrackBoth = "Rate TrackBoth"
+    static let rateUrgeBuddy = "Rate Urge Buddy"
     static let aboutSection = "About"
     static let version = "Version"
     static let accessibilityStatement = "Accessibility statement"
     static let replaceBackup = "This replaces everything on this device with the backup."
-    static let newerBackup = "This backup is from a newer version of TrackBoth."
-    static let invalidBackup = "This file isn't a TrackBoth backup."
+    static let newerBackup = "This backup is from a newer version of Urge Buddy."
+    static let invalidBackup = "This file isn't an Urge Buddy backup."
     static let backupProblem = "Backup"
-    static let lockedTitle = "TrackBoth is locked"
+    static let lockedTitle = "Urge Buddy is locked"
     static let unlock = "Unlock"
-    static let unlockReason = "Unlock TrackBoth"
+    static let unlockReason = "Unlock Urge Buddy"
     static let crisisImmediate = "If you're in immediate danger, call 911 or your local emergency number."
     static let crisis988 = "988 Suicide & Crisis Lifeline"
     static let call988 = "Call 988"
