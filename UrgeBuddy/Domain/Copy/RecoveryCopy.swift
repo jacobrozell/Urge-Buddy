@@ -317,7 +317,7 @@ enum RecoveryCopy {
     static let toFeelInControl = "To feel in control…"
     static let whatHelps = "What helps you?"
     static let dailyCheckInTime = "Daily check-in time"
-    static let reminderExplainer = "We'll send one gentle reminder a day. Nothing else."
+    static let reminderExplainer = "We'll send one gentle reminder a day, and a note when you reach a milestone."
     static let turnOnReminders = "Turn on reminders"
     static let notNow = "Not now"
     static let keepPrivate = "Keep it private?"

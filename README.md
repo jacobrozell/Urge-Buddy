@@ -59,5 +59,7 @@ The Xcode module is **UrgeBuddy**. App Store bundle ID remains `com.jacobrozell.
 ## Docs
 
 - [`docs/project-status.md`](docs/project-status.md) — current release focus
+- [`docs/release/todo.md`](docs/release/todo.md) — 1.0.0 ship checklist
+- [`DaRules/scripts/trigger-xcode-cloud.sh`](../../DaRules/scripts/trigger-xcode-cloud.sh) — starts the Xcode Cloud archive
 - [`Specs/ProductSpec.md`](Specs/ProductSpec.md) — product rules
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — agent and contributor conventions

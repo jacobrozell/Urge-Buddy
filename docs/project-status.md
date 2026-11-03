@@ -1,6 +1,6 @@
 # Urge Buddy — Project status
 
-> Last updated: 2026-11-02
+> Last updated: 2026-11-03
 
 ## At a glance
 
@@ -18,7 +18,7 @@
 
 ## Current focus
 
-**Xcode Cloud Release run 7 is archiving 1.0.0 (8) from `ui-polish` (`e4de4fd6-f3ec-483f-9d20-19bc3b9195b0`) and is not submitted.** Review lanes: Bugbot ready with nits, tests pass with gaps (168/169, one iPad-only skip), store policy likely approve. iPhone 6.9" and iPad 13" screenshots were replaced on 2026-11-02. The Duo set is still the earlier capture. The reminder sentence still says the daily check-in is the only notification. What's New waits until the first release is live. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
+**Xcode Cloud Release run 7 is archiving 1.0.0 (8) from `ui-polish` (`e4de4fd6-f3ec-483f-9d20-19bc3b9195b0`) and is not submitted.** Review lanes: Bugbot ready with nits, tests pass with gaps (168/169, one iPad-only skip), store policy likely approve. iPhone 6.9" and iPad 13" screenshots were replaced on 2026-11-02. The Duo set is still the earlier capture. The onboarding reminder line and the listing description now mention milestone notices. Connect needs the new description and a new build. What's New waits until the first release is live. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
 
 The app has never shipped. Build 5 was archived on 2026-06-22 and never uploaded. There is no production data to migrate.
 
@@ -39,3 +39,5 @@ The app has never shipped. Build 5 was archived on 2026-06-22 and never uploaded
 | [`Specs/README.md`](../Specs/README.md) | Current behavior specs |
 | [`docs/feature-inventory.md`](feature-inventory.md) | Cut list and planned features |
 | [`docs/release/app-store-copy.md`](release/app-store-copy.md) | Listing copy (rewritten at the end of the overhaul) |
+| [`docs/release/todo.md`](release/todo.md) | 1.0.0 ship checklist |
+| [`DaRules/scripts/trigger-xcode-cloud.sh`](../../../DaRules/scripts/trigger-xcode-cloud.sh) | Starts the Xcode Cloud archive |

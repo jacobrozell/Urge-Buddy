@@ -281,7 +281,7 @@ The progress bar is filled for the current step, so the first page already shows
 | 4 | For each chosen vice (one page each): **Quit or cut back.** Quit asks **When did you last [use/do] it?** [Today] [Yesterday] [Pick a date] → `startedAt` (Today = now; Yesterday/Pick = that day at 23:59:59, as with slips). Cut back asks usual amount and a daily limit (required; zero is fine). **What does it cost you per day?** Optional currency field. Number pads get a keyboard **Done** button. | `startedAt`, `costPerDay`, tracking |
 | 5 | **Why do you want to quit [first vice]?** Multiline text with prompt chips that insert a starter ("For my health…", "For my family…", "To save money…", "To feel in control…"). Skippable. | first `Reason` |
 | 6 | **What helps you?** Helper habit presets (§13.3) + custom, multi-select, max 3. Skippable. | draft habits |
-| 7 | **Daily check-in time.** Time picker, default 8:00 PM. Copy: "We'll send one gentle reminder a day. Nothing else." [Turn on reminders] → *then* call the system permission prompt. [Not now]. | reminder prefs |
+| 7 | **Daily check-in time.** Time picker, default 8:00 PM. Copy: "We'll send one gentle reminder a day, and a note when you reach a milestone." [Turn on reminders] → *then* call the system permission prompt. [Not now]. | reminder prefs |
 | 8 | **Keep it private?** "Lock Urge Buddy with Face ID." [Turn on] [Not now]. Hidden if the device has no passcode set. | lock pref |
 | 9 | **Important.** "Urge Buddy is a self-help tool, not medical treatment. Stopping some substances suddenly, like alcohol, benzodiazepines, or opioids, can be dangerous. Talk to a doctor. If you're in crisis, help is in Settings → Get help now." [I understand] | `hasAcceptedDisclaimer` |
 

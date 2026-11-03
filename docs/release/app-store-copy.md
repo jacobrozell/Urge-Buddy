@@ -1,7 +1,7 @@
 # Urge Buddy — App Store copy (1.0)
 
-**Last updated:** 2026-11-02
-**Status:** Pasted into App Store Connect on 2026-11-02 for version 1.0 (Prepare for Submission). What's New is not accepted until the first release is live. Age rating result is still blank until the questionnaire is submitted.
+**Last updated:** 2026-11-03
+**Status:** Pasted into App Store Connect on 2026-11-02 for version 1.0 (Prepare for Submission). The reminder bullet changed on 2026-11-03 and needs to be pasted again. What's New is not accepted until the first release is live. Age rating result is still blank until the questionnaire is submitted.
 **Monetization:** Free. No IAP.
 
 Store copy follows the app. An urge is a wave that crests and fades. Most pass in a few minutes. Some take longer. The ride timer starts at 5 minutes, and the user can add 5. Do not cite a study, name a clinician, or promise that an urge ends in a set number of minutes.
@@ -37,7 +37,7 @@ Urge Buddy is a self-help tool. It does not treat, cure, or diagnose anything. I
 - Quit one or more vices, cut back, or only build habits
 - Live count of days free, and a calendar you can correct
 - A guided way to surf an urge: timer, breath, your reasons, your plan
-- Optional daily reminder. Nothing else
+- Optional daily reminder, plus a note when you reach a milestone
 - Lock the app with Face ID, Touch ID, or your passcode
 - Export a backup you control. Nothing leaves your device unless you share the file
 
