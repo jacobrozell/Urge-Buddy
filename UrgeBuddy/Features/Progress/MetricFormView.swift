@@ -53,10 +53,14 @@ struct MetricFormView: View {
                         TextField(model.costLabel, text: Bindable(model).costText)
                             .keyboardType(.decimalPad)
                     }
-                    iconPicker(model)
+                    Section(RecoveryCopy.iconHeader) {
+                        iconPicker(model)
+                    }
                     if !model.isNew {
-                        Toggle(RecoveryCopy.archive, isOn: Bindable(model).isArchived)
-                        Button(RecoveryCopy.delete, role: .destructive) { confirmDelete = true }
+                        Section {
+                            Toggle(RecoveryCopy.archive, isOn: Bindable(model).isArchived)
+                            Button(RecoveryCopy.delete, role: .destructive) { confirmDelete = true }
+                        }
                     }
                 }
             }
@@ -112,16 +116,18 @@ struct MetricFormView: View {
     private func iconPicker(_ model: MetricFormViewModel) -> some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 44))], spacing: Spacing.s) {
             ForEach(model.icons, id: \.self) { icon in
+                let selected = model.iconName == icon
                 Button {
                     model.iconName = icon
                 } label: {
                     Image(systemName: icon)
                         .frame(minWidth: 44, minHeight: 44)
-                        .foregroundStyle(model.iconName == icon ? Color.tbOnBrand : Color.tbTextPrimary)
-                        .background(model.iconName == icon ? Color.tbBrand : Color.tbSurfaceMuted, in: RoundedRectangle(cornerRadius: Radius.control))
+                        .foregroundStyle(selected ? Color.tbOnBrand : Color.tbTextPrimary)
+                        .background(selected ? Color.tbBrand : Color.tbSurfaceMuted, in: RoundedRectangle(cornerRadius: Radius.control))
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(icon)
+                .buttonStyle(.pressable)
+                .accessibilityLabel(RecoveryCopy.iconName(icon))
+                .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
     }

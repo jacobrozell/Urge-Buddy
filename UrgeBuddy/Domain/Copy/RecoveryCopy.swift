@@ -43,6 +43,12 @@ enum RecoveryCopy {
     }
 
     static let dontMissTwice = "Don't miss twice"
+    static let iconHeader = "Icon"
+
+    /// Spoken name for an SF Symbol: "eye.slash" reads as "eye slash".
+    static func iconName(_ symbol: String) -> String {
+        symbol.replacingOccurrences(of: ".", with: " ")
+    }
 
     static func nextMilestone(_ threshold: Int, inDays: Int) -> String {
         return "Next: \(threshold) \(daysUnit(threshold)) (in \(inDays) \(daysUnit(inDays)))"
