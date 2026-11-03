@@ -107,6 +107,9 @@ final class OnboardingViewModel {
         return result
     }
 
+    var vicesFull: Bool { viceChoices.count >= maxChoices }
+    var habitsFull: Bool { habitChoices.count >= maxChoices }
+
     var canAdvance: Bool {
         switch page {
         case .chooseVices:

@@ -231,6 +231,24 @@ final class UrgeBuddyUITests: UrgeBuddyUITestCase {
         assertStaticTextExists("Alcohol")
     }
 
+    func testOnboardingCustomViceKeepsKeyboardWhileTyping() {
+        launchFreshOnboarding()
+        advanceOnboarding(to: "What it is")
+        advanceOnboarding(to: "What do you want to quit?")
+        let alcohol = app.buttons["onboarding.vicePreset.alcohol"]
+        XCTAssertTrue(alcohol.waitForExistence(timeout: 4))
+        alcohol.tap()
+        XCTAssertTrue(alcohol.isSelected)
+        let field = app.textFields["Something else…"]
+        XCTAssertTrue(field.waitForExistence(timeout: 4))
+        field.tap()
+        field.typeText("Vaping")
+        XCTAssertEqual(field.value as? String, "Vaping")
+        XCTAssertTrue(app.keyboards.firstMatch.exists)
+        advanceOnboarding(to: "When did you last drink?")
+        advanceOnboarding(to: "When did you last do it?")
+    }
+
     func testOnboardingHabitOnlyPath() {
         launchFreshOnboarding()
         advanceOnboarding(to: "What it is")

@@ -70,6 +70,19 @@ final class OnboardingViewModelTests: XCTestCase {
         XCTAssertTrue(model.canAdvance)
     }
 
+    func testThreePicksFillTheViceGrid() {
+        let model = OnboardingViewModel()
+        model.toggleVice("alcohol")
+        model.toggleVice("smoking")
+        XCTAssertFalse(model.vicesFull)
+        model.customViceName = "Sugar"
+        XCTAssertTrue(model.vicesFull)
+        model.toggleVice("vaping")
+        XCTAssertEqual(model.selectedViceIDs, ["alcohol", "smoking"])
+        model.toggleVice("smoking")
+        XCTAssertFalse(model.vicesFull)
+    }
+
     func testHabitOnlySkipsVicePages() {
         let model = OnboardingViewModel()
         model.chooseHabitsOnly()

@@ -60,23 +60,19 @@ struct OnboardingFlow: View {
         }
     }
 
-    private var pageSelection: Binding<Int> {
-        Binding(get: { model.pageIndex }, set: { model.pageIndex = $0 })
-    }
-
+    /// One page at a time. A paged TabView rebuilt every page whenever the page list changed,
+    /// which dropped the keyboard mid-word in Something else, and its swipe skipped the Next checks.
     private var pager: some View {
-        TabView(selection: pageSelection) {
-            ForEach(Array(model.pages.enumerated()), id: \.offset) { index, page in
-                ScrollView {
-                    ReadableColumn {
-                        pageView(page)
-                            .padding(.vertical, Spacing.l)
-                    }
+        ZStack {
+            ScrollView {
+                ReadableColumn {
+                    pageView(model.page)
+                        .padding(.vertical, Spacing.l)
                 }
-                .tag(index)
             }
+            .id(model.pageIndex)
+            .transition(.opacity)
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
         .animation(.easeInOut(duration: 0.2), value: model.pageIndex)
     }
 
@@ -161,7 +157,7 @@ struct OnboardingFlow: View {
             Text(RecoveryCopy.pickUpToThree)
                 .font(.subheadline)
                 .foregroundStyle(Color.tbTextSecondary)
-            presetGrid(Presets.vices, selected: model.selectedViceIDs) { preset in
+            presetGrid(Presets.vices, selected: model.selectedViceIDs, full: model.vicesFull) { preset in
                 model.toggleVice(preset.id)
             }
             TextField(RecoveryCopy.somethingElse, text: customViceName)
@@ -276,7 +272,7 @@ struct OnboardingFlow: View {
                 .frame(maxWidth: .infinity, minHeight: 44)
                 .background(selected ? Color.tbBrand : Color.tbSurfaceMuted, in: RoundedRectangle(cornerRadius: Radius.control))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
@@ -316,7 +312,7 @@ struct OnboardingFlow: View {
             Text(RecoveryCopy.pickUpToThree)
                 .font(.subheadline)
                 .foregroundStyle(Color.tbTextSecondary)
-            presetGrid(Presets.habits, selected: model.selectedHabitIDs) { preset in
+            presetGrid(Presets.habits, selected: model.selectedHabitIDs, full: model.habitsFull) { preset in
                 model.toggleHabit(preset.id)
             }
             TextField(RecoveryCopy.somethingElse, text: customHabitName)
@@ -397,7 +393,8 @@ struct OnboardingFlow: View {
         .padding(.bottom, Spacing.l)
     }
 
-    private func presetGrid(_ presets: [Preset], selected: [String], toggle: @escaping (Preset) -> Void) -> some View {
+    /// When three are picked, the rest dim instead of ignoring taps.
+    private func presetGrid(_ presets: [Preset], selected: [String], full: Bool, toggle: @escaping (Preset) -> Void) -> some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: Spacing.s)], spacing: Spacing.s) {
             ForEach(presets) { preset in
                 let isOn = selected.contains(preset.id)
@@ -415,7 +412,8 @@ struct OnboardingFlow: View {
                     .padding(.vertical, Spacing.s)
                     .background(isOn ? Color.tbBrand : Color.tbSurfaceMuted, in: RoundedRectangle(cornerRadius: Radius.control))
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable)
+                .disabled(full && !isOn)
                 .accessibilityAddTraits(isOn ? .isSelected : [])
                 .accessibilityIdentifier(AccessibilityIdentifiers.onboardingVicePreset(preset.id))
             }
