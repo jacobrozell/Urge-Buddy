@@ -33,7 +33,11 @@ struct CutBackCardModel: Identifiable, Equatable {
 
     var accessibilityLabel: String {
         var parts = [name, RecoveryCopy.todayAmount(amount, limit: limit, unit: unit)]
-        if isOver { parts.append(RecoveryCopy.overLimitToday) }
+        if isOver {
+            parts.append(RecoveryCopy.overLimitToday)
+        } else {
+            parts.append(RecoveryCopy.leftToday(max(0, limit - amount)))
+        }
         if let trendLine { parts.append(trendLine) }
         return parts.joined(separator: ", ")
     }

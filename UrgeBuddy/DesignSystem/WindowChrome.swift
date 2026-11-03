@@ -160,18 +160,43 @@ private struct VerticalBarFloatingBarLayout<Button: View>: View {
     var bottomPadding: CGFloat
     @ViewBuilder var button: () -> Button
 
+    /// Shares the wide readable column with the content above. Beside a vertical tab bar it
+    /// spans that column; above a bottom tab bar it stays a centered 560pt.
     var body: some View {
-        HStack(spacing: 0) {
-            if avoidTrailing {
-                button()
-                Spacer(minLength: 0)
-            } else {
-                Spacer(minLength: 0)
-                button()
-                Spacer(minLength: 0)
-            }
+        ReadableColumn(width: .wide) {
+            button()
+                .frame(maxWidth: avoidTrailing ? .infinity : 560)
+                .frame(maxWidth: .infinity)
         }
-        .padding(.leading, avoidTrailing ? Spacing.l : 0)
+        .padding(.trailing, avoidTrailing ? VerticalTabBarClearance.width : 0)
         .padding(.bottom, bottomPadding)
+    }
+}
+
+extension View {
+    /// Keeps content out from under a vertical Duo tab bar, which is not in the safe area.
+    func verticalTabBarClearance() -> some View {
+        modifier(VerticalTabBarClearance())
+    }
+}
+
+private struct VerticalTabBarClearance: ViewModifier {
+    static let width: CGFloat = 64
+
+    func body(content: Content) -> some View {
+        if #available(iOS 27.1, *) {
+            content.modifier(VerticalTabBarClearanceOn27())
+        } else {
+            content
+        }
+    }
+}
+
+@available(iOS 27.1, *)
+private struct VerticalTabBarClearanceOn27: ViewModifier {
+    @Environment(\.toolbarVerticalEdge) private var toolbarVerticalEdge
+
+    func body(content: Content) -> some View {
+        content.padding(.trailing, toolbarVerticalEdge == .trailing ? VerticalTabBarClearance.width : 0)
     }
 }

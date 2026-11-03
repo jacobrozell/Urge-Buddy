@@ -21,10 +21,13 @@ struct TodayScreen: View {
         NavigationStack {
             VStack(spacing: 0) {
             ScrollView {
-                VStack(alignment: .leading, spacing: Spacing.s) {
-                    ReadableColumn {
+                // One column for every row, so cards, sections, and the SOS bar share edges.
+                ReadableColumn(width: model.isEmpty ? .text : .wide) {
+                    VStack(alignment: .leading, spacing: Spacing.s) {
                         VStack(alignment: .leading, spacing: Spacing.s) {
-                            dateLabel
+                            if model.isEmpty || !model.checkInDoneToday {
+                                dateLabel
+                            }
                             if let prompt = model.yesterdayPrompt {
                                 YesterdayPrompt(name: prompt.name) {
                                     confirmYesterday(prompt.metricID)
@@ -36,7 +39,11 @@ struct TodayScreen: View {
                             }
                             if !model.isEmpty {
                                 if model.checkInDoneToday {
-                                    CheckInStreakCard(streak: model.checkInStreak)
+                                    CheckInStreakCard(
+                                        streak: model.checkInStreak,
+                                        dateLine: shortDateLine,
+                                        dateAccessibility: dateAccessibility
+                                    )
                                 } else {
                                     CheckInBanner(remaining: model.checkInRemaining, streak: model.checkInStreak) {
                                         router.present(.checkIn)
@@ -67,16 +74,17 @@ struct TodayScreen: View {
                                 )
                             }
                         }
-                    }
-                    if !model.isEmpty {
-                        metricColumns
-                            .padding(.horizontal, Spacing.l)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        if !model.isEmpty {
+                            metricColumns
+                        }
                     }
                 }
+                .verticalTabBarClearance()
                 .padding(.top, Spacing.s)
                 .padding(.bottom, Spacing.m)
-                .containerRelativeFrame(.horizontal, alignment: .leading)
+                // Stay in the width the scroll view proposes. containerRelativeFrame follows a
+                // Duo container that includes the off-screen region, which shoves this column
+                // off the leading edge of the visible display.
             }
             if model.showsSOS {
                 VerticalBarFloatingBar {
@@ -223,7 +231,15 @@ struct TodayScreen: View {
         Text(Date().formatted(.dateTime.weekday(.wide).month(.wide).day()))
             .font(.subheadline)
             .foregroundStyle(Color.tbTextSecondary)
-            .accessibilityLabel(Date().formatted(date: .complete, time: .omitted))
+            .accessibilityLabel(dateAccessibility)
+    }
+
+    private var shortDateLine: String {
+        Date().formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day())
+    }
+
+    private var dateAccessibility: String {
+        Date().formatted(date: .complete, time: .omitted)
     }
 
     private var snapshotToken: String {

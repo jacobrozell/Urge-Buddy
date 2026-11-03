@@ -30,6 +30,7 @@ struct CrisisResourcesView: View {
             }
         }
         .readableListMargins()
+        .verticalTabBarClearance()
         .tbNavigationBarBackground()
         .navigationTitle(RecoveryCopy.getHelpNow)
         .navigationBarTitleDisplayMode(.inline)

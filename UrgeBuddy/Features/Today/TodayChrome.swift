@@ -55,8 +55,37 @@ struct CheckInBanner: View {
 
 struct CheckInStreakCard: View {
     var streak: Int
+    var dateLine: String
+    var dateAccessibility: String
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    summary
+                    dateText
+                }
+            } else {
+                HStack(alignment: .center, spacing: Spacing.m) {
+                    summary
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    dateText
+                        .multilineTextAlignment(.trailing)
+                        .layoutPriority(1)
+                }
+            }
+        }
+        .padding(Spacing.l)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .background(Color.tbBrandSoft, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(spoken)
+        .accessibilityIdentifier(AccessibilityIdentifiers.todayCheckInStreak)
+    }
+
+    private var summary: some View {
         HStack(alignment: .center, spacing: Spacing.m) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.largeTitle)
@@ -77,16 +106,20 @@ struct CheckInStreakCard: View {
                     .font(.subheadline)
                     .foregroundStyle(Color.tbTextSecondary)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(Spacing.l)
-        .frame(minHeight: 44)
-        .background(Color.tbBrandSoft, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(streak > 0
+    }
+
+    private var dateText: some View {
+        Text(dateLine)
+            .font(.subheadline)
+            .foregroundStyle(Color.tbTextSecondary)
+    }
+
+    private var spoken: String {
+        let status = streak > 0
             ? "\(RecoveryCopy.checkInStreak(streak)). \(RecoveryCopy.checkedInToday)"
-            : RecoveryCopy.checkedInToday)
-        .accessibilityIdentifier(AccessibilityIdentifiers.todayCheckInStreak)
+            : RecoveryCopy.checkedInToday
+        return "\(status) \(dateAccessibility)"
     }
 }
 
@@ -132,13 +165,10 @@ struct UrgeSurfingRow: View {
     var onDismiss: () -> Void
 
     var body: some View {
-        HStack(spacing: Spacing.s) {
+        HStack(alignment: .top, spacing: 0) {
             Button(action: action) {
-                HStack(spacing: Spacing.m) {
-                    Image(systemName: "wind")
-                        .font(.title2)
-                        .foregroundStyle(Color.tbBrand)
-                        .accessibilityHidden(true)
+                HStack(alignment: .top, spacing: Spacing.m) {
+                    IconBadge(systemImage: "wind", tint: .tbBrand)
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         Text(RecoveryCopy.urgeSurfingTitle)
                             .font(.headline)
@@ -146,12 +176,13 @@ struct UrgeSurfingRow: View {
                         Text(RecoveryCopy.urgeSurfingRow)
                             .font(.subheadline)
                             .foregroundStyle(Color.tbTextSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(Color.tbTextSecondary)
-                        .accessibilityHidden(true)
                 }
+                .padding(.leading, Spacing.l)
+                .padding(.vertical, Spacing.l)
+                .padding(.trailing, Spacing.s)
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
             }
             .buttonStyle(.pressable)
@@ -162,13 +193,15 @@ struct UrgeSurfingRow: View {
 
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
+                    .font(.subheadline.weight(.semibold))
                     .frame(minWidth: 44, minHeight: 44)
             }
             .buttonStyle(.pressable)
             .accessibilityLabel(RecoveryCopy.dismiss)
             .foregroundStyle(Color.tbTextSecondary)
+            .padding(.top, Spacing.xs)
+            .padding(.trailing, Spacing.xs)
         }
-        .padding(Spacing.l)
         .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
     }
 }
@@ -183,16 +216,14 @@ struct SOSButton: View {
                     .accessibilityHidden(true)
                 Text(RecoveryCopy.sosButton)
                     .lineLimit(2)
-                    .multilineTextAlignment(.leading)
+                    .multilineTextAlignment(.center)
             }
-            .font(.subheadline.weight(.semibold))
+            .font(.headline)
             .foregroundStyle(Color.tbOnBrand)
+            .frame(maxWidth: .infinity, minHeight: 52)
             .padding(.horizontal, Spacing.l)
-            .padding(.vertical, Spacing.xs)
-            .frame(minHeight: 44)
-            .frame(maxWidth: 320)
-            .background(Color.tbBrand, in: Capsule())
-            .shadow(color: .black.opacity(0.18), radius: 8, y: 3)
+            .padding(.vertical, Spacing.s)
+            .background(Color.tbBrand, in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
         }
         .buttonStyle(.pressable)
         .accessibilityLabel(RecoveryCopy.sosButton)

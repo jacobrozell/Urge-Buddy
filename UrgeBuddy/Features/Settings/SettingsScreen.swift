@@ -53,6 +53,7 @@ struct SettingsScreen: View {
             }
             .scrollContentBackground(.hidden)
             .readableListMargins()
+            .verticalTabBarClearance()
             .contentMargins(.bottom, Spacing.xl, for: .scrollContent)
             .background(Color.tbBackground.ignoresSafeArea())
             .tbNavigationBarBackground()

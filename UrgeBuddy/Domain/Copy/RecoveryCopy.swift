@@ -430,6 +430,13 @@ enum RecoveryCopy {
         "\(amountOf(amount, limit, unit: unit)) today"
     }
 
+    /// Room under today's limit. Zero means the limit is met, not passed.
+    static func leftToday(_ remaining: Int) -> String {
+        if remaining <= 0 { return "At your limit" }
+        if remaining == 1 { return "1 left" }
+        return "\(remaining) left"
+    }
+
     static func perDayAmount(_ amount: Int, unit: String) -> String {
         "\(amount) \(unit) a day"
     }

@@ -12,22 +12,30 @@ struct DayDots: View {
     }
 
     var body: some View {
-        HStack(spacing: Spacing.m) {
+        HStack(spacing: 0) {
             ForEach(Array(states.enumerated()), id: \.offset) { index, state in
-                VStack(spacing: 2) {
-                    DayMark(state: state, size: 16)
-                        .accessibilityLabel(spoken(index: index, state: state))
-                    if showsLetters, labels.indices.contains(index), !labels[index].isEmpty {
-                        Text(initial(for: labels[index]))
-                            .font(.caption2)
-                            .foregroundStyle(Color.tbTextSecondary)
-                            .accessibilityHidden(true)
-                    }
+                if index > 0 {
+                    Spacer(minLength: Spacing.s)
                 }
+                dayColumn(index: index, state: state)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityHidden(true)
+    }
+
+    private func dayColumn(index: Int, state: DayVisualState) -> some View {
+        let isToday = index == states.count - 1
+        return VStack(spacing: Spacing.xs) {
+            DayMark(state: state, size: isToday ? 20 : 16)
+                .accessibilityLabel(spoken(index: index, state: state))
+            if showsLetters, labels.indices.contains(index), !labels[index].isEmpty {
+                Text(initial(for: labels[index]))
+                    .font(.caption2.weight(isToday ? .bold : .regular))
+                    .foregroundStyle(isToday ? Color.tbTextPrimary : Color.tbTextSecondary)
+                    .accessibilityHidden(true)
+            }
+        }
     }
 
     /// Weekday names use the locale's short symbol. Anything else uses its first character.

@@ -8,31 +8,66 @@ struct AmountStepper: View {
     var label: String
     var onChange: (Int) -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
+        control
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(label)
+            .accessibilityValue(RecoveryCopy.amountUnit(value, unit: unit))
+            .accessibilityAdjustableAction { direction in
+                switch direction {
+                case .increment: onChange(value + step)
+                case .decrement: onChange(max(0, value - step))
+                @unknown default: break
+                }
+            }
+            .sensoryFeedback(.impact(weight: .light), trigger: value)
+    }
+
+    @ViewBuilder
+    private var control: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            stacked
+        } else {
+            clustered
+        }
+    }
+
+    private var clustered: some View {
         HStack(spacing: Spacing.m) {
             stepButton("minus", title: RecoveryCopy.removeOne, enabled: value > 0) {
                 onChange(max(0, value - step))
             }
-            Text(RecoveryCopy.amountUnit(value, unit: unit))
-                .font(.title3.weight(.semibold).monospacedDigit())
-                .foregroundStyle(Color.tbTextPrimary)
-                .frame(maxWidth: .infinity)
-                .multilineTextAlignment(.center)
+            valueLabel
             stepButton("plus", title: RecoveryCopy.logOne, enabled: true) {
                 onChange(value + step)
             }
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(label)
-        .accessibilityValue(RecoveryCopy.amountUnit(value, unit: unit))
-        .accessibilityAdjustableAction { direction in
-            switch direction {
-            case .increment: onChange(value + step)
-            case .decrement: onChange(max(0, value - step))
-            @unknown default: break
+    }
+
+    /// Large type: the count sits above the buttons so the words are not crushed between them.
+    private var stacked: some View {
+        VStack(spacing: Spacing.xs) {
+            valueLabel
+            HStack(spacing: Spacing.m) {
+                stepButton("minus", title: RecoveryCopy.removeOne, enabled: value > 0) {
+                    onChange(max(0, value - step))
+                }
+                stepButton("plus", title: RecoveryCopy.logOne, enabled: true) {
+                    onChange(value + step)
+                }
             }
         }
-        .sensoryFeedback(.impact(weight: .light), trigger: value)
+    }
+
+    private var valueLabel: some View {
+        Text(RecoveryCopy.amountUnit(value, unit: unit))
+            .font(.body.weight(.semibold).monospacedDigit())
+            .foregroundStyle(Color.tbTextPrimary)
+            .multilineTextAlignment(.center)
+            .lineLimit(2)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     private func stepButton(_ systemImage: String, title: String, enabled: Bool, action: @escaping () -> Void) -> some View {
