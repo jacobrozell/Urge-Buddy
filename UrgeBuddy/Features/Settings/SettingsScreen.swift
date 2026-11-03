@@ -132,6 +132,7 @@ struct SettingsScreen: View {
                     Task { await updateReminders(enabled: enabled) }
                 }
             DatePicker(RecoveryCopy.time, selection: reminderDate, displayedComponents: .hourAndMinute)
+                .disabled(!remindersEnabled)
             Toggle(RecoveryCopy.milestoneNotifications, isOn: $milestonesEnabled)
                 .onChange(of: milestonesEnabled) { _, _ in
                     Task { await ReminderScheduler.refresh(context: modelContext) }
