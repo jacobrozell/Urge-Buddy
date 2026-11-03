@@ -401,10 +401,9 @@ struct MetricDetailScreen: View {
                     TextField(RecoveryCopy.addReason, text: $newReason)
                         .textFieldStyle(TBFieldStyle(fill: .tbSurfaceMuted))
                         .textInputAutocapitalization(.sentences)
-                    Button(RecoveryCopy.addReason) { addReason() }
+                    LinkButton(RecoveryCopy.addReason, fillsWidth: true) { addReason() }
                         .font(.headline)
                         .foregroundStyle(Color.tbBrand)
-                        .frame(maxWidth: .infinity, minHeight: 44)
                         .disabled(newReason.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
@@ -480,10 +479,9 @@ struct MetricDetailScreen: View {
                         .textFieldStyle(TBFieldStyle(fill: .tbSurfaceMuted))
                         .lineLimit(2...6)
                     if planDirty {
-                        Button(RecoveryCopy.save) { savePlan() }
+                        LinkButton(RecoveryCopy.save, fillsWidth: true) { savePlan() }
                             .font(.headline)
                             .foregroundStyle(Color.tbBrand)
-                            .frame(maxWidth: .infinity, minHeight: 44)
                     }
                 }
             }

@@ -129,6 +129,8 @@ struct RootView: View {
                 StoreRecoveryBanner()
             }
         }
+        // Outermost, so onboarding and the sheets presented above pick up the theme tint too.
+        .tint(Color.tbBrand)
     }
 
     private var urgeBinding: Binding<PresentedFlow?> {
@@ -272,7 +274,6 @@ private struct MainTabView: View {
                 .tabItem { Label("Settings", systemImage: "gearshape").accessibilityIdentifier(AccessibilityIdentifiers.tabSettings) }
                 .tag(AppTab.settings)
         }
-        .tint(Color.tbBrand)
     }
 }
 

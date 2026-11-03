@@ -499,12 +499,10 @@ struct UrgeFlowView: View {
             PrimaryButton(title: RecoveryCopy.saveIt, systemImage: nil, accessibilityID: AccessibilityIdentifiers.urgeJournalSave) {
                 complete(finish, keep: true)
             }
-            Button(RecoveryCopy.deleteIt) { complete(finish, keep: false) }
-                .frame(minHeight: 44)
+            LinkButton(RecoveryCopy.deleteIt) { complete(finish, keep: false) }
                 .foregroundStyle(Color.tbOnCalm)
                 .accessibilityIdentifier(AccessibilityIdentifiers.urgeJournalDelete)
-            Button(RecoveryCopy.back) { pendingFinish = nil }
-                .frame(minHeight: 44)
+            LinkButton(RecoveryCopy.back) { pendingFinish = nil }
                 .foregroundStyle(Color.tbOnCalm)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -713,15 +711,17 @@ struct UrgeFlowView: View {
             .accessibilityIdentifier(AccessibilityIdentifiers.urgeAddWhy)
             .submitLabel(.done)
             .onSubmit { addWhy() }
-            Button(RecoveryCopy.saveReason) { addWhy() }
-                .buttonStyle(.plain)
-                .frame(maxWidth: .infinity, minHeight: 44)
+            Button { addWhy() } label: {
+                Text(RecoveryCopy.saveReason)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .background(
+                        Color.tbOnCalm.opacity(newWhyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.08 : 0.16),
+                        in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
+                    )
+            }
+                .buttonStyle(.pressable)
                 .accessibilityIdentifier(AccessibilityIdentifiers.urgeSaveWhy)
                 .foregroundStyle(Color.tbOnCalm)
-                .background(
-                    Color.tbOnCalm.opacity(newWhyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.08 : 0.16),
-                    in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
-                )
                 .disabled(newWhyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
     }
@@ -818,16 +818,18 @@ struct UrgeFlowView: View {
             .accessibilityIdentifier(AccessibilityIdentifiers.urgeAddInstead)
             .submitLabel(.done)
             .onSubmit { addInstead() }
-            Button(RecoveryCopy.saveInstead) { addInstead() }
-                .buttonStyle(.plain)
+            Button { addInstead() } label: {
+                Text(RecoveryCopy.saveInstead)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .background(
+                        Color.tbOnCalm.opacity(insteadTextIsEmpty ? 0.08 : 0.16),
+                        in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
+                    )
+            }
+                .buttonStyle(.pressable)
                 .font(.headline)
-                .frame(maxWidth: .infinity, minHeight: 44)
                 .accessibilityIdentifier(AccessibilityIdentifiers.urgeSaveInstead)
                 .foregroundStyle(Color.tbOnCalm)
-                .background(
-                    Color.tbOnCalm.opacity(insteadTextIsEmpty ? 0.08 : 0.16),
-                    in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
-                )
                 .disabled(insteadTextIsEmpty)
         }
     }

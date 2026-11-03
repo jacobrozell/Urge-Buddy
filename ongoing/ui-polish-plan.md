@@ -637,13 +637,10 @@ These came up in the review but change the brand or product. **Implementers: ski
 
 Implementers: add anything you noticed but didn't fix here, with file and line.
 
-- `SectionHeader`'s add button still uses `.buttonStyle(.plain)` (`UrgeBuddy/DesignSystem/Components/SectionHeader.swift`, the plus `Button`). Phase 1 only switched the listed files, so that + does not dim on press.
-- `summaryStat` in `UrgeBuddy/Features/Slip/SlipFlowView.swift` still accepts a `caption` that nothing passes after the tile copy change.
 - The strength step keeps the "What is urge surfing?" pill. The ride screen embeds that link in the intro card via `surfingLink(inCard:)`.
 - The yesterday prompt has no launch argument, so its `ChoiceButton`s were checked in code only.
 - Reasons and plan fields on metric detail sit on a `Surface` card, so they use `TBFieldStyle(fill: .tbSurfaceMuted)`. The other fields stay `Surface` on `Background`.
 - The settings spec line (Time disabled while reminders are off) is in the onboarding/celebration commit. The settings code commit had already landed.
 - Pinning the urge buttons with `safeAreaInset` left the journal field under the bar, so the journal UI test could not focus it. The buttons sit in a `VStack` under the scroll view instead. Content does not scroll behind them.
-- At AX5 the SOS button truncates ("I'm having a…") because `SOSButton` uses `lineLimit(2)` in `TodayChrome.swift`.
 - Settings' last rows (Import, Delete all data) sit under the tab bar on iPhone 17.
 - No launch argument opens the celebration sheet or an unanswered yesterday, so those were checked in code. Reduce Motion and VoiceOver were not run live.

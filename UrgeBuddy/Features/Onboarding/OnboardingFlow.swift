@@ -165,8 +165,7 @@ struct OnboardingFlow: View {
                 .textFieldStyle(.tbField)
                 .focused($keyboard)
                 .onChange(of: model.customViceName) { _, _ in model.habitOnly = false }
-            Button(RecoveryCopy.habitOnlyLink) { model.chooseHabitsOnly() }
-                .frame(minHeight: 44)
+            LinkButton(RecoveryCopy.habitOnlyLink) { model.chooseHabitsOnly() }
                 .foregroundStyle(Color.tbBrand)
                 .accessibilityIdentifier(AccessibilityIdentifiers.onboardingHabitOnly)
         }
@@ -386,8 +385,7 @@ struct OnboardingFlow: View {
                 .disabled(!review && !model.canAdvance)
             }
             if model.canGoBack {
-                Button(RecoveryCopy.back) { model.goBack() }
-                    .frame(minHeight: 44)
+                LinkButton(RecoveryCopy.back) { model.goBack() }
                     .foregroundStyle(Color.tbTextSecondary)
             }
         }
@@ -510,12 +508,15 @@ private struct FlowChips: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             ForEach(titles, id: \.self) { title in
-                Button(title) { insert(title) }
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Color.tbTextPrimary)
-                    .padding(.horizontal, Spacing.m)
-                    .frame(minHeight: 44)
-                    .background(Color.tbSurfaceMuted, in: Capsule())
+                Button { insert(title) } label: {
+                    Text(title)
+                        .padding(.horizontal, Spacing.m)
+                        .frame(minHeight: 44)
+                        .background(Color.tbSurfaceMuted, in: Capsule())
+                }
+                .buttonStyle(.pressable)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Color.tbTextPrimary)
             }
         }
     }

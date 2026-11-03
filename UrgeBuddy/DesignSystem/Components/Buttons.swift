@@ -128,3 +128,25 @@ private struct AccessibilityIDModifier: ViewModifier {
         }
     }
 }
+
+/// A text button whose whole 44pt row takes the tap. Sizing a Button from outside its label
+/// moves the layout but leaves only the words tappable.
+struct LinkButton: View {
+    var title: String
+    var fillsWidth = false
+    var action: () -> Void
+
+    init(_ title: String, fillsWidth: Bool = false, action: @escaping () -> Void) {
+        self.title = title
+        self.fillsWidth = fillsWidth
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .frame(maxWidth: fillsWidth ? .infinity : nil, minHeight: 44)
+                .contentShape(Rectangle())
+        }
+    }
+}

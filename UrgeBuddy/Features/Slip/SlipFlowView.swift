@@ -217,7 +217,7 @@ struct SlipFlowView: View {
         }
     }
 
-    private func summaryStat(value: String, label: String, caption: String? = nil, systemImage: String) -> some View {
+    private func summaryStat(value: String, label: String, systemImage: String) -> some View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             Image(systemName: systemImage)
                 .font(.subheadline.weight(.semibold))
@@ -233,11 +233,6 @@ struct SlipFlowView: View {
                 .font(.footnote)
                 .foregroundStyle(Color.tbTextSecondary)
                 .fixedSize(horizontal: false, vertical: true)
-            if let caption {
-                Text(caption)
-                    .font(.caption)
-                    .foregroundStyle(Color.tbTextSecondary)
-            }
         }
         .frame(maxHeight: .infinity, alignment: .topLeading)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -254,10 +249,20 @@ struct SlipFlowView: View {
             (RecoveryCopy.yesterday, .yesterday),
             (RecoveryCopy.pickADay, .picked(pickedDay))
         ]
+        // One row when it fits, then two equal columns like the trigger grid below, then one column.
         ViewThatFits(in: .horizontal) {
             HStack(spacing: Spacing.s) {
                 ForEach(Array(options.enumerated()), id: \.offset) { _, option in
                     whenChip(option.0, when: option.1, model: model)
+                }
+            }
+            Grid(horizontalSpacing: Spacing.s, verticalSpacing: Spacing.s) {
+                ForEach([0, 2], id: \.self) { start in
+                    GridRow {
+                        ForEach(options[start...start + 1].indices, id: \.self) { index in
+                            whenChip(options[index].0, when: options[index].1, model: model, fills: true)
+                        }
+                    }
                 }
             }
             VStack(alignment: .leading, spacing: Spacing.s) {
@@ -268,7 +273,7 @@ struct SlipFlowView: View {
         }
     }
 
-    private func whenChip(_ title: String, when: SlipWhen, model: SlipViewModel) -> some View {
+    private func whenChip(_ title: String, when: SlipWhen, model: SlipViewModel, fills: Bool = false) -> some View {
         let selected = isSelected(when, model: model)
         return Button { model.when = when } label: {
             Text(title)
@@ -276,10 +281,10 @@ struct SlipFlowView: View {
                 .foregroundStyle(selected ? Color.tbOnBrand : Color.tbTextPrimary)
                 .padding(.horizontal, Spacing.m)
                 .padding(.vertical, Spacing.s)
-                .frame(minHeight: 44)
+                .frame(maxWidth: fills ? .infinity : nil, minHeight: 44)
                 .background(selected ? Color.tbBrand : Color.tbSurfaceMuted, in: Capsule())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
