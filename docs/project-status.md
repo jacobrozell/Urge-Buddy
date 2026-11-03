@@ -12,13 +12,13 @@
 | **Latest submitted** | — |
 | **Latest shipped (App Store)** | — |
 | **Repo version** | 1.0.0 (9), not archived |
-| **Active branch** | `ui-polish` |
+| **Active branch** | `main` |
 | **Platform** | iOS 18+ — iPhone and iPad, portrait and landscape |
 | **Monetization** | Free, no IAP |
 
 ## Current focus
 
-**Build 9 is local on `ui-polish` and is not archived.** TestFlight still has build 8 (`e4de4fd6-f3ec-483f-9d20-19bc3b9195b0`), which says the daily check-in is the only notification. Build 9 mentions milestone notices, hides a locked Today screen from VoiceOver, and gives the urge strength rows a full-width tap target. Connect needs the new description and build 9. What's New waits until the first release is live. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
+**Build 9 is on `main` and is not archived.** TestFlight still has build 8 (`e4de4fd6-f3ec-483f-9d20-19bc3b9195b0`), which says the daily check-in is the only notification. Build 9 mentions milestone notices, hides a locked Today screen from VoiceOver, gives the urge strength rows a full-width tap target, fixes onboarding dropping the keyboard and ignoring taps, draws every accent from one teal theme (`AppTheme`), lines up card widths, and fills the width on a phone in landscape. Connect needs the new description and build 9. What's New waits until the first release is live. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
 
 The app has never shipped. Build 5 was archived on 2026-06-22 and never uploaded. There is no production data to migrate.
 

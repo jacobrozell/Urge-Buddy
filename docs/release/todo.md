@@ -7,7 +7,7 @@ Status legend: `[ ]` todo · `[x]` done
 | | |
 |--|--|
 | **Version** | `1.0.0` (build 9 in `project.yml`, not archived) |
-| **Branch** | `ui-polish` |
+| **Branch** | `main` |
 | **Archive** | Xcode Cloud `Release` workflow. Push the branch first, then run [`DaRules/scripts/trigger-xcode-cloud.sh`](../../../../DaRules/scripts/trigger-xcode-cloud.sh) `start UrgeBuddy <branch>`. The build runs on the remote branch. |
 | **Status** | [`../project-status.md`](../project-status.md) |
 
@@ -25,8 +25,8 @@ Status legend: `[ ]` todo · `[x]` done
 - [x] Export compliance: `ITSAppUsesNonExemptEncryption = NO` in `project.yml`
 - [x] Build 8 archived and in TestFlight (Xcode Cloud run 7)
 - [x] Commit #14 and bump to build 9. Build 8 still has the old onboarding line.
-- [ ] Push `ui-polish` and archive build 9 (`DaRules/scripts/trigger-xcode-cloud.sh`).
-- [ ] Recapture the iPhone Duo set from the current build (`Scripts/capture-duo-marketing-screenshots.sh`). The Connect set is the earlier capture — [`app-store-copy.md`](app-store-copy.md#iphone-duo-badge)
+- [ ] Push `main` and archive build 9 (`DaRules/scripts/trigger-xcode-cloud.sh`).
+- [ ] Recapture the iPhone 6.9", iPad 13", and Duo sets from build 9 (`Scripts/capture-marketing-screenshots.sh`, `Scripts/capture-duo-marketing-screenshots.sh`). The build 8 shots show the old navy urge screen and indigo habits — [`app-store-copy.md`](app-store-copy.md#iphone-duo-badge)
 - [x] Tests for legacy backup fixtures and crisis resources.
 - [ ] Optional: Accessibility, Architecture, and Code smells lanes — [Pending lanes](../../ongoing/1.0.0-review-fixes.md#pending-lanes)
 
@@ -36,7 +36,7 @@ Status legend: `[ ]` todo · `[x]` done
 - [ ] App Privacy is **Data Not Collected** — [code-health 1.2](../../ongoing/code-health-plan.md)
 - [ ] Paste the updated description (reminder bullet, #14) — [`app-store-copy.md`](app-store-copy.md#description)
 - [x] iPhone 6.9" and iPad 13" screenshots replaced from build 8 (2026-11-02)
-- [ ] Upload the recaptured iPhone Duo set (outer and inner)
+- [ ] Upload the recaptured iPhone 6.9", iPad 13", and Duo (outer and inner) sets
 - [ ] Confirm review notes match [Review notes](app-store-copy.md#review-notes)
 - [ ] Select build 9 for version 1.0
 
@@ -63,4 +63,4 @@ From [Decisions for the owner](../../ongoing/ui-polish-plan.md#decisions-for-the
 
 - [ ] Every item above is checked or waived
 - [ ] Add for Review and submit version 1.0
-- [ ] After approval: merge `ui-polish` to `main`, tag `1.0.0`, and update [`project-status.md`](../project-status.md) and [`feature-inventory.md`](../feature-inventory.md). What's New waits for the first update.
+- [ ] After approval: tag `1.0.0` on `main`, and update [`project-status.md`](../project-status.md) and [`feature-inventory.md`](../feature-inventory.md). What's New waits for the first update.
