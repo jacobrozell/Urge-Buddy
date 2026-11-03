@@ -271,6 +271,8 @@ Notification copy is never guilt-based. In **discreet mode** it never names the 
 
 ### 4.8 Onboarding (9 short steps, all skippable except choosing a vice)
 
+The progress bar is filled for the current step, so the first page already shows a short teal segment and the last page is full.
+
 | Step | Screen | Saves |
 |------|--------|-------|
 | 1 | **Welcome.** "Quit what's hurting you. Build what helps." Three lines on how it works. [Get started] | — |
@@ -289,7 +291,7 @@ Finish → create everything in one `RecoveryStore` transaction → land on Toda
 
 | Section | Rows |
 |---------|------|
-| Reminders | Daily check-in (toggle) · Time (hour/minute picker) · Milestone notifications (toggle) · Discreet notifications (toggle; footer: "Hides habit and vice names on your lock screen.") |
+| Reminders | Daily check-in (toggle) · Time (hour/minute picker, disabled while Daily check-in is off) · Milestone notifications (toggle) · Discreet notifications (toggle; footer: "Hides habit and vice names on your lock screen.") |
 | Privacy | Lock with Face ID / Touch ID / Passcode (label adapts to `LAContext.biometryType`) |
 | Appearance | System / Light / Dark (segmented) |
 | Your data | Export backup (.json) · Import backup · Delete all data (destructive, double-confirm) |
@@ -344,6 +346,7 @@ Finish → create everything in one `RecoveryStore` transaction → land on Toda
 | `slipSubtitle` | "A slip is information, not failure. Let's learn from it." |
 | `slipSummaryTitle` | "Your free clock restarts from here." |
 | `slipSummaryBody(free, counted, saved?)` | "You still have \(free) of your last \(counted) days free\(saved.map { " and \($0) saved" } ?? ""). That progress is real and it stays." |
+| `daysUnit(n)` | n == 1 ? "day" : "days" |
 | `milestoneVice(t, name)` | t == 1 ? "Your first day free from \(name)." : "\(t) days free from \(name)." |
 | `milestoneHabit(t, name)` | "\(t)-day run: \(name)." |
 | `disclaimer` | see §4.8 step 8 |

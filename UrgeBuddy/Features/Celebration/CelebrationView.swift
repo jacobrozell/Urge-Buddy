@@ -8,6 +8,7 @@ struct CelebrationView: View {
     @Environment(\.requestReview) private var requestReview
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @ScaledMetric(relativeTo: .largeTitle) private var heroSize: CGFloat = 120
     @State private var shown = false
 
     private var isShortHeight: Bool {
@@ -20,16 +21,12 @@ struct CelebrationView: View {
                 Group {
                     if isShortHeight {
                         HStack(alignment: .center, spacing: Spacing.xl) {
-                            Text("\(request.threshold)")
-                                .bigNumberStyle()
-                                .foregroundStyle(Color.tbTextPrimary)
+                            heroBadge
                             messageStack
                         }
                     } else {
                         VStack(spacing: Spacing.l) {
-                            Text("\(request.threshold)")
-                                .bigNumberStyle()
-                                .foregroundStyle(Color.tbTextPrimary)
+                            heroBadge
                             messageStack
                         }
                     }
@@ -44,6 +41,22 @@ struct CelebrationView: View {
         .urgeBuddyCelebration(isPresented: shown, reduceMotion: reduceMotion)
         .onAppear { shown = true }
         .adaptiveFormSheet()
+    }
+
+    private var heroBadge: some View {
+        ZStack {
+            Circle().fill(request.isVice ? Color.tbBrandSoft : Color.tbHabitSoft)
+            VStack(spacing: 0) {
+                Text("\(request.threshold)")
+                    .font(.system(size: heroSize * 0.42, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                Text(RecoveryCopy.daysUnit(request.threshold))
+                    .font(.subheadline.weight(.semibold))
+            }
+            .foregroundStyle(request.isVice ? Color.tbBrand : Color.tbHabit)
+        }
+        .frame(width: heroSize, height: heroSize)
+        .accessibilityHidden(true)
     }
 
     private var messageStack: some View {

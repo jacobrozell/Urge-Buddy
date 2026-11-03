@@ -5,6 +5,10 @@ enum RecoveryCopy {
         count == 1 ? "1 day free" : "\(count) days free"
     }
 
+    static func daysUnit(_ count: Int) -> String {
+        count == 1 ? "day" : "days"
+    }
+
     static func clock(days: Int, hours: Int, minutes: Int) -> String {
         if days > 0 {
             var parts = ["\(days)d"]

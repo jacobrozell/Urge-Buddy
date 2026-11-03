@@ -96,8 +96,8 @@ struct OnboardingFlow: View {
     }
 
     private var progressFraction: CGFloat {
-        guard model.pages.count > 1 else { return 1 }
-        return CGFloat(model.pageIndex) / CGFloat(model.pages.count - 1)
+        guard !model.pages.isEmpty else { return 1 }
+        return CGFloat(model.pageIndex + 1) / CGFloat(model.pages.count)
     }
 
     @ViewBuilder

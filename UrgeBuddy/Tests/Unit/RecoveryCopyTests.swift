@@ -5,6 +5,8 @@ final class RecoveryCopyTests: XCTestCase {
     func testPlurals() {
         XCTAssertEqual(RecoveryCopy.daysFree(1), "1 day free")
         XCTAssertEqual(RecoveryCopy.daysFree(12), "12 days free")
+        XCTAssertEqual(RecoveryCopy.daysUnit(1), "day")
+        XCTAssertEqual(RecoveryCopy.daysUnit(7), "days")
         XCTAssertEqual(RecoveryCopy.habitRun(1), "1-day run")
         XCTAssertEqual(RecoveryCopy.habitRun(5), "5-day run")
         XCTAssertEqual(RecoveryCopy.urgePassed(1), "You rode it out. That's 1 urge you've beaten.")
