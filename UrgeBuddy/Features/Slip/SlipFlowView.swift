@@ -61,8 +61,10 @@ struct SlipFlowView: View {
             .tbNavigationBarBackground()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(RecoveryCopy.close) { dismiss() }
+                if model?.summary == nil {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(RecoveryCopy.close) { dismiss() }
+                    }
                 }
                 if model?.summary != nil, pinsActionInToolbar {
                     ToolbarItem(placement: .confirmationAction) {
@@ -184,18 +186,7 @@ struct SlipFlowView: View {
 
     private func summaryActions() -> some View {
         VStack(spacing: Spacing.s) {
-            Button { showHelp = true } label: {
-                Text(RecoveryCopy.needSupport)
-                    .font(.headline)
-                    .foregroundStyle(Color.tbBrand)
-                    .frame(maxWidth: .infinity, minHeight: 52)
-                    .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
-                            .strokeBorder(Color.tbBrand.opacity(0.35), lineWidth: 1)
-                    }
-            }
-            .buttonStyle(.plain)
+            SecondaryButton(title: RecoveryCopy.needSupport) { showHelp = true }
             if !pinsActionInToolbar {
                 PrimaryButton(title: RecoveryCopy.backToToday, systemImage: nil, action: onFinish)
             }
@@ -207,6 +198,7 @@ struct SlipFlowView: View {
             HStack(alignment: .top, spacing: Spacing.m) {
                 summaryStatTiles(summary)
             }
+            .fixedSize(horizontal: false, vertical: true)
             VStack(alignment: .leading, spacing: Spacing.m) {
                 summaryStatTiles(summary)
             }
@@ -216,9 +208,8 @@ struct SlipFlowView: View {
     @ViewBuilder
     private func summaryStatTiles(_ summary: SlipSummary) -> some View {
         summaryStat(
-            value: "\(summary.freeDays)",
+            value: "\(summary.freeDays) of \(summary.countedDays)",
             label: RecoveryCopy.slipRecentDaysFree,
-            caption: RecoveryCopy.slipOfCounted(summary.countedDays),
             systemImage: "sun.max"
         )
         if let saved = summary.saved {
@@ -248,6 +239,7 @@ struct SlipFlowView: View {
                     .foregroundStyle(Color.tbTextSecondary)
             }
         }
+        .frame(maxHeight: .infinity, alignment: .topLeading)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Spacing.m)
         .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))

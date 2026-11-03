@@ -89,10 +89,6 @@ enum RecoveryCopy {
     static let slipRecentDaysFree = "Recent days free"
     static let slipStillSaved = "Still saved"
 
-    static func slipOfCounted(_ counted: Int) -> String {
-        "of \(counted)"
-    }
-
     static func slipSummaryBody(free: Int, counted: Int, saved: String?) -> String {
         let savings = saved.map { " and \($0) saved" } ?? ""
         return "You still have \(free) of your last \(counted) days free\(savings). That progress is real and it stays."

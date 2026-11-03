@@ -232,8 +232,11 @@ On save: `RecoveryStore.logSlip(...)`, and if the plan text changed, update `met
 > **Your free clock restarts from here.**
 > You still have **27 of your last 30 days** free and **$135** saved. That progress is real and it stays.
 > *[Reason card: first Reason]*
-> Need more support? → Get help now (Crisis resources, §4.9)
+> Two equal-height tiles: "**27 of 30**" / Recent days free, and the amount still saved.
+> Need more support? is a `SecondaryButton` → Get help now (Crisis resources, §4.9)
 > **[Back to Today]**
+>
+> The summary has no Close. Close stays on the form. In landscape, Back to Today stays in the toolbar.
 
 Haptic: `.impact(weight: .light)`. Never `.error`.
 
