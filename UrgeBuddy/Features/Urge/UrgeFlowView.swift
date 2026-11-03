@@ -57,29 +57,29 @@ struct UrgeFlowView: View {
         NavigationStack {
             Group {
                 if let model {
-                    ScrollViewReader { proxy in
-                        ScrollView {
-                            ReadableColumn {
-                                content(model)
+                    VStack(spacing: 0) {
+                        ScrollViewReader { proxy in
+                            ScrollView {
+                                ReadableColumn {
+                                    content(model)
+                                }
+                                .padding(.vertical, Spacing.l)
+                                .id(Self.topID)
                             }
-                            .padding(.vertical, Spacing.l)
-                            .id(Self.topID)
-                        }
-                        .scrollContentBackground(.hidden)
-                        .scrollDismissesKeyboard(.interactively)
-                        .safeAreaInset(edge: .bottom) {
-                            if model.step == .ride, pendingFinish == nil,
-                               !AdaptiveLayout.isShortHeight(vertical: verticalSizeClass) {
-                                ReadableColumn { rideActions(model) }
-                                    .padding(.vertical, Spacing.s)
-                                    .background(Color.tbCalm.opacity(0.95).ignoresSafeArea(edges: .bottom))
+                            .scrollContentBackground(.hidden)
+                            .scrollDismissesKeyboard(.interactively)
+                            .onChange(of: model.step) { _, _ in
+                                proxy.scrollTo(Self.topID, anchor: .top)
+                            }
+                            .onChange(of: pendingFinish) { _, finish in
+                                revealConfirm(finish, proxy)
                             }
                         }
-                        .onChange(of: model.step) { _, _ in
-                            proxy.scrollTo(Self.topID, anchor: .top)
-                        }
-                        .onChange(of: pendingFinish) { _, finish in
-                            revealConfirm(finish, proxy)
+                        if model.step == .ride, pendingFinish == nil,
+                           !AdaptiveLayout.isShortHeight(vertical: verticalSizeClass) {
+                            ReadableColumn { rideActions(model) }
+                                .padding(.vertical, Spacing.s)
+                                .background(Color.tbCalm.opacity(0.95).ignoresSafeArea(edges: .bottom))
                         }
                     }
                 }

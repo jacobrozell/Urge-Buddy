@@ -202,7 +202,7 @@ Having an urge right now? →            (closes this sheet, opens Urge, then br
    - **Your why** card: a short quote for each reason. Swipe between them (or a list under Reduce Motion).
    - **Your plan** card, if `ifThenPlan` is set: "When I feel the urge, I will: …"
    - **Try one instead:** each habit is a row with its icon and an open circle. Tapping marks it done today (the circle fills, plus a haptic). Tap again to clear it. A field on the card adds another habit. It shows up in the list immediately and on Today. A name that is already there is not added again.
-   - Buttons: **[The urge passed]** (primary) and **[I slipped]** (secondary, plain text style). In portrait they stay pinned to the bottom of the screen, inside the readable column, including while the rest of the ride scrolls. In landscape (short height) they stay at the end of the support column. They hide once "I slipped" opens the journal confirm step. The X in the corner asks "How did it go?" → passed / slipped / not sure.
+   - Buttons: **[The urge passed]** (primary) and **[I slipped]** (secondary, plain text style). In portrait they stay pinned under the scroll view, inside the readable column, so the journal field is never covered. In landscape (short height) they stay at the end of the support column. They hide once "I slipped" opens the journal confirm step. The X in the corner asks "How did it go?" → passed / slipped / not sure.
    - When the timer hits 0: a soft haptic, the short `urge-timer-done` tone (Mixkit's unlock notification; silent switch wins), and "Still with it? You can add 5 minutes, or check in with yourself." Adding 5 minutes and letting it run out plays the tone again. It does not play when the ride opens already at 0.
 4. **Outcome**
    - *Passed* → `outcome = .resisted` → screen: "You rode it out." + "That's **N** urges you've beaten." + optional "What set it off?" trigger chips → **Done**.
@@ -413,6 +413,6 @@ Custom vices use the verb phrase "do it". **Verify every SF Symbol name** in the
 
 | Field | Value |
 |-------|--------|
-| Last verified | — |
-| Commit | — |
+| Last verified | 2026-11-02 |
+| Commit | ui-polish |
 
