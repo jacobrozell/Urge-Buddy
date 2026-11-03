@@ -86,18 +86,9 @@ struct TodayScreen: View {
                 // Duo container that includes the off-screen region, which shoves this column
                 // off the leading edge of the visible display.
             }
-            if model.showsSOS {
+            if model.showsSOS && !isShortHeight {
                 VerticalBarFloatingBar {
-                    SOSButton {
-                        let sheetWasUp = sheet != nil
-                        sheet = nil
-                        let present = { router.present(.urge(nil)) }
-                        if sheetWasUp {
-                            PresentationSequence.afterDismiss(present)
-                        } else {
-                            PresentationSequence.resignKeyboardThen(present)
-                        }
-                    }
+                    SOSButton(action: openUrge)
                 }
                 .padding(.top, Spacing.s)
                 .background(Color.tbBackground)
@@ -107,9 +98,15 @@ struct TodayScreen: View {
             .tbNavigationBarBackground()
             .navigationTitle("Today")
             .navigationBarTitleDisplayMode(
-                AdaptiveLayout.isShortHeight(vertical: verticalSizeClass) ? .inline : .large
+                isShortHeight ? .inline : .large
             )
             .toolbar {
+                // A pinned bar would leave a phone in landscape a sliver of Today, so the urge button rides in the nav bar.
+                if model.showsSOS && isShortHeight {
+                    ToolbarItem(placement: .topBarLeading) {
+                        SOSToolbarButton(action: openUrge)
+                    }
+                }
                 if !model.isEmpty {
                     ToolbarItem(placement: .primaryAction) {
                         Button { sheet = .add(.vice) } label: {
@@ -152,6 +149,21 @@ struct TodayScreen: View {
                 }
             }
             .persistFailureAlert()
+        }
+    }
+
+    private var isShortHeight: Bool {
+        AdaptiveLayout.isShortHeight(vertical: verticalSizeClass)
+    }
+
+    private func openUrge() {
+        let sheetWasUp = sheet != nil
+        sheet = nil
+        let present = { router.present(.urge(nil)) }
+        if sheetWasUp {
+            PresentationSequence.afterDismiss(present)
+        } else {
+            PresentationSequence.resignKeyboardThen(present)
         }
     }
 

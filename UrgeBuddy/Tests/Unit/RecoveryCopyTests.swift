@@ -13,6 +13,11 @@ final class RecoveryCopyTests: XCTestCase {
         XCTAssertEqual(RecoveryCopy.urgePassed(6), "You rode it out. That's 6 urges you've beaten.")
         XCTAssertEqual(RecoveryCopy.nextMilestone(14, inDays: 1), "Next: 14 days (in 1 day)")
         XCTAssertEqual(RecoveryCopy.nextMilestone(14, inDays: 2), "Next: 14 days (in 2 days)")
+        XCTAssertEqual(RecoveryCopy.nextMilestone(1, inDays: 1), "Next: 1 day (in 1 day)")
+        XCTAssertEqual(RecoveryCopy.viceProgress(days: 0, longest: 1, free: 1, counted: 2), "0 days free\nLongest 1 day · 1/2 days")
+        XCTAssertEqual(RecoveryCopy.habitProgress(run: 1, best: 1, done: 1, counted: 1), "1-day run\nBest 1 day · 1/1 days")
+        XCTAssertEqual(RecoveryCopy.milestoneNotificationTitle(1), "1 day free")
+        XCTAssertEqual(RecoveryCopy.milestoneNotificationBody(1, name: "Alcohol"), "You reached 1 day free from Alcohol. Open Urge Buddy to celebrate.")
     }
 
     func testClockFormats() {

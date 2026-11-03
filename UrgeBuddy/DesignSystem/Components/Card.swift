@@ -5,9 +5,17 @@ struct Card<Content: View>: View {
 
     var body: some View {
         content()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(Spacing.l)
-            .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+            .cardSurface()
+    }
+}
+
+extension View {
+    /// The shared card shape. It always fills the column, so cards stacked together share both edges.
+    func cardSurface(_ fill: Color = .tbSurface, vertical: CGFloat = Spacing.l) -> some View {
+        frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, Spacing.l)
+            .padding(.vertical, vertical)
+            .background(fill, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
     }
 }
 

@@ -169,9 +169,7 @@ struct CheckInSheet: View {
                         answerRow(row)
                     }
                 }
-                .padding(.horizontal, Spacing.l)
-                .padding(.vertical, Spacing.m)
-                .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+                .cardSurface(vertical: Spacing.m)
             }
             if !model.cutBacks.isEmpty {
                 SectionHeader(RecoveryCopy.cuttingBack)
@@ -197,9 +195,7 @@ struct CheckInSheet: View {
                                 .foregroundStyle(Color.tbTextPrimary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .padding(.horizontal, Spacing.l)
-                        .padding(.vertical, Spacing.s)
-                        .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+                        .cardSurface(vertical: Spacing.s)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(row.isDone ? "\(row.name), done" : "\(row.name), not done")
@@ -228,9 +224,7 @@ struct CheckInSheet: View {
             }
             .accessibilityIdentifier(AccessibilityIdentifiers.checkInAmount(row.id))
         }
-        .padding(.horizontal, Spacing.l)
-        .padding(.vertical, Spacing.m)
-        .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+        .cardSurface(vertical: Spacing.m)
     }
 
     private func moodSection(_ model: CheckInViewModel) -> some View {

@@ -28,7 +28,7 @@ struct SectionHeader: View {
                         .frame(minWidth: 44, minHeight: 44)
                         .contentShape(Rectangle())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable)
                 .foregroundStyle(Color.tbBrand)
                 .accessibilityLabel(addLabel)
                 .accessibilityIdentifier(addID ?? "")

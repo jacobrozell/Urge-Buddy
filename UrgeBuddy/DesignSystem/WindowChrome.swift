@@ -160,12 +160,10 @@ private struct VerticalBarFloatingBarLayout<Button: View>: View {
     var bottomPadding: CGFloat
     @ViewBuilder var button: () -> Button
 
-    /// Shares the wide readable column with the content above. Beside a vertical tab bar it
-    /// spans that column; above a bottom tab bar it stays a centered 560pt.
+    /// Spans the wide readable column, so the button lines up with the cards above it.
     var body: some View {
         ReadableColumn(width: .wide) {
             button()
-                .frame(maxWidth: avoidTrailing ? .infinity : 560)
                 .frame(maxWidth: .infinity)
         }
         .padding(.trailing, avoidTrailing ? VerticalTabBarClearance.width : 0)

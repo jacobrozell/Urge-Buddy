@@ -4,6 +4,7 @@ struct ReadableColumn<Content: View>: View {
     enum Width { case text, wide }
 
     var width: Width
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
     @ViewBuilder var content: () -> Content
 
     init(width: Width = .text, @ViewBuilder content: @escaping () -> Content) {
@@ -11,9 +12,10 @@ struct ReadableColumn<Content: View>: View {
         self.content = content
     }
 
+    /// A phone in landscape is short and only a little wider than the text column, so it fills the width.
     var body: some View {
         content()
-            .frame(maxWidth: width == .text ? AdaptiveLayout.textColumnWidth : AdaptiveLayout.wideColumnWidth)
+            .frame(maxWidth: width == .text && verticalSizeClass != .compact ? AdaptiveLayout.textColumnWidth : AdaptiveLayout.wideColumnWidth)
             .frame(maxWidth: .infinity)
             .padding(.horizontal, Spacing.l)
     }

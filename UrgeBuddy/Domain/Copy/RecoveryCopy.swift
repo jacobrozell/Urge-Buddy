@@ -45,8 +45,7 @@ enum RecoveryCopy {
     static let dontMissTwice = "Don't miss twice"
 
     static func nextMilestone(_ threshold: Int, inDays: Int) -> String {
-        let unit = inDays == 1 ? "day" : "days"
-        return "Next: \(threshold) days (in \(inDays) \(unit))"
+        return "Next: \(threshold) \(daysUnit(threshold)) (in \(inDays) \(daysUnit(inDays)))"
     }
 
     static func checkInBanner(left: Int) -> String {
@@ -207,11 +206,11 @@ enum RecoveryCopy {
     static func urgesBeatenCount(_ count: Int) -> String { "\(urgesBeaten) \(count)" }
 
     static func viceProgress(days: Int, longest: Int, free: Int, counted: Int) -> String {
-        "\(daysFree(days))\nLongest \(longest) days · \(free)/\(counted) days"
+        "\(daysFree(days))\nLongest \(longest) \(daysUnit(longest)) · \(free)/\(counted) days"
     }
 
     static func habitProgress(run: Int, best: Int, done: Int, counted: Int) -> String {
-        "\(habitRun(run))\nBest \(best) days · \(done)/\(counted) days"
+        "\(habitRun(run))\nBest \(best) \(daysUnit(best)) · \(done)/\(counted) days"
     }
 
     static let totalSaved = "Total saved"
@@ -293,11 +292,11 @@ enum RecoveryCopy {
     static let discreetMilestoneBody = "You reached a new milestone."
 
     static func milestoneNotificationTitle(_ threshold: Int) -> String {
-        "\(threshold) days free"
+        daysFree(threshold)
     }
 
     static func milestoneNotificationBody(_ threshold: Int, name: String) -> String {
-        "You reached \(threshold) days free from \(name). Open Urge Buddy to celebrate."
+        "You reached \(daysFree(threshold)) from \(name). Open Urge Buddy to celebrate."
     }
 
     static let welcomeTitle = "Quit what's hurting you. Build what helps."

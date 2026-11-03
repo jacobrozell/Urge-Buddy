@@ -149,8 +149,7 @@ struct YesterdayPrompt: View {
                 VStack(spacing: Spacing.s) { actions }
             }
         }
-        .padding(Spacing.l)
-        .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+        .cardSurface()
     }
 
     @ViewBuilder
@@ -202,7 +201,30 @@ struct UrgeSurfingRow: View {
             .padding(.top, Spacing.xs)
             .padding(.trailing, Spacing.xs)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+    }
+}
+
+/// The urge button as a compact nav bar item, for a phone in landscape.
+struct SOSToolbarButton: View {
+    var action: () -> Void
+
+    var body: some View {
+        // A Label collapses to its icon in a nav bar. This is the main action, so it keeps its words.
+        Button(action: action) {
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: "wind")
+                    .accessibilityHidden(true)
+                Text(RecoveryCopy.sosButton)
+            }
+            .font(.subheadline.weight(.semibold))
+            .lineLimit(1)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(Color.tbBrand)
+        .accessibilityLabel(RecoveryCopy.sosButton)
+        .accessibilityIdentifier(AccessibilityIdentifiers.todaySOSButton)
     }
 }
 
@@ -215,8 +237,8 @@ struct SOSButton: View {
                 Image(systemName: "wind")
                     .accessibilityHidden(true)
                 Text(RecoveryCopy.sosButton)
-                    .lineLimit(2)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .font(.headline)
             .foregroundStyle(Color.tbOnBrand)

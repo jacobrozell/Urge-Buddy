@@ -5,7 +5,9 @@
 
 ## 8. Design system
 
-### 8.1 Palette (asset catalog color sets with Any + Dark appearances)
+### 8.1 Palette
+
+Neutrals and Slip are asset catalog color sets with Any + Dark appearances. They stay the same for every theme.
 
 | Token | Light | Dark | Use |
 |-------|-------|------|-----|
@@ -14,16 +16,23 @@
 | `SurfaceMuted` | `#EEF1EF` | `#1F2629` | Chips, inactive cells |
 | `TextPrimary` | `#111827` | `#F3F4F6` | Body text |
 | `TextSecondary` | `#4B5563` | `#A3AAB5` | Captions |
+| `Slip` | `#B45309` | `#FBBF24` | Slip dot, at-risk hint (**never red**) |
+| `SlipSoft` | `#FEF3C7` | `#451A03` | Slip backgrounds |
+
+Accent colors come from one hue family per theme, defined in code in `DesignSystem/Theme.swift` (`AppTheme`, `ThemePalette`). Only `teal` ships. Adding a theme is a new case plus its palette; `WCAGContrastTests` checks every theme's text-on-fill pairs.
+
+| Token | Light | Dark | Use |
+|-------|-------|------|-----|
 | `Brand` | `#0F766E` | `#2DD4BF` | Free state, primary buttons, tint |
 | `BrandSoft` | `#CCFBF1` | `#134E4A` | Presumed-free cells, soft fills |
 | `OnBrand` | `#FFFFFF` | `#042F2E` | Text on `Brand` fills |
-| `Habit` | `#4F46E5` | `#A5B4FC` | Habit done |
-| `HabitSoft` | `#E0E7FF` | `#312E81` | Habit soft fills |
-| `Slip` | `#B45309` | `#FBBF24` | Slip dot, at-risk hint (**never red**) |
-| `SlipSoft` | `#FEF3C7` | `#451A03` | Slip backgrounds |
-| `Calm` | `#1E3A5F` | `#1E3A5F` | Urge flow background (white text on top) |
+| `Habit` | `#047857` | `#34D399` | Habit done. A neighbor of `Brand`, not a second hue |
+| `HabitSoft` | `#D1FAE5` | `#064E3B` | Habit soft fills |
+| `Calm` | `#0C3532` | `#0C3532` | Urge flow background: a deep shade of `Brand` (white text on top) |
 
-`AccentColor` = `Brand`. `LaunchBackground` = `Background`. Expose them as `extension Color { static let tbBackground = Color("Background") … }` in `Palette.swift`. Don't use any raw colors in views.
+`AccentColor` (asset) = teal `Brand`. `LaunchBackground` = `Background`. Expose every token as `Color.tb…` in `Palette.swift`. Don't use any raw colors in views.
+
+Cards use `cardSurface()` (or `Card`), which fills the column so cards stacked together share both edges. On a phone in landscape, `ReadableColumn` fills the width, and Today's urge button moves into the nav bar.
 
 ### 8.2 Spacing and radius
 
@@ -88,7 +97,7 @@ Three layout signals (see `DesignSystem/AdaptiveLayout.swift`):
 
 - The app's own windows are painted with the Background color, and screen backgrounds ignore the safe area, so the trailing status-bar edge is not white. Keyboard and input windows are left alone. If a presentation leaves the screen transparent, the content is restored after that presentation has finished.
 - On iOS 26 and later, navigation bars use `containerBackground` instead of an opaque toolbar fill. Liquid Glass would otherwise leave a white strip.
-- The Today SOS control fills the content width up to 560pt. It stays centered above a bottom tab bar. When the tab bar is vertical (`toolbarVerticalEdge == .trailing`), it spans the full content column and leaves 64pt clear of that bar. Today's content sits in the same wide readable column (text width when empty) and keeps the same 64pt clear (`verticalTabBarClearance()`), so the cards, sections, and SOS control share both edges. Size that column from the width the scroll view proposes. Do not pin it with `containerRelativeFrame`: on Duo that container includes the off-screen region and clips the leading edge. Settings and crisis lists use the same 64pt trailing clearance so rows stay off the vertical bar.
+- The Today SOS control spans the same wide column as the cards above it. On a phone in landscape it moves into the nav bar (leading, with its words). When the tab bar is vertical (`toolbarVerticalEdge == .trailing`), it spans the full content column and leaves 64pt clear of that bar. Today's content sits in the same wide readable column (text width when empty) and keeps the same 64pt clear (`verticalTabBarClearance()`), so the cards, sections, and SOS control share both edges. Size that column from the width the scroll view proposes. Do not pin it with `containerRelativeFrame`: on Duo that container includes the off-screen region and clips the leading edge. Settings and crisis lists use the same 64pt trailing clearance so rows stay off the vertical bar.
 - The urge Close control stays leading on iPhone and moves to the trailing edge with the vertical bar.
 
 **Rules:** No `UIDevice` / `UIScreen` in app code. Keep `@State` on screen structs across layout branches. Preserve accessibility identifiers when moving controls to the toolbar.
