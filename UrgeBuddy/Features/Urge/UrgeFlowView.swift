@@ -67,6 +67,14 @@ struct UrgeFlowView: View {
                         }
                         .scrollContentBackground(.hidden)
                         .scrollDismissesKeyboard(.interactively)
+                        .safeAreaInset(edge: .bottom) {
+                            if model.step == .ride, pendingFinish == nil,
+                               !AdaptiveLayout.isShortHeight(vertical: verticalSizeClass) {
+                                ReadableColumn { rideActions(model) }
+                                    .padding(.vertical, Spacing.s)
+                                    .background(Color.tbCalm.opacity(0.95).ignoresSafeArea(edges: .bottom))
+                            }
+                        }
                         .onChange(of: model.step) { _, _ in
                             proxy.scrollTo(Self.topID, anchor: .top)
                         }
@@ -245,7 +253,7 @@ struct UrgeFlowView: View {
                 }
                 .frame(minHeight: 44)
                 .foregroundStyle(Color.tbOnCalm)
-                surfingLink
+                surfingLink()
             }
         case .ride:
             rideBody(model)
@@ -256,7 +264,7 @@ struct UrgeFlowView: View {
         }
     }
 
-    private var surfingLink: some View {
+    private func surfingLink(inCard: Bool = false) -> some View {
         Button {
             PresentationSequence.resignKeyboardThen { rideSheet = .surfing }
         } label: {
@@ -269,9 +277,15 @@ struct UrgeFlowView: View {
                     .accessibilityHidden(true)
             }
             .foregroundStyle(Color.tbOnCalm)
-            .padding(.horizontal, Spacing.l)
+            .padding(.horizontal, inCard ? 0 : Spacing.l)
+            .padding(.vertical, inCard ? Spacing.xs : 0)
             .frame(maxWidth: .infinity, minHeight: 44)
-            .background(Color.tbOnCalm.opacity(0.12), in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
+            .background {
+                if !inCard {
+                    RoundedRectangle(cornerRadius: Radius.control, style: .continuous)
+                        .fill(Color.tbOnCalm.opacity(0.12))
+                }
+            }
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier(AccessibilityIdentifiers.urgeSurfingLearn)
@@ -378,14 +392,16 @@ struct UrgeFlowView: View {
         if let pendingFinish {
             journalConfirm(pendingFinish, model)
         } else {
-            Text(RecoveryCopy.urgeIntro)
-                .font(.body)
-                .foregroundStyle(Color.tbOnCalm)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(Spacing.l)
-                .background(Color.tbOnCalm.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
-            surfingLink
+            VStack(alignment: .leading, spacing: Spacing.m) {
+                Text(RecoveryCopy.urgeIntro)
+                    .font(.body)
+                    .foregroundStyle(Color.tbOnCalm)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                surfingLink(inCard: true)
+            }
+            .padding(Spacing.l)
+            .background(Color.tbOnCalm.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
             journalEditor(model)
             if let plan = selectedMetric?.ifThenPlan, !plan.isEmpty {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -399,6 +415,14 @@ struct UrgeFlowView: View {
             }
             whySection(showAddField: true)
             habitChips
+            if AdaptiveLayout.isShortHeight(vertical: verticalSizeClass) {
+                rideActions(model)
+            }
+        }
+    }
+
+    private func rideActions(_ model: UrgeViewModel) -> some View {
+        VStack(spacing: Spacing.s) {
             PrimaryButton(title: RecoveryCopy.theUrgePassed, systemImage: nil, accessibilityID: AccessibilityIdentifiers.urgePassed) {
                 journalFocused = false
                 whyFocused = false
