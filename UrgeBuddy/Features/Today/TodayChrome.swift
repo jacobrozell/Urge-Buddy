@@ -122,13 +122,8 @@ struct YesterdayPrompt: View {
 
     @ViewBuilder
     private var actions: some View {
-        Button(RecoveryCopy.yesterdayYes, action: onYes)
-            .buttonStyle(.borderedProminent)
-            .tint(Color.tbBrand)
-            .frame(minHeight: 44)
-        Button(RecoveryCopy.iSlipped, action: onSlipped)
-            .buttonStyle(.bordered)
-            .frame(minHeight: 44)
+        ChoiceButton(title: RecoveryCopy.yesterdayYes, action: onYes)
+        ChoiceButton(title: RecoveryCopy.iSlipped, action: onSlipped)
     }
 }
 

@@ -254,22 +254,20 @@ struct CheckInSheet: View {
     }
 
     private func freeButton(_ row: CheckInViceRow) -> some View {
-        Button(RecoveryCopy.freeToday) { markFree(row.id) }
-            .buttonStyle(.borderedProminent)
-            .tint(Color.tbBrand)
-            .frame(maxWidth: .infinity, minHeight: 44)
-            .accessibilityIdentifier(AccessibilityIdentifiers.checkInFree(row.id))
-            .accessibilityAddTraits(row.answer == .free ? .isSelected : [])
+        ChoiceButton(
+            title: RecoveryCopy.freeToday,
+            isSelected: row.answer == .free,
+            accessibilityID: AccessibilityIdentifiers.checkInFree(row.id)
+        ) { markFree(row.id) }
     }
 
     private func slippedButton(_ row: CheckInViceRow) -> some View {
-        Button(RecoveryCopy.iSlipped) {
+        ChoiceButton(
+            title: RecoveryCopy.iSlipped,
+            accessibilityID: AccessibilityIdentifiers.checkInSlipped(row.id)
+        ) {
             PresentationSequence.resignKeyboardThen { slippingID = row.id }
         }
-            .buttonStyle(.bordered)
-            .tint(Color.tbSlip)
-            .frame(maxWidth: .infinity, minHeight: 44)
-            .accessibilityIdentifier(AccessibilityIdentifiers.checkInSlipped(row.id))
     }
 
     private func prepare() {

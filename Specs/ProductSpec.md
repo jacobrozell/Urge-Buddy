@@ -159,17 +159,17 @@ Rules:
 - Tapping a ViceCard opens Metric Detail (pushes onto the Progress tab's stack: switch tab, then push. Or present Metric Detail as a sheet from Today, which is simpler; **use the sheet**).
 - Tapping a habit's circle toggles done for today (haptic `.success` on done, `.selection` on undo). Tapping the row text opens Metric Detail.
 - Empty state (no metrics; only reachable after deleting everything): "Start with one thing", then "Quit or cut back" (adds a vice) and "Build a habit" (adds a habit).
-- If yesterday is unconfirmed for any vice **and** the user opened the app before noon, show one dismissible row above the banner: "Yesterday: were you free from Alcohol?" with [Yes] [I slipped]. (Keeps the calendar honest without nagging.)
+- If yesterday is unconfirmed for any vice **and** the user opened the app before noon, show one dismissible row above the banner: "Yesterday: were you free from Alcohol?" with `ChoiceButton`s [Yes] [I slipped]. (Keeps the calendar honest without nagging.)
 
 ### 4.3 Daily check-in (the core ritual)
 
 Sheet, `.presentationDetents([.medium, .large])`.
 
 ```
-Daily check-in · Tue, Oct 28
+Daily check-in
 
 Alcohol
- [  Free today  ]   [ I slipped ]
+ [✓ Free today  ]   [ I slipped ]
 
 Social media
  [  Free today  ]   [ I slipped ]
@@ -183,8 +183,9 @@ Having an urge right now? →            (closes this sheet, opens Urge, then br
 [ Done ]                                 (enabled once every vice has an answer)
 ```
 
-- "Free today" → `RecoveryStore.markFree(metric, on: today)`.
+- "Free today" and "I slipped" are `ChoiceButton`s, equal width. "Free today" → `RecoveryStore.markFree(metric, on: today)`, and the button fills `Brand` with a checkmark. "I slipped" is never shown selected.
 - "I slipped" → present the **Slip flow** with `day = today`. When it finishes, that row shows "Slip logged · thanks for being honest" and can't be toggled back from here (fix it in the Day editor).
+- The yesterday prompt uses the same `ChoiceButton`s for "Yes" and "I slipped".
 - Habit rows toggle done.
 - **Done** → `CheckInCompleteView` (inside the same sheet): an animated check, the check-in streak in a big number ("5" / "days in a row" / "You checked in today."), then one line per vice ("13 days free · $104 saved"), then any milestone → Celebration.
 - Check-in counts as **complete** for a day when every active vice has an entry for that day. Habits are optional for completeness.
