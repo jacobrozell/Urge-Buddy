@@ -162,8 +162,8 @@ struct MetricDetailScreen: View {
                             .font(.subheadline)
                             .foregroundStyle(Color.tbTextSecondary)
                         Text(RecoveryCopy.noUrgesYet)
-                            .font(.subheadline)
-                            .foregroundStyle(Color.tbTextPrimary)
+                            .font(.footnote)
+                            .foregroundStyle(Color.tbTextSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)

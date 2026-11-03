@@ -35,6 +35,7 @@ struct ProgressScreen: View {
                         summary: model.summary,
                         stacksStats: dynamicTypeSize.usesAccessibilityLayout
                     )
+                    .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.tbBackground)
                     .listRowSeparator(.hidden)
                     .selectionDisabled()
@@ -121,6 +122,7 @@ struct ProgressScreen: View {
                     }
                 }
             }
+            .listSectionSpacing(.compact)
             .scrollContentBackground(.hidden)
             .background(Color.tbBackground.ignoresSafeArea())
             .tbNavigationBarBackground()

@@ -63,20 +63,27 @@ struct MonthCalendar: View {
     private func dayCell(_ day: Date) -> some View {
         let state = stateFor(day)
         let number = calendar.component(.day, from: day)
+        let isFuture = day > calendar.startOfDay(for: Date())
+        let dateLabel = day.formatted(date: .abbreviated, time: .omitted)
         return Button {
             onSelect(day)
         } label: {
             VStack(spacing: Spacing.xs) {
                 Text("\(number)")
                     .font(.caption)
-                    .foregroundStyle(state == .inactive ? Color.tbTextSecondary : Color.tbTextPrimary)
-                DayMark(state: state, size: 12)
+                    .foregroundStyle(isFuture || state == .inactive ? Color.tbTextSecondary : Color.tbTextPrimary)
+                if isFuture {
+                    Color.clear.frame(width: 12, height: 12)
+                } else {
+                    DayMark(state: state, size: 12)
+                }
             }
             .frame(maxWidth: .infinity, minHeight: 44)
-            .background(state == .slipped ? Color.tbSlipSoft : Color.clear, in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
+            .background(state == .slipped && !isFuture ? Color.tbSlipSoft : Color.clear, in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(day.formatted(date: .abbreviated, time: .omitted)), \(state.accessibilityName)")
+        .disabled(isFuture)
+        .accessibilityLabel(isFuture ? dateLabel : "\(dateLabel), \(state.accessibilityName)")
         .accessibilityIdentifier(AccessibilityIdentifiers.calendarDay(day, calendar: calendar))
     }
 }
