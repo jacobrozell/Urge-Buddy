@@ -99,4 +99,4 @@ Order: Today, urge ride, slip summary, progress detail, cut back.
 
 ## iPhone Duo badge
 
-Uploaded 2026-11-02 as one `APP_IPHONE_DUO` set: five outer (1398×2034) then five inner (2853×2007). The product page shows the iPhone Duo badge once Connect has both sizes.
+Uploaded 2026-11-02, then replaced the same day after the UI polish: iPhone 6.9" (`APP_IPHONE_67`, 5), iPad 13" (`APP_IPAD_PRO_3GEN_129`, 5), and one `APP_IPHONE_DUO` set of five outer (1398×2034) then five inner (2853×2007). The product page shows the iPhone Duo badge once Connect has both sizes.

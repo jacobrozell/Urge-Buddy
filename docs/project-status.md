@@ -18,7 +18,7 @@
 
 ## Current focus
 
-**UI polish, then the App Store listing.** The visible 1.0 rough edges are implemented on `ui-polish` and not pushed. Marketing screenshots were regenerated on 2026-11-02 (iPhone 6.9", iPad 13", and iPhone Duo) and are not uploaded. The English listing and review notes are in App Store Connect on version 1.0 (Prepare for Submission). What's New is not accepted until the first release is live. 1.0.0 (7) is the Xcode Cloud archive candidate and is not submitted. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
+**UI polish is on `ui-polish` and pushed.** Marketing screenshots for iPhone 6.9", iPad 13", and iPhone Duo were recaptured and uploaded to App Store Connect on 2026-11-02. Xcode Cloud Release build 6 is archiving 1.0.0 (7) from `ui-polish` (`ec9aa8cf-b42c-4bc5-9ca8-81aee480b3df`) and is not submitted. What's New waits until the first release is live. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
 
 The app has never shipped. Build 5 was archived on 2026-06-22 and never uploaded. There is no production data to migrate.
 
