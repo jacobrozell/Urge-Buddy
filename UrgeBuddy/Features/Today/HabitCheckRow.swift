@@ -25,6 +25,7 @@ struct HabitCheckRow: View {
         }
         .padding(.horizontal, Spacing.l)
         .padding(.vertical, Spacing.s)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
     }
 

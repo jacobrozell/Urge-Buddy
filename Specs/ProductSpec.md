@@ -110,7 +110,7 @@ Entry points into the **Urge** flow: the Today button, the home-screen quick act
 
 ```
 ┌──────────────────────────────────────┐
-│ Today                                │  large title
+│ Today                             +  │  large title; + adds a metric
 │ Monday, November 2                   │  date under the title, not in the toolbar
 │                                      │
 │ ┌──────────────────────────────────┐ │
@@ -123,7 +123,7 @@ Entry points into the **Urge** flow: the Today button, the home-screen quick act
 │ │ An urge rises and passes…        │ │  dismisses it for good. Shown while a vice is active, until dismissed
 │ └──────────────────────────────────┘ │
 │                                      │
-│ QUITTING                          +  │  section header; + adds a vice
+│ QUITTING                             │  section header
 │ ┌──────────────────────────────────┐ │
 │ │ [wineglass]  Alcohol           › │ │  ViceCard; chevron means it opens
 │ │ 12 days free                     │ │  big rounded number
@@ -133,7 +133,7 @@ Entry points into the **Urge** flow: the Today button, the home-screen quick act
 │ │ Next milestone: 14 days (2 days) │ │
 │ └──────────────────────────────────┘ │
 │                                      │
-│ BUILDING                          +  │  + adds a habit
+│ BUILDING                             │
 │ ┌──────────────────────────────────┐ │
 │ │ ○  Go for a walk       5-day run │ │  HabitCheckRow (tap circle = done)
 │ │ ●  Call a friend       2-day run │ │
@@ -153,7 +153,7 @@ Rules:
 - The date is gray subtitle text ("Monday, November 2"), including at large accessibility sizes. It is not a toolbar item. The check-in sheet has no date in the toolbar either.
 - The check-in card stays once anything is tracked. While today is open it is a brand-filled button: the streak on one line (when there is one) and "Check in · N things left · about 10 seconds" (or "1 thing left"). After today is answered it becomes "N days in a row" and "You checked in today." The streak is consecutive days the check-in was answered, including today only after it is answered. A presumed-free day does not count. A logged slip does. One missed day ends the run, and the app does not say so. The urge button sits under the list, not over the last row.
 - The urge-surfing row shows while a vice is active, until the person taps it or dismisses it. Either choice sets `Preferences.hasDismissedUrgeSurfingTip` and the row stays gone. The explainer remains in Settings → Support and inside the urge flow.
-- The + on Quitting opens Add metric as a vice. The + on Building opens it as a habit. The type picker is still there. "Quitting" is hidden when there are no quit vices and there is at least one cut back. In that case the + (same add action and accessibility ID) moves onto "Cutting back". Otherwise "Cutting back" has no +. When "Building" has no habits, a dashed add row sits under the header. It is hidden from VoiceOver because the header + already announces the action.
+- One Add button in the toolbar (`today.add`, label "Add something") opens Add metric. The type picker chooses quitting or building. Section headers have no +. A section is shown only when it has a card. On a wide window the quitting column and the building column fill the width, side by side, wider than the text column above them. Empty Today still offers "Quit or cut back" and "Build a habit".
 - Vice cards and cut-back cards show a trailing chevron. It is hidden from VoiceOver; the card is still one button.
 - The SOSButton shows only if there's at least one active vice.
 - Tapping a ViceCard opens Metric Detail (pushes onto the Progress tab's stack: switch tab, then push. Or present Metric Detail as a sheet from Today, which is simpler; **use the sheet**).
@@ -187,7 +187,7 @@ Having an urge right now? →            (closes this sheet, opens Urge, then br
 - "I slipped" → present the **Slip flow** with `day = today`. When it finishes, that row shows "Slip logged · thanks for being honest" and can't be toggled back from here (fix it in the Day editor).
 - The yesterday prompt uses the same `ChoiceButton`s for "Yes" and "I slipped".
 - Habit rows toggle done.
-- **Done** → `CheckInCompleteView` (inside the same sheet): an animated check, the check-in streak in a big number ("5" / "days in a row" / "You checked in today."), then one line per vice ("13 days free · $104 saved"), then any milestone → Celebration.
+- **Done** → `CheckInCompleteView` (inside the same sheet): an animated check, the check-in streak in a big number ("5" / "days in a row" / "You checked in today."), then one line per vice ("13 days free · $104 saved"), with padding and spacers between the badge, the streak, and the lines. Then any milestone → Celebration. The celebration sheet uses the same breathing room. **Keep going** records the milestone and dismisses the sheet. A 7-day vice milestone asks for a review only after that sheet is gone.
 - Check-in counts as **complete** for a day when every active vice has an entry for that day. Habits are optional for completeness.
 
 ### 4.4 Urge flow ("I'm having an urge")

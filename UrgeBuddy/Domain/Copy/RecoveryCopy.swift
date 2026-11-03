@@ -118,8 +118,6 @@ enum RecoveryCopy {
     static let addSomething = "Add something"
     static let addSomethingToQuit = "Quit or cut back"
     static let addAHabit = "Build a habit"
-    static let addQuitting = "Add something you're quitting"
-    static let addBuilding = "Add a habit"
     static let yesterdayYes = "Yes"
     static let dismiss = "Dismiss"
     static let slipLoggedThanks = "Slip logged · thanks for being honest"

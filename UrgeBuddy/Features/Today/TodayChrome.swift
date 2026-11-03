@@ -173,36 +173,6 @@ struct UrgeSurfingRow: View {
     }
 }
 
-struct AddPlaceholderRow: View {
-    var action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: Spacing.s) {
-                Image(systemName: "plus.circle")
-                    .foregroundStyle(Color.tbBrand)
-                    .accessibilityHidden(true)
-                Text(RecoveryCopy.addBuilding)
-                    .font(.body)
-                    .foregroundStyle(Color.tbTextPrimary)
-                    .multilineTextAlignment(.leading)
-            }
-            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-            .padding(.horizontal, Spacing.l)
-            .padding(.vertical, Spacing.s)
-            .background {
-                RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
-                    .strokeBorder(
-                        Color.tbTextSecondary.opacity(0.4),
-                        style: StrokeStyle(lineWidth: 1, dash: [6, 4])
-                    )
-            }
-        }
-        .buttonStyle(.pressable)
-        .accessibilityHidden(true)
-    }
-}
-
 struct SOSButton: View {
     var action: () -> Void
 

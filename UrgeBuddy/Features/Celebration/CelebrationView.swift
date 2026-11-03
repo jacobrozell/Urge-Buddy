@@ -6,6 +6,7 @@ struct CelebrationView: View {
     var onDone: () -> Void
 
     @Environment(\.requestReview) private var requestReview
+    @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @ScaledMetric(relativeTo: .largeTitle) private var heroSize: CGFloat = 120
@@ -24,14 +25,21 @@ struct CelebrationView: View {
                             heroBadge
                             messageStack
                         }
+                        .padding(.horizontal, Spacing.xl)
+                        .padding(.vertical, Spacing.xl)
                     } else {
-                        VStack(spacing: Spacing.l) {
+                        VStack(spacing: Spacing.xl) {
+                            Spacer(minLength: Spacing.xl)
                             heroBadge
+                            Spacer(minLength: Spacing.l)
                             messageStack
+                            Spacer(minLength: Spacing.xl)
                         }
+                        .padding(.horizontal, Spacing.xl)
+                        .padding(.vertical, Spacing.xl)
+                        .frame(maxWidth: .infinity, minHeight: 520)
                     }
                 }
-                .padding(.vertical, Spacing.xl)
             }
         }
         .scrollBounceBehavior(.basedOnSize)
@@ -60,7 +68,7 @@ struct CelebrationView: View {
     }
 
     private var messageStack: some View {
-        VStack(spacing: Spacing.l) {
+        VStack(spacing: Spacing.xl) {
             Text(request.isVice ? RecoveryCopy.milestoneVice(request.threshold, name: request.name) : RecoveryCopy.milestoneHabit(request.threshold, name: request.name))
                 .font(.title2)
                 .multilineTextAlignment(isShortHeight ? .leading : .center)
@@ -71,15 +79,23 @@ struct CelebrationView: View {
                     .multilineTextAlignment(isShortHeight ? .leading : .center)
                     .foregroundStyle(Color.tbTextSecondary)
             }
+            Spacer(minLength: Spacing.xl)
             PrimaryButton(title: RecoveryCopy.keepGoing, systemImage: nil, accessibilityID: AccessibilityIdentifiers.celebrationContinue) {
-                MilestoneLedger.record(request.threshold, for: request.metricID)
-                if request.isVice, request.threshold == 7, !Preferences.hasRequestedReview {
-                    Preferences.hasRequestedReview = true
-                    requestReview()
-                }
-                onDone()
+                keepGoing()
             }
         }
+        .padding(.vertical, Spacing.m)
         .frame(maxWidth: .infinity, alignment: isShortHeight ? .leading : .center)
+    }
+
+    private func keepGoing() {
+        MilestoneLedger.record(request.threshold, for: request.metricID)
+        let askForReview = request.isVice && request.threshold == 7 && !Preferences.hasRequestedReview
+        if askForReview { Preferences.hasRequestedReview = true }
+        onDone()
+        dismiss()
+        if askForReview {
+            PresentationSequence.afterDismiss { requestReview() }
+        }
     }
 }

@@ -120,8 +120,6 @@ struct RootView: View {
                 CelebrationView(request: request) {
                     celebration = nil
                     cover = nil
-                    refreshCelebration()
-                    syncCover()
                 }
             }
         }
@@ -151,10 +149,16 @@ struct RootView: View {
     }
 
     /// The check-in sheet finished leaving. The urge cover can show now.
+    /// A celebration that just closed looks for the next one only after it is gone,
+    /// so Keep going is not immediately covered by the same sheet.
     private func finishSheetDismiss() {
-        guard blockUrgeCover, !appLock.shouldHoldPresentations else { return }
-        blockUrgeCover = false
-        syncCover()
+        if blockUrgeCover, !appLock.shouldHoldPresentations {
+            blockUrgeCover = false
+            syncCover()
+            return
+        }
+        guard celebration == nil else { return }
+        refreshCelebration()
     }
 
     /// The urge cover finished leaving. The next sheet can show now.

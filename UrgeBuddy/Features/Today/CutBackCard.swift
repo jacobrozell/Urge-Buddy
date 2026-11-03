@@ -52,6 +52,7 @@ struct CutBackCard: View {
         }
         .padding(.horizontal, Spacing.l)
         .padding(.vertical, Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
     }
 }

@@ -8,7 +8,8 @@ struct CheckInCompleteView: View {
     @State private var appeared = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.l) {
+        VStack(alignment: .leading, spacing: Spacing.xl) {
+            Spacer(minLength: Spacing.xl)
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 56))
                 .foregroundStyle(Color.tbBrand)
@@ -16,6 +17,7 @@ struct CheckInCompleteView: View {
                 .symbolEffect(.bounce, value: reduceMotion ? false : appeared)
                 .accessibilityHidden(true)
             if streak > 0 {
+                Spacer(minLength: Spacing.m)
                 Text("\(streak)")
                     .bigNumberStyle()
                     .foregroundStyle(Color.tbBrand)
@@ -34,6 +36,7 @@ struct CheckInCompleteView: View {
                     .foregroundStyle(Color.tbTextPrimary)
                     .frame(maxWidth: .infinity, alignment: .center)
             }
+            Spacer(minLength: Spacing.l)
             ForEach(lines) { line in
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(line.name)
@@ -50,7 +53,11 @@ struct CheckInCompleteView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            Spacer(minLength: Spacing.xl)
         }
+        .padding(.horizontal, Spacing.l)
+        .padding(.vertical, Spacing.xl)
+        .frame(maxWidth: .infinity, minHeight: 420)
         .onAppear { appeared = true }
         .sensoryFeedback(.success, trigger: appeared)
     }

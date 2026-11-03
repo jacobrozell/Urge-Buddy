@@ -21,71 +21,62 @@ struct TodayScreen: View {
         NavigationStack {
             VStack(spacing: 0) {
             ScrollView {
-                ReadableColumn(width: .wide) {
-                    VStack(alignment: .leading, spacing: Spacing.s) {
-                        dateLabel
-                        if let prompt = model.yesterdayPrompt {
-                            YesterdayPrompt(name: prompt.name) {
-                                confirmYesterday(prompt.metricID)
-                            } onSlipped: {
-                                sheet = .slip(prompt.metricID)
-                            } onDismiss: {
-                                dismissYesterday()
-                            }
-                            .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
-                        }
-                        if !model.isEmpty {
-                            if model.checkInDoneToday {
-                                CheckInStreakCard(streak: model.checkInStreak)
-                                    .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
-                            } else {
-                                CheckInBanner(remaining: model.checkInRemaining, streak: model.checkInStreak) {
-                                    router.present(.checkIn)
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    ReadableColumn {
+                        VStack(alignment: .leading, spacing: Spacing.s) {
+                            dateLabel
+                            if let prompt = model.yesterdayPrompt {
+                                YesterdayPrompt(name: prompt.name) {
+                                    confirmYesterday(prompt.metricID)
+                                } onSlipped: {
+                                    sheet = .slip(prompt.metricID)
+                                } onDismiss: {
+                                    dismissYesterday()
                                 }
-                                .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
                             }
-                        }
-                        if model.showsSOS && !surfingTipDismissed {
-                            UrgeSurfingRow {
-                                Preferences.hasDismissedUrgeSurfingTip = true
-                                surfingTipDismissed = true
-                                sheet = .surfing
-                            } onDismiss: {
-                                withAnimation(reduceMotion ? nil : UrgeBuddyMotion.spring) {
+                            if !model.isEmpty {
+                                if model.checkInDoneToday {
+                                    CheckInStreakCard(streak: model.checkInStreak)
+                                } else {
+                                    CheckInBanner(remaining: model.checkInRemaining, streak: model.checkInStreak) {
+                                        router.present(.checkIn)
+                                    }
+                                }
+                            }
+                            if model.showsSOS && !surfingTipDismissed {
+                                UrgeSurfingRow {
                                     Preferences.hasDismissedUrgeSurfingTip = true
                                     surfingTipDismissed = true
+                                    sheet = .surfing
+                                } onDismiss: {
+                                    withAnimation(reduceMotion ? nil : UrgeBuddyMotion.spring) {
+                                        Preferences.hasDismissedUrgeSurfingTip = true
+                                        surfingTipDismissed = true
+                                    }
                                 }
                             }
-                            .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
-                        }
-                        if model.isEmpty {
-                            EmptyState(
-                                systemImage: "sun.max",
-                                title: RecoveryCopy.startWithOneThing,
-                                message: RecoveryCopy.startWithOneThingMessage,
-                                actionTitle: RecoveryCopy.addSomethingToQuit,
-                                action: { sheet = .add(.vice) },
-                                secondaryTitle: RecoveryCopy.addAHabit,
-                                secondaryAction: { sheet = .add(.positive) }
-                            )
-                            .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
-                        }
-                        if !model.isEmpty {
-                            if model.hasViceSection && !model.habits.isEmpty {
-                                AdaptiveColumns {
-                                    viceSections
-                                } trailing: {
-                                    buildingSection
-                                }
-                            } else {
-                                viceSections
-                                buildingSection
+                            if model.isEmpty {
+                                EmptyState(
+                                    systemImage: "sun.max",
+                                    title: RecoveryCopy.startWithOneThing,
+                                    message: RecoveryCopy.startWithOneThingMessage,
+                                    actionTitle: RecoveryCopy.addSomethingToQuit,
+                                    action: { sheet = .add(.vice) },
+                                    secondaryTitle: RecoveryCopy.addAHabit,
+                                    secondaryAction: { sheet = .add(.positive) }
+                                )
                             }
                         }
                     }
-                    .padding(.top, Spacing.s)
-                    .padding(.bottom, Spacing.m)
+                    if !model.isEmpty {
+                        metricColumns
+                            .padding(.horizontal, Spacing.l)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
+                .padding(.top, Spacing.s)
+                .padding(.bottom, Spacing.m)
+                .containerRelativeFrame(.horizontal, alignment: .leading)
             }
             if model.showsSOS {
                 VerticalBarFloatingBar {
@@ -110,6 +101,17 @@ struct TodayScreen: View {
             .navigationBarTitleDisplayMode(
                 AdaptiveLayout.isShortHeight(vertical: verticalSizeClass) ? .inline : .large
             )
+            .toolbar {
+                if !model.isEmpty {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button { sheet = .add(.vice) } label: {
+                            Image(systemName: "plus")
+                        }
+                        .accessibilityLabel(RecoveryCopy.addSomething)
+                        .accessibilityIdentifier(AccessibilityIdentifiers.todayAdd)
+                    }
+                }
+            }
         }
         .onAppear {
             refresh()
@@ -145,63 +147,63 @@ struct TodayScreen: View {
         }
     }
 
-    private var showsQuittingSection: Bool {
-        !model.vices.isEmpty || model.cutBacks.isEmpty
+    private var hasQuittingColumn: Bool {
+        !model.vices.isEmpty || !model.cutBacks.isEmpty
+    }
+
+    @ViewBuilder
+    private var metricColumns: some View {
+        if hasQuittingColumn && !model.habits.isEmpty {
+            AdaptiveColumns {
+                viceSections
+            } trailing: {
+                buildingSection
+            }
+        } else {
+            VStack(alignment: .leading, spacing: Spacing.l) {
+                viceSections
+                buildingSection
+            }
+        }
     }
 
     private var viceSections: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            if showsQuittingSection { quittingSection }
+            if !model.vices.isEmpty { quittingSection }
             if !model.cutBacks.isEmpty { cuttingBackSection }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    @ViewBuilder
     private var quittingSection: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            SectionHeader(
-                RecoveryCopy.quitting,
-                addLabel: RecoveryCopy.addQuitting,
-                addID: AccessibilityIdentifiers.todayAddQuitting
-            ) { sheet = .add(.vice) }
-            if !model.vices.isEmpty {
-                VStack(spacing: Spacing.m) {
-                    ForEach(model.vices) { card in
-                        ViceCard(model: card, calendar: model.calendar) { sheet = .detail(card.id) }
-                    }
+            SectionHeader(RecoveryCopy.quitting)
+            VStack(spacing: Spacing.m) {
+                ForEach(model.vices) { card in
+                    ViceCard(model: card, calendar: model.calendar) { sheet = .detail(card.id) }
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var cuttingBackSection: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            if showsQuittingSection {
-                SectionHeader(RecoveryCopy.cuttingBack)
-            } else {
-                SectionHeader(
-                    RecoveryCopy.cuttingBack,
-                    addLabel: RecoveryCopy.addQuitting,
-                    addID: AccessibilityIdentifiers.todayAddQuitting
-                ) { sheet = .add(.vice) }
-            }
+            SectionHeader(RecoveryCopy.cuttingBack)
             VStack(spacing: Spacing.m) {
                 ForEach(model.cutBacks) { card in
                     CutBackCard(model: card, onChange: { setAmount(card.id, $0) }, onOpen: { sheet = .detail(card.id) })
                 }
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
     private var buildingSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.s) {
-            SectionHeader(
-                RecoveryCopy.building,
-                addLabel: RecoveryCopy.addBuilding,
-                addID: AccessibilityIdentifiers.todayAddBuilding
-            ) { sheet = .add(.positive) }
-            if !model.habits.isEmpty {
+        if !model.habits.isEmpty {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                SectionHeader(RecoveryCopy.building)
                 VStack(spacing: Spacing.s) {
                     ForEach(model.habits) { row in
                         HabitCheckRow(
@@ -212,9 +214,8 @@ struct TodayScreen: View {
                         )
                     }
                 }
-            } else {
-                AddPlaceholderRow { sheet = .add(.positive) }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 

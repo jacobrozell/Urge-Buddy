@@ -44,6 +44,7 @@ struct ViceCard: View {
                 .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
             }
             .buttonStyle(.pressable)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(spoken(at: context.date))
             .accessibilityAddTraits(.isButton)
