@@ -79,30 +79,30 @@ Large text: `xcrun simctl ui "iPhone 17" content_size accessibility-extra-extra-
 
 | # | Task | Phase | Effort | Status |
 |---|------|-------|--------|--------|
-| 1.1 | [Pressed and disabled states for every custom button](#11-pressed-and-disabled-states) | Foundations | S | [ ] |
-| 1.2 | [`ChoiceButton` for paired answers](#12-choicebutton) | Foundations | S | [ ] |
-| 1.3 | [`tbField` text-field style](#13-tbfield-text-field-style) | Foundations | S | [ ] |
-| 1.4 | [Fix edge-to-edge lists on iPhone](#14-fix-edge-to-edge-lists) | Foundations | XS | [ ] |
-| 2.1 | [Move the date out of the toolbar](#21-move-the-date-out-of-the-toolbar) | Today | XS | [ ] |
-| 2.2 | [Say "check in" on the streak banner](#22-say-check-in-on-the-streak-banner) | Today | XS | [ ] |
-| 2.3 | [Make the urge-surfing row dismissible](#23-dismissible-urge-surfing-row) | Today | S | [ ] |
-| 2.4 | [No empty section headers](#24-no-empty-section-headers) | Today | S | [ ] |
-| 2.5 | [Chevrons on tappable cards](#25-chevrons-on-tappable-cards) | Today | XS | [ ] |
-| 2.6 | [Animate the habit check](#26-animate-the-habit-check) | Today | XS | [ ] |
-| 2.7 | [Weekday letters under the week dots](#27-weekday-letters-under-the-week-dots) | Today | S | [ ] |
-| 2.8 | [Two choices on the empty state](#28-two-choices-on-the-empty-state) | Today | S | [ ] |
-| 3.1 | [Check-in answers show what you picked](#31-check-in-answers-show-what-you-picked) | Check-in | S | [ ] |
-| 3.2 | [Yesterday prompt uses the app's buttons](#32-yesterday-prompt-buttons) | Check-in | XS | [ ] |
-| 4.1 | [Pin the urge outcome buttons to the bottom](#41-pin-the-urge-outcome-buttons) | Urge | M | [ ] |
-| 4.2 | [Merge the intro card and the "What is urge surfing?" row](#42-merge-intro-and-link) | Urge | XS | [ ] |
-| 5.1 | [Slip summary: one button style, equal tiles, no double close](#51-slip-summary-cleanup) | Slip | S | [ ] |
-| 6.1 | [Progress summary card lines up with the list](#61-progress-summary-alignment) | Progress | XS | [ ] |
-| 6.2 | [Calendar: no markers on future days](#62-calendar-future-days) | Progress | S | [ ] |
-| 6.3 | [Quiet empty "Urges" line on the detail screen](#63-quiet-empty-urges-line) | Progress | XS | [ ] |
-| 7.1 | [Disable the reminder time while reminders are off](#71-reminder-time-disabled) | Settings | XS | [ ] |
-| 8.1 | [Onboarding progress bar starts with a filled step](#81-onboarding-progress-bar) | Onboarding | XS | [ ] |
-| 8.2 | [Celebration looks like a celebration](#82-celebration-hero) | Celebration | S | [ ] |
-| 10 | [Final QA and re-capture marketing screenshots](#10-final-qa) | QA | M | [ ] |
+| 1.1 | [Pressed and disabled states for every custom button](#11-pressed-and-disabled-states) | Foundations | S | [x] |
+| 1.2 | [`ChoiceButton` for paired answers](#12-choicebutton) | Foundations | S | [x] |
+| 1.3 | [`tbField` text-field style](#13-tbfield-text-field-style) | Foundations | S | [x] |
+| 1.4 | [Fix edge-to-edge lists on iPhone](#14-fix-edge-to-edge-lists) | Foundations | XS | [x] |
+| 2.1 | [Move the date out of the toolbar](#21-move-the-date-out-of-the-toolbar) | Today | XS | [x] |
+| 2.2 | [Say "check in" on the streak banner](#22-say-check-in-on-the-streak-banner) | Today | XS | [x] |
+| 2.3 | [Make the urge-surfing row dismissible](#23-dismissible-urge-surfing-row) | Today | S | [x] |
+| 2.4 | [No empty section headers](#24-no-empty-section-headers) | Today | S | [x] |
+| 2.5 | [Chevrons on tappable cards](#25-chevrons-on-tappable-cards) | Today | XS | [x] |
+| 2.6 | [Animate the habit check](#26-animate-the-habit-check) | Today | XS | [x] |
+| 2.7 | [Weekday letters under the week dots](#27-weekday-letters-under-the-week-dots) | Today | S | [x] |
+| 2.8 | [Two choices on the empty state](#28-two-choices-on-the-empty-state) | Today | S | [x] |
+| 3.1 | [Check-in answers show what you picked](#31-check-in-answers-show-what-you-picked) | Check-in | S | [x] |
+| 3.2 | [Yesterday prompt uses the app's buttons](#32-yesterday-prompt-buttons) | Check-in | XS | [x] |
+| 4.1 | [Pin the urge outcome buttons to the bottom](#41-pin-the-urge-outcome-buttons) | Urge | M | [x] |
+| 4.2 | [Merge the intro card and the "What is urge surfing?" row](#42-merge-intro-and-link) | Urge | XS | [x] |
+| 5.1 | [Slip summary: one button style, equal tiles, no double close](#51-slip-summary-cleanup) | Slip | S | [x] |
+| 6.1 | [Progress summary card lines up with the list](#61-progress-summary-alignment) | Progress | XS | [x] |
+| 6.2 | [Calendar: no markers on future days](#62-calendar-future-days) | Progress | S | [x] |
+| 6.3 | [Quiet empty "Urges" line on the detail screen](#63-quiet-empty-urges-line) | Progress | XS | [x] |
+| 7.1 | [Disable the reminder time while reminders are off](#71-reminder-time-disabled) | Settings | XS | [x] |
+| 8.1 | [Onboarding progress bar starts with a filled step](#81-onboarding-progress-bar) | Onboarding | XS | [x] |
+| 8.2 | [Celebration looks like a celebration](#82-celebration-hero) | Celebration | S | [x] |
+| 10 | [Final QA and re-capture marketing screenshots](#10-final-qa) | QA | M | [x] |
 
 Phase 9 is intentionally empty. See [Decisions for the owner](#decisions-for-the-owner): those are not for the implementer.
 
@@ -637,4 +637,13 @@ These came up in the review but change the brand or product. **Implementers: ski
 
 Implementers: add anything you noticed but didn't fix here, with file and line.
 
--
+- `SectionHeader`'s add button still uses `.buttonStyle(.plain)` (`UrgeBuddy/DesignSystem/Components/SectionHeader.swift`, the plus `Button`). Phase 1 only switched the listed files, so that + does not dim on press.
+- `summaryStat` in `UrgeBuddy/Features/Slip/SlipFlowView.swift` still accepts a `caption` that nothing passes after the tile copy change.
+- The strength step keeps the "What is urge surfing?" pill. The ride screen embeds that link in the intro card via `surfingLink(inCard:)`.
+- The yesterday prompt has no launch argument, so its `ChoiceButton`s were checked in code only.
+- Reasons and plan fields on metric detail sit on a `Surface` card, so they use `TBFieldStyle(fill: .tbSurfaceMuted)`. The other fields stay `Surface` on `Background`.
+- The settings spec line (Time disabled while reminders are off) is in the onboarding/celebration commit. The settings code commit had already landed.
+- Pinning the urge buttons with `safeAreaInset` left the journal field under the bar, so the journal UI test could not focus it. The buttons sit in a `VStack` under the scroll view instead. Content does not scroll behind them.
+- At AX5 the SOS button truncates ("I'm having a…") because `SOSButton` uses `lineLimit(2)` in `TodayChrome.swift`.
+- Settings' last rows (Import, Delete all data) sit under the tab bar on iPhone 17.
+- No launch argument opens the celebration sheet or an unanswered yesterday, so those were checked in code. Reduce Motion and VoiceOver were not run live.

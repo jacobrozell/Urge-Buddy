@@ -100,6 +100,6 @@ Three layout signals (see `DesignSystem/AdaptiveLayout.swift`):
 
 | Field | Value |
 |-------|--------|
-| Last verified | 2026-10-28 |
-| Commit | Phase 4 |
+| Last verified | 2026-11-02 |
+| Commit | ui-polish |
 
