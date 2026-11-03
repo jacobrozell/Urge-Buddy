@@ -135,4 +135,140 @@ final class BackupServiceTests: XCTestCase {
         let metrics = try harness.store.context.fetch(FetchDescriptor<Metric>())
         XCTAssertEqual(metrics.map(\.name), ["Walk"])
     }
+
+    func testLegacyV1BackupImportsDaysAndSlips() throws {
+        let harness = try TestHarness()
+        try BackupService.importData(try fixture("legacy-v1"), into: harness.store)
+
+        let metrics = try harness.store.context.fetch(FetchDescriptor<Metric>(sortBy: [SortDescriptor(\.sortOrder)]))
+        XCTAssertEqual(metrics.map(\.name), ["Go for a walk", "Alcohol"])
+        XCTAssertEqual(metrics.map(\.habitType), [.positive, .vice])
+        XCTAssertEqual(metrics.map(\.iconName), ["figure.walk", "wineglass"])
+        XCTAssertEqual(metrics.map(\.startedAt), [date(2026, 10, 1, 9), date(2026, 10, 1, 9)])
+        XCTAssertEqual(metrics.map(\.viceMode), [.quit, .quit])
+        XCTAssertNil(metrics[1].costPerDay)
+        let walk = metrics[0], alcohol = metrics[1]
+        XCTAssertEqual(try statusByDay(walk, in: harness.store), [
+            date(2026, 10, 10): .done, date(2026, 10, 11): .done, date(2026, 10, 12): .done,
+        ])
+        XCTAssertEqual(try statusByDay(alcohol, in: harness.store), [date(2026, 10, 2): .free, date(2026, 10, 5): .slipped])
+        let slip = try XCTUnwrap(try harness.store.entries(for: alcohol.id).first { $0.status == .slipped })
+        XCTAssertEqual(slip.occurredAt, DayMath.endOfDay(date(2026, 10, 5), calendar: .testNY))
+        XCTAssertEqual(try harness.store.context.fetchCount(FetchDescriptor<MetricEntry>()), 5)
+        XCTAssertEqual(try harness.store.context.fetchCount(FetchDescriptor<Reason>()), 0)
+        XCTAssertEqual(try harness.store.context.fetchCount(FetchDescriptor<UrgeEvent>()), 0)
+        XCTAssertTrue(Preferences.hasCompletedOnboarding)
+        XCTAssertTrue(Preferences.hasAcceptedDisclaimer)
+    }
+
+    func testLegacyV3BackupImportsReasonsAndNotesAndSkipsBlankReasons() throws {
+        let harness = try TestHarness()
+        try BackupService.importData(try fixture("legacy-v3"), into: harness.store)
+
+        let metrics = try harness.store.context.fetch(FetchDescriptor<Metric>(sortBy: [SortDescriptor(\.sortOrder)]))
+        XCTAssertEqual(metrics.map(\.name), ["Go for a walk", "Alcohol"])
+        let walk = metrics[0], alcohol = metrics[1]
+        XCTAssertNil(alcohol.costPerDay)
+        XCTAssertEqual(try harness.store.reasons(for: walk.id).map(\.text), [])
+        let reasons = try harness.store.reasons(for: alcohol.id)
+        XCTAssertEqual(reasons.map(\.text), ["For my health", "Remember my kids", "I want to feel clear"])
+        XCTAssertEqual(reasons.map(\.sortOrder), [0, 1, 2])
+        XCTAssertEqual(try statusByDay(alcohol, in: harness.store), [date(2026, 10, 2): .free, date(2026, 10, 5): .slipped])
+        XCTAssertEqual(try noteByDay(walk, in: harness.store), [date(2026, 10, 12): "Morning loop"])
+        XCTAssertEqual(try noteByDay(alcohol, in: harness.store), [date(2026, 10, 2): "Stayed in", date(2026, 10, 5): "After dinner"])
+        XCTAssertEqual(try harness.store.context.fetchCount(FetchDescriptor<MetricEntry>()), 5)
+    }
+
+    func testLegacyV4BackupImportsCostAndSkipsUndoneHabitDays() throws {
+        let harness = try TestHarness()
+        try BackupService.importData(try fixture("legacy-v4"), into: harness.store)
+
+        let metrics = try harness.store.context.fetch(FetchDescriptor<Metric>(sortBy: [SortDescriptor(\.sortOrder)]))
+        XCTAssertEqual(metrics.map(\.name), ["Go for a walk", "Alcohol"])
+        let walk = metrics[0], alcohol = metrics[1]
+        XCTAssertEqual(alcohol.costPerDay, 8)
+        XCTAssertNil(walk.costPerDay)
+        XCTAssertEqual(try statusByDay(walk, in: harness.store), [
+            date(2026, 10, 10): .done, date(2026, 10, 11): .done, date(2026, 10, 12): .done,
+        ])
+        XCTAssertEqual(try statusByDay(alcohol, in: harness.store), [date(2026, 10, 2): .free, date(2026, 10, 5): .slipped])
+        XCTAssertEqual(
+            try harness.store.reasons(for: alcohol.id).map(\.text),
+            ["For my health", "Remember my kids", "I want to feel clear"]
+        )
+        XCTAssertEqual(try harness.store.context.fetchCount(FetchDescriptor<MetricEntry>()), 5)
+    }
+
+    func testTruncatedBackupFailsAndLeavesData() throws {
+        let harness = try TestHarness()
+        try seedWalk(in: harness.store)
+        let data = try fixture("legacy-v4")
+        try assertImportFails(data.prefix(data.count / 2), leavesWalkIn: harness.store)
+    }
+
+    func testLegacyBackupWithUnknownHabitTypeFailsWithoutPartialWrites() throws {
+        let harness = try TestHarness()
+        try seedWalk(in: harness.store)
+        let json = String(decoding: try fixture("legacy-v4"), as: UTF8.self)
+            .replacingOccurrences(of: "\"habitType\": \"vice\"", with: "\"habitType\": \"sometimes\"")
+        try assertImportFails(Data(json.utf8), leavesWalkIn: harness.store)
+    }
+
+    func testBackupWithOrphanEntryFailsWithoutPartialWrites() throws {
+        let harness = try TestHarness()
+        try seedWalk(in: harness.store)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        var backup = try decoder.decode(
+            UrgeBuddyBackup.self,
+            from: try BackupService.exportData(from: harness.store.context, now: date(2026, 10, 28, 12))
+        )
+        backup.entries.append(
+            UrgeBuddyBackup.EntryRecord(
+                id: UUID().uuidString,
+                metricID: UUID().uuidString,
+                day: date(2026, 10, 2),
+                status: EntryStatus.free.rawValue,
+                occurredAt: date(2026, 10, 2),
+                note: nil,
+                triggers: [],
+                amount: nil
+            )
+        )
+        try assertImportFails(try encoder.encode(backup), leavesWalkIn: harness.store)
+    }
+
+    private func fixture(_ name: String) throws -> Data {
+        let url = try XCTUnwrap(Bundle(for: BackupServiceTests.self).url(forResource: name, withExtension: "json"))
+        return try Data(contentsOf: url)
+    }
+
+    private func statusByDay(_ metric: Metric, in store: RecoveryStore) throws -> [Date: EntryStatus] {
+        Dictionary(try store.entries(for: metric.id).map { ($0.day, $0.status) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    private func noteByDay(_ metric: Metric, in store: RecoveryStore) throws -> [Date: String] {
+        Dictionary(
+            try store.entries(for: metric.id).compactMap { entry in entry.note.map { (entry.day, $0) } },
+            uniquingKeysWith: { first, _ in first }
+        )
+    }
+
+    private func seedWalk(in store: RecoveryStore) throws {
+        let walk = try store.addMetric(
+            name: "Walk", habitType: .positive, iconName: "figure.walk", startedAt: date(2026, 10, 1), costPerDay: nil, firstReason: "Clear head"
+        )
+        try store.setHabitDone(walk, on: date(2026, 10, 3), done: true, now: date(2026, 10, 3))
+    }
+
+    private func assertImportFails(_ data: Data, leavesWalkIn store: RecoveryStore, line: UInt = #line) throws {
+        XCTAssertThrowsError(try BackupService.importData(data, into: store), line: line) { error in
+            XCTAssertEqual(error as? BackupError, .invalid, line: line)
+        }
+        XCTAssertEqual(try store.context.fetch(FetchDescriptor<Metric>()).map(\.name), ["Walk"], line: line)
+        XCTAssertEqual(try store.context.fetch(FetchDescriptor<Reason>()).map(\.text), ["Clear head"], line: line)
+        XCTAssertEqual(try store.context.fetch(FetchDescriptor<MetricEntry>()).map(\.day), [date(2026, 10, 3)], line: line)
+    }
 }

@@ -250,6 +250,39 @@ final class UrgeBuddyUITests: UrgeBuddyUITestCase {
         XCTAssertFalse(app.staticTexts["Alcohol"].waitForExistence(timeout: 1))
     }
 
+    func testSettingsOpensCrisisResources() {
+        launchApp()
+        tab(named: "Settings", identifier: "tab.settings").tap()
+        let help = app.buttons["settings.crisisResources"]
+        XCTAssertTrue(scrollUntilExists(help), "Get help now is below the Settings fold")
+        help.tap()
+        let bar = app.navigationBars["Get help now"]
+        XCTAssertTrue(bar.waitForExistence(timeout: 4))
+        assertCrisisResourcesShown()
+        bar.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(bar.waitForNonExistence(timeout: 4))
+        XCTAssertTrue(help.isHittable)
+    }
+
+    func testSlipSummaryOpensCrisisResources() {
+        launchApp()
+        let banner = app.buttons["today.checkInBanner"]
+        XCTAssertTrue(banner.waitForExistence(timeout: 8))
+        banner.tap()
+        let slipped = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'checkIn.slipped.'"))
+        XCTAssertTrue(slipped.firstMatch.waitForExistence(timeout: 4))
+        slipped.firstMatch.tap()
+        XCTAssertTrue(app.buttons["slip.save"].waitForExistence(timeout: 6))
+        app.buttons["slip.save"].tap()
+        let support = app.buttons["Need more support?"]
+        XCTAssertTrue(support.waitForExistence(timeout: 6))
+        support.tap()
+        assertCrisisResourcesShown()
+        app.swipeDown(velocity: .fast)
+        XCTAssertTrue(app.staticTexts["988 Suicide & Crisis Lifeline"].waitForNonExistence(timeout: 4))
+        XCTAssertTrue(app.otherElements["slip.summary"].exists)
+    }
+
     func testDeleteAllReturnsToOnboarding() {
         launchApp()
         tab(named: "Settings", identifier: "tab.settings").tap()
@@ -262,6 +295,17 @@ final class UrgeBuddyUITests: UrgeBuddyUITestCase {
 
         XCTAssertTrue(app.staticTexts["Quit what's hurting you. Build what helps."].waitForExistence(timeout: 8))
         XCTAssertFalse(app.buttons["tab.today"].exists)
+    }
+
+    private func assertCrisisResourcesShown() {
+        let resources = [
+            "call 911", "988 Suicide & Crisis Lifeline", "Call 988", "Text 988",
+            "SAMHSA National Helpline", "Call 1-800-662-4357", "Outside the US, find a helpline",
+        ]
+        for label in resources {
+            let match = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", label)).firstMatch
+            XCTAssertTrue(match.waitForExistence(timeout: 4), "Missing crisis resource \(label)")
+        }
     }
 
     private func launchFreshOnboarding() {
