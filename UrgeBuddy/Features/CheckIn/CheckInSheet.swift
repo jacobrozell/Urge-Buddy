@@ -115,11 +115,6 @@ struct CheckInSheet: View {
                         dismiss()
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Text(Date().formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
-                        .font(.subheadline)
-                        .foregroundStyle(Color.tbTextSecondary)
-                }
                 if let model, pinsActionInToolbar {
                     ToolbarItem(placement: .confirmationAction) {
                         Button(doneTitle(model)) { finish(model) }

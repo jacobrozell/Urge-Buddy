@@ -9,11 +9,12 @@ struct TodayScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(AppRouter.self) private var router
     @Environment(\.verticalSizeClass) private var verticalSizeClass
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.persist) private var persist
     @State private var model = TodayViewModel()
     @State private var sheet: TodaySheet?
     @State private var dismissedYesterday = Preferences.dismissedYesterdayPromptDay
+    @State private var surfingTipDismissed = Preferences.hasDismissedUrgeSurfingTip
     @State private var didPresentSlip = false
 
     var body: some View {
@@ -22,9 +23,7 @@ struct TodayScreen: View {
             ScrollView {
                 ReadableColumn(width: .wide) {
                     VStack(alignment: .leading, spacing: Spacing.s) {
-                        if dynamicTypeSize.usesAccessibilityLayout {
-                            dateLabel
-                        }
+                        dateLabel
                         if let prompt = model.yesterdayPrompt {
                             YesterdayPrompt(name: prompt.name) {
                                 confirmYesterday(prompt.metricID)
@@ -46,17 +45,29 @@ struct TodayScreen: View {
                                 .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
                             }
                         }
-                        if model.showsSOS {
-                            UrgeSurfingRow { sheet = .surfing }
-                                .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
+                        if model.showsSOS && !surfingTipDismissed {
+                            UrgeSurfingRow {
+                                Preferences.hasDismissedUrgeSurfingTip = true
+                                surfingTipDismissed = true
+                                sheet = .surfing
+                            } onDismiss: {
+                                withAnimation(reduceMotion ? nil : UrgeBuddyMotion.spring) {
+                                    Preferences.hasDismissedUrgeSurfingTip = true
+                                    surfingTipDismissed = true
+                                }
+                            }
+                            .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
                         }
                         if model.isEmpty {
                             EmptyState(
                                 systemImage: "sun.max",
                                 title: RecoveryCopy.startWithOneThing,
                                 message: RecoveryCopy.startWithOneThingMessage,
-                                actionTitle: RecoveryCopy.addSomething
-                            ) { sheet = .add(.vice) }
+                                actionTitle: RecoveryCopy.addSomethingToQuit,
+                                action: { sheet = .add(.vice) },
+                                secondaryTitle: RecoveryCopy.addAHabit,
+                                secondaryAction: { sheet = .add(.positive) }
+                            )
                             .frame(maxWidth: AdaptiveLayout.textColumnWidth, alignment: .leading)
                         }
                         if !model.isEmpty {
@@ -99,11 +110,6 @@ struct TodayScreen: View {
             .navigationBarTitleDisplayMode(
                 AdaptiveLayout.isShortHeight(vertical: verticalSizeClass) ? .inline : .large
             )
-            .toolbar {
-                if !dynamicTypeSize.usesAccessibilityLayout {
-                    ToolbarItem(placement: .topBarTrailing) { dateLabel }
-                }
-            }
         }
         .onAppear {
             refresh()
@@ -139,9 +145,13 @@ struct TodayScreen: View {
         }
     }
 
+    private var showsQuittingSection: Bool {
+        !model.vices.isEmpty || model.cutBacks.isEmpty
+    }
+
     private var viceSections: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            quittingSection
+            if showsQuittingSection { quittingSection }
             if !model.cutBacks.isEmpty { cuttingBackSection }
         }
     }
@@ -166,7 +176,15 @@ struct TodayScreen: View {
 
     private var cuttingBackSection: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            SectionHeader(RecoveryCopy.cuttingBack)
+            if showsQuittingSection {
+                SectionHeader(RecoveryCopy.cuttingBack)
+            } else {
+                SectionHeader(
+                    RecoveryCopy.cuttingBack,
+                    addLabel: RecoveryCopy.addQuitting,
+                    addID: AccessibilityIdentifiers.todayAddQuitting
+                ) { sheet = .add(.vice) }
+            }
             VStack(spacing: Spacing.m) {
                 ForEach(model.cutBacks) { card in
                     CutBackCard(model: card, onChange: { setAmount(card.id, $0) }, onOpen: { sheet = .detail(card.id) })
@@ -194,12 +212,14 @@ struct TodayScreen: View {
                         )
                     }
                 }
+            } else {
+                AddPlaceholderRow { sheet = .add(.positive) }
             }
         }
     }
 
     private var dateLabel: some View {
-        Text(Date().formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
+        Text(Date().formatted(.dateTime.weekday(.wide).month(.wide).day()))
             .font(.subheadline)
             .foregroundStyle(Color.tbTextSecondary)
             .accessibilityLabel(Date().formatted(date: .complete, time: .omitted))

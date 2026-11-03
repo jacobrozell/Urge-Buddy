@@ -31,7 +31,8 @@ final class RecoveryCopyTests: XCTestCase {
     func testRemainingDeckStrings() {
         XCTAssertEqual(RecoveryCopy.freeOfLast(free: 27, counted: 30), "27 of last 30 days free")
         XCTAssertEqual(RecoveryCopy.dontMissTwice, "Don't miss twice")
-        XCTAssertEqual(RecoveryCopy.checkInBanner(left: 3), "3 to go · about 10 seconds")
+        XCTAssertEqual(RecoveryCopy.checkInBanner(left: 3), "Check in · 3 things left · about 10 seconds")
+        XCTAssertEqual(RecoveryCopy.checkInBanner(left: 1), "Check in · 1 thing left · about 10 seconds")
         XCTAssertEqual(RecoveryCopy.checkInStreak(1), "1 day in a row")
         XCTAssertEqual(RecoveryCopy.checkInStreak(4), "4 days in a row")
         XCTAssertEqual(RecoveryCopy.sosButton, "I'm having an urge")

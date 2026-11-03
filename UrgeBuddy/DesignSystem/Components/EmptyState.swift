@@ -6,6 +6,8 @@ struct EmptyState: View {
     var message: String
     var actionTitle: String? = nil
     var action: (() -> Void)? = nil
+    var secondaryTitle: String? = nil
+    var secondaryAction: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: Spacing.l) {
@@ -23,6 +25,9 @@ struct EmptyState: View {
                 .multilineTextAlignment(.center)
             if let actionTitle, let action {
                 PrimaryButton(title: actionTitle, systemImage: nil, action: action)
+            }
+            if let secondaryTitle, let secondaryAction {
+                SecondaryButton(title: secondaryTitle, action: secondaryAction)
             }
         }
         .frame(maxWidth: .infinity)

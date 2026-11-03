@@ -47,9 +47,9 @@ Use Dynamic Type text styles only (`.largeTitle`, `.title2`, `.headline`, `.body
 | `Card` | `Card { content }` | `Surface`, `Radius.card`, padding `Spacing.l` |
 | `StatTile` | `StatTile(value:, label:, systemImage:)` | VoiceOver reads "label, value" |
 | `Chip` / `ChipGrid` | `ChipGrid(items:, selection: Binding<Set<…>>)` | Adaptive grid, min 44pt height, selected = `Brand` fill |
-| `EmptyState` | `EmptyState(systemImage:, title:, message:, actionTitle:, action:)` | |
+| `EmptyState` | `EmptyState(systemImage:, title:, message:, actionTitle:, action:, secondaryTitle:, secondaryAction:)` | Optional primary button, and a `SecondaryButton` when both secondary title and action are set. |
 | `BreathingCircle` | `BreathingCircle(inhale: 4, exhale: 6)` | Orb, glow, and ripples ease across the full inhale and exhale. `RideAtmosphere` is the slow wash behind the ride screen. The top edge stays solid `Calm` so Close and the status area are not tinted. Reduce Motion → text-only cue, no wash motion |
-| `DayDots` | `DayDots(states: [DayVisualState])` | 7 dots. Each dot has a VoiceOver label ("Monday, free"). Shape and color both encode state (solid, ring, triangle for slip) so it works without color. |
+| `DayDots` | `DayDots(states:, labels:, showsInitials:)` | 7 dots. Each dot has a VoiceOver label ("Monday, free"). The locale's short weekday symbol sits under each dot (`showsInitials`, default true) and is hidden from VoiceOver and at accessibility text sizes. Shape and color both encode state (solid, ring, triangle for slip) so it works without color. |
 | `MonthCalendar` | `MonthCalendar(month:, stateFor: (Date) -> DayVisualState, onSelect:)` | `firstWeekday` from `Calendar.current`. Cells ≥44pt. |
 | `SectionHeader` | `SectionHeader("Quitting", addLabel:, onAdd:)` | Title gets `.isHeader`. Optional trailing + is its own 44pt button. |
 | `IconBadge` | `IconBadge(systemImage:, tint:)` | 36pt rounded square |
@@ -61,7 +61,7 @@ Use Dynamic Type text styles only (`.largeTitle`, `.title2`, `.headline`, `.body
 
 - Urge countdown reaches 0: `.sensoryFeedback(.success)` plus `UrgeTimerChime` (`urge-timer-done.wav`, ambient so the silent switch is respected).
 - Check-in done: `.symbolEffect(.bounce)` on the checkmark + `.sensoryFeedback(.success, trigger:)`.
-- Habit toggle: `.sensoryFeedback(.selection, trigger:)`.
+- Habit toggle: the circle morphs to a checkmark (`.contentTransition(.symbolEffect(.replace))`) and bounces. Reduce Motion swaps the symbol with no bounce. `.sensoryFeedback(.selection, trigger:)` on undo and `.success` when it becomes done.
 - Slip saved: `.sensoryFeedback(.impact(weight: .light), trigger:)`.
 - Celebration: scale-in + soft glow (`TrackBothMotion.celebrationSpring`). **No confetti libraries.** Under Reduce Motion: no scale, just a fade.
 - Wrap every animation in `trackBothAnimation(_:value:reduceMotion:)`.

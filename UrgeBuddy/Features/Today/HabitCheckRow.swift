@@ -7,6 +7,7 @@ struct HabitCheckRow: View {
     var onOpen: () -> Void
 
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {
@@ -67,6 +68,8 @@ struct HabitCheckRow: View {
                 .font(.title2)
                 .foregroundStyle(model.isDoneToday ? Color.tbHabit : Color.tbTextSecondary)
                 .frame(minWidth: 44, minHeight: 44)
+                .contentTransition(.symbolEffect(.replace))
+                .symbolEffect(.bounce, value: reduceMotion ? false : model.isDoneToday)
         }
         .buttonStyle(.pressable)
         .accessibilityIdentifier(AccessibilityIdentifiers.habitToggle(model.id))

@@ -17,6 +17,11 @@ enum Preferences {
         set { defaults.set(newValue, forKey: Key.disclaimer) }
     }
 
+    static var hasDismissedUrgeSurfingTip: Bool {
+        get { defaults.bool(forKey: Key.dismissedUrgeSurfingTip) }
+        set { defaults.set(newValue, forKey: Key.dismissedUrgeSurfingTip) }
+    }
+
     static var remindersEnabled: Bool {
         get { defaults.bool(forKey: Key.reminders) }
         set { defaults.set(newValue, forKey: Key.reminders) }
@@ -83,6 +88,7 @@ enum Preferences {
     private enum Key {
         static let onboarding = "pref.hasCompletedOnboarding"
         static let disclaimer = "pref.hasAcceptedDisclaimer"
+        static let dismissedUrgeSurfingTip = "pref.dismissedUrgeSurfingTip"
         static let reminders = "pref.remindersEnabled"
         static let reminderHour = "pref.reminderHour"
         static let reminderMinute = "pref.reminderMinute"

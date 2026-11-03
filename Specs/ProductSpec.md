@@ -110,24 +110,26 @@ Entry points into the **Urge** flow: the Today button, the home-screen quick act
 
 ```
 ┌──────────────────────────────────────┐
-│ Today                    Tue, Oct 28 │  large title + date
+│ Today                                │  large title
+│ Monday, November 2                   │  date under the title, not in the toolbar
 │                                      │
 │ ┌──────────────────────────────────┐ │
 │ │  4                               │ │  Check-in card, brand fill, while
 │ │  days in a row                   │ │  today is still open. Afterward:
-│ │  Daily check-in · 3 to go · …  › │ │  "5 days in a row" on brand soft.
+│ │  Check in · 3 things left · …  › │ │  "5 days in a row" on brand soft.
 │ └──────────────────────────────────┘ │
 │ ┌──────────────────────────────────┐ │
-│ │ [wind]  Urge surfing          ›  │ │  opens the urge-surfing explainer
-│ │ An urge rises and passes…        │ │  while a vice is active
+│ │ [wind]  Urge surfing       ›  ×  │ │  opens the explainer; × or the row
+│ │ An urge rises and passes…        │ │  dismisses it for good. Shown while a vice is active, until dismissed
 │ └──────────────────────────────────┘ │
 │                                      │
 │ QUITTING                          +  │  section header; + adds a vice
 │ ┌──────────────────────────────────┐ │
-│ │ [wineglass]  Alcohol             │ │  ViceCard
+│ │ [wineglass]  Alcohol           › │ │  ViceCard; chevron means it opens
 │ │ 12 days free                     │ │  big rounded number
 │ │ 12d 4h 13m  ·  $96 saved         │ │  live (TimelineView, minute)
-│ │ ● ● ● ○ ● ● ◐   last 7 days      │ │  ●confirmed ○presumed ◐today ▲slip
+│ │ ● ● ● ○ ● ● ◐                    │ │  ●confirmed ○presumed ◐today ▲slip
+│ │ M T W T F S S                    │ │  weekday initials under the dots
 │ │ Next milestone: 14 days (2 days) │ │
 │ └──────────────────────────────────┘ │
 │                                      │
@@ -147,13 +149,16 @@ Entry points into the **Urge** flow: the Today button, the home-screen quick act
 ```
 
 Rules:
-- Order: check-in card → "Quitting" (vices, by `sortOrder`) → "Building" (habits) → SOSButton pinned with `safeAreaInset(edge: .bottom)`.
-- The check-in card stays once anything is tracked. While today is open it is a brand-filled button pinned above the urge button's space: the streak on one line (when there is one) and how many answers are left. After today is answered it becomes "N days in a row" and "You checked in today." The streak is consecutive days the check-in was answered, including today only after it is answered. A presumed-free day does not count. A logged slip does. One missed day ends the run, and the app does not say so. The urge button sits under the list, not over the last row.
-- Once anything is tracked, both headers stay visible. The + on Quitting opens Add metric as a vice. The + on Building opens it as a habit. The type picker is still there.
+- Order: date under the title → check-in card → urge-surfing row (until dismissed) → "Quitting" (vices, by `sortOrder`) → "Cutting back" → "Building" (habits) → SOSButton under the list.
+- The date is gray subtitle text ("Monday, November 2"), including at large accessibility sizes. It is not a toolbar item. The check-in sheet has no date in the toolbar either.
+- The check-in card stays once anything is tracked. While today is open it is a brand-filled button: the streak on one line (when there is one) and "Check in · N things left · about 10 seconds" (or "1 thing left"). After today is answered it becomes "N days in a row" and "You checked in today." The streak is consecutive days the check-in was answered, including today only after it is answered. A presumed-free day does not count. A logged slip does. One missed day ends the run, and the app does not say so. The urge button sits under the list, not over the last row.
+- The urge-surfing row shows while a vice is active, until the person taps it or dismisses it. Either choice sets `Preferences.hasDismissedUrgeSurfingTip` and the row stays gone. The explainer remains in Settings → Support and inside the urge flow.
+- The + on Quitting opens Add metric as a vice. The + on Building opens it as a habit. The type picker is still there. "Quitting" is hidden when there are no quit vices and there is at least one cut back. In that case the + (same add action and accessibility ID) moves onto "Cutting back". Otherwise "Cutting back" has no +. When "Building" has no habits, a dashed add row sits under the header. It is hidden from VoiceOver because the header + already announces the action.
+- Vice cards and cut-back cards show a trailing chevron. It is hidden from VoiceOver; the card is still one button.
 - The SOSButton shows only if there's at least one active vice.
 - Tapping a ViceCard opens Metric Detail (pushes onto the Progress tab's stack: switch tab, then push. Or present Metric Detail as a sheet from Today, which is simpler; **use the sheet**).
 - Tapping a habit's circle toggles done for today (haptic `.success` on done, `.selection` on undo). Tapping the row text opens Metric Detail.
-- Empty state (no metrics; only reachable after deleting everything): "Start with one thing" + button → Add metric.
+- Empty state (no metrics; only reachable after deleting everything): "Start with one thing", then "Quit or cut back" (adds a vice) and "Build a habit" (adds a habit).
 - If yesterday is unconfirmed for any vice **and** the user opened the app before noon, show one dismissible row above the banner: "Yesterday: were you free from Alcohol?" with [Yes] [I slipped]. (Keeps the calendar honest without nagging.)
 
 ### 4.3 Daily check-in (the core ritual)
@@ -324,7 +329,9 @@ Finish → create everything in one `RecoveryStore` transaction → land on Toda
 | `habitRun(n)` | n == 1 ? "1-day run" : "\(n)-day run" |
 | `dontMissTwice` | "Don't miss twice" |
 | `nextMilestone(t, inDays)` | "Next: \(t) days (in \(inDays) \(inDays == 1 ? "day" : "days"))" |
-| `checkInBanner(left)` | "\(left) to go · about 10 seconds" |
+| `checkInBanner(left)` | left == 1 ? "Check in · 1 thing left · about 10 seconds" : "Check in · \(left) things left · about 10 seconds" |
+| `addSomethingToQuit` | "Quit or cut back" |
+| `addAHabit` | "Build a habit" |
 | `sosButton` | "I'm having an urge" |
 | `urgeIntro` | "This is urge surfing. The urge rises, peaks, and passes, like a wave. Breathe, and watch it." |
 | `whatIsUrgeSurfing` | "What is urge surfing?" |

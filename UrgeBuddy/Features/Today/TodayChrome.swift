@@ -134,36 +134,77 @@ struct YesterdayPrompt: View {
 
 struct UrgeSurfingRow: View {
     var action: () -> Void
+    var onDismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: Spacing.s) {
+            Button(action: action) {
+                HStack(spacing: Spacing.m) {
+                    Image(systemName: "wind")
+                        .font(.title2)
+                        .foregroundStyle(Color.tbBrand)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(RecoveryCopy.urgeSurfingTitle)
+                            .font(.headline)
+                            .foregroundStyle(Color.tbTextPrimary)
+                        Text(RecoveryCopy.urgeSurfingRow)
+                            .font(.subheadline)
+                            .foregroundStyle(Color.tbTextSecondary)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Image(systemName: "chevron.right")
+                        .foregroundStyle(Color.tbTextSecondary)
+                        .accessibilityHidden(true)
+                }
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            }
+            .buttonStyle(.pressable)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("\(RecoveryCopy.urgeSurfingTitle). \(RecoveryCopy.urgeSurfingRow)")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityIdentifier(AccessibilityIdentifiers.todayUrgeSurfing)
+
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+                    .frame(minWidth: 44, minHeight: 44)
+            }
+            .buttonStyle(.pressable)
+            .accessibilityLabel(RecoveryCopy.dismiss)
+            .foregroundStyle(Color.tbTextSecondary)
+        }
+        .padding(Spacing.l)
+        .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+    }
+}
+
+struct AddPlaceholderRow: View {
+    var action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: Spacing.m) {
-                Image(systemName: "wind")
-                    .font(.title2)
+            HStack(spacing: Spacing.s) {
+                Image(systemName: "plus.circle")
                     .foregroundStyle(Color.tbBrand)
                     .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(RecoveryCopy.urgeSurfingTitle)
-                        .font(.headline)
-                        .foregroundStyle(Color.tbTextPrimary)
-                    Text(RecoveryCopy.urgeSurfingRow)
-                        .font(.subheadline)
-                        .foregroundStyle(Color.tbTextSecondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Image(systemName: "chevron.right")
-                    .foregroundStyle(Color.tbTextSecondary)
-                    .accessibilityHidden(true)
+                Text(RecoveryCopy.addBuilding)
+                    .font(.body)
+                    .foregroundStyle(Color.tbTextPrimary)
+                    .multilineTextAlignment(.leading)
             }
-            .padding(Spacing.l)
-            .frame(minHeight: 44)
-            .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .padding(.horizontal, Spacing.l)
+            .padding(.vertical, Spacing.s)
+            .background {
+                RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
+                    .strokeBorder(
+                        Color.tbTextSecondary.opacity(0.4),
+                        style: StrokeStyle(lineWidth: 1, dash: [6, 4])
+                    )
+            }
         }
         .buttonStyle(.pressable)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(RecoveryCopy.urgeSurfingTitle). \(RecoveryCopy.urgeSurfingRow)")
-        .accessibilityAddTraits(.isButton)
-        .accessibilityIdentifier(AccessibilityIdentifiers.todayUrgeSurfing)
+        .accessibilityHidden(true)
     }
 }
 

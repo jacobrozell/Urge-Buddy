@@ -16,6 +16,11 @@ struct CutBackCard: View {
                             .foregroundStyle(Color.tbTextPrimary)
                             .multilineTextAlignment(.leading)
                             .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: Spacing.s)
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Color.tbTextSecondary)
+                            .accessibilityHidden(true)
                     }
                     Text(RecoveryCopy.todayAmount(model.amount, limit: model.limit, unit: model.unit))
                         .font(.title2.weight(.bold))

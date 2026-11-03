@@ -46,7 +46,7 @@ enum RecoveryCopy {
     }
 
     static func checkInBanner(left: Int) -> String {
-        "\(left) to go · about 10 seconds"
+        left == 1 ? "Check in · 1 thing left · about 10 seconds" : "Check in · \(left) things left · about 10 seconds"
     }
 
     static let checkInAbout = "About 10 seconds"
@@ -116,6 +116,8 @@ enum RecoveryCopy {
     static let startWithOneThing = "Start with one thing"
     static let startWithOneThingMessage = "Add a vice or a habit and today gets simpler."
     static let addSomething = "Add something"
+    static let addSomethingToQuit = "Quit or cut back"
+    static let addAHabit = "Build a habit"
     static let addQuitting = "Add something you're quitting"
     static let addBuilding = "Add a habit"
     static let yesterdayYes = "Yes"

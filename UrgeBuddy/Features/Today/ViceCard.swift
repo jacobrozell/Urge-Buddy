@@ -16,6 +16,11 @@ struct ViceCard: View {
                             .foregroundStyle(Color.tbTextPrimary)
                             .multilineTextAlignment(.leading)
                             .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: Spacing.s)
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(Color.tbTextSecondary)
+                            .accessibilityHidden(true)
                     }
                     Text(RecoveryCopy.daysFree(model.daysFree))
                         .bigNumberStyle()
