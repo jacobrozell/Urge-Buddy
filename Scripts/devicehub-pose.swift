@@ -24,16 +24,21 @@ func attr(_ el: AXUIElement, _ name: String) -> AnyObject? {
     return value
 }
 
-func findButton(in el: AXUIElement, description: String) -> AXUIElement? {
-    let role = attr(el, kAXRoleAttribute) as? String ?? ""
-    let desc = attr(el, kAXDescriptionAttribute) as? String ?? ""
-    if role == "AXButton", desc == description {
-        return el
-    }
-    guard let kids = attr(el, kAXChildrenAttribute) as? [AXUIElement] else { return nil }
-    for kid in kids {
-        if let hit = findButton(in: kid, description: description) {
-            return hit
+func findButton(in root: AXUIElement, description: String) -> AXUIElement? {
+    var queue: [AXUIElement] = [root]
+    var seen = Set<UInt>()
+    var index = 0
+    while index < queue.count, index < 8_000 {
+        let el = queue[index]
+        index += 1
+        let key = UInt(bitPattern: Unmanaged.passUnretained(el).toOpaque())
+        if !seen.insert(key).inserted { continue }
+        let role = attr(el, kAXRoleAttribute) as? String ?? ""
+        let desc = attr(el, kAXDescriptionAttribute) as? String ?? ""
+        if role == "AXButton", desc == description { return el }
+        if role == "AXMenuBar" || role == "AXMenu" || role == "AXMenuBarItem" { continue }
+        if let kids = attr(el, kAXChildrenAttribute) as? [AXUIElement] {
+            queue.append(contentsOf: kids)
         }
     }
     return nil
