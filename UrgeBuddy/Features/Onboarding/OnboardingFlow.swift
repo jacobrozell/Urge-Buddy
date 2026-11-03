@@ -67,6 +67,7 @@ struct OnboardingFlow: View {
             ScrollView {
                 ReadableColumn {
                     pageView(model.page)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, Spacing.l)
                 }
             }
