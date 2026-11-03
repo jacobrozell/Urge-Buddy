@@ -206,10 +206,12 @@ struct CheckInSheet: View {
                 }
             }
             moodSection(model)
-            Button(RecoveryCopy.havingAnUrge) {
+            Button {
                 PresentationSequence.resignKeyboardThen { router.present(.urge(nil)) }
+            } label: {
+                Text(RecoveryCopy.havingAnUrge)
+                    .frame(maxWidth: .infinity, minHeight: 44)
             }
-            .frame(maxWidth: .infinity, minHeight: 44)
         }
     }
 

@@ -6,7 +6,7 @@ Status legend: `[ ]` todo · `[x]` done
 
 | | |
 |--|--|
-| **Version** | `1.0.0` (build 8 in `project.yml`) |
+| **Version** | `1.0.0` (build 9 in `project.yml`, not archived) |
 | **Branch** | `ui-polish` |
 | **Archive** | Xcode Cloud `Release` workflow. Push the branch first, then run [`DaRules/scripts/trigger-xcode-cloud.sh`](../../../../DaRules/scripts/trigger-xcode-cloud.sh) `start UrgeBuddy <branch>`. The build runs on the remote branch. |
 | **Status** | [`../project-status.md`](../project-status.md) |
@@ -24,9 +24,11 @@ Status legend: `[ ]` todo · `[x]` done
 - [x] Privacy manifest, and legal pages live — review-fixes #2 and #13
 - [x] Export compliance: `ITSAppUsesNonExemptEncryption = NO` in `project.yml`
 - [x] Build 8 archived and in TestFlight (Xcode Cloud run 7)
-- [ ] Commit #14, bump to build 9, push, and archive. Build 8 still has the old onboarding line.
+- [x] Commit #14 and bump to build 9. Build 8 still has the old onboarding line.
+- [ ] Push `ui-polish` and archive build 9 (`DaRules/scripts/trigger-xcode-cloud.sh`).
 - [ ] Recapture the iPhone Duo set from the current build (`Scripts/capture-duo-marketing-screenshots.sh`). The Connect set is the earlier capture — [`app-store-copy.md`](app-store-copy.md#iphone-duo-badge)
-- [ ] Optional: Accessibility, Architecture, and Code smells lanes, plus tests for legacy backup fixtures and crisis resources — [Pending lanes](../../ongoing/1.0.0-review-fixes.md#pending-lanes)
+- [x] Tests for legacy backup fixtures and crisis resources.
+- [ ] Optional: Accessibility, Architecture, and Code smells lanes — [Pending lanes](../../ongoing/1.0.0-review-fixes.md#pending-lanes)
 
 ## Jacob, manual in App Store Connect
 

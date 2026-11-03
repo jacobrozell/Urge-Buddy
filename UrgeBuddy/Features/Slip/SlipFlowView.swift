@@ -269,14 +269,18 @@ struct SlipFlowView: View {
     }
 
     private func whenChip(_ title: String, when: SlipWhen, model: SlipViewModel) -> some View {
-        Button(title) { model.when = when }
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(isSelected(when, model: model) ? Color.tbOnBrand : Color.tbTextPrimary)
-            .padding(.horizontal, Spacing.m)
-            .padding(.vertical, Spacing.s)
-            .frame(minHeight: 44)
-            .background(isSelected(when, model: model) ? Color.tbBrand : Color.tbSurfaceMuted, in: Capsule())
-            .accessibilityAddTraits(isSelected(when, model: model) ? .isSelected : [])
+        let selected = isSelected(when, model: model)
+        return Button { model.when = when } label: {
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(selected ? Color.tbOnBrand : Color.tbTextPrimary)
+                .padding(.horizontal, Spacing.m)
+                .padding(.vertical, Spacing.s)
+                .frame(minHeight: 44)
+                .background(selected ? Color.tbBrand : Color.tbSurfaceMuted, in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
     private func isSelected(_ when: SlipWhen, model: SlipViewModel) -> Bool {

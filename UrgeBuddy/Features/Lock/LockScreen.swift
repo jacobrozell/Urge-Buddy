@@ -12,6 +12,7 @@ struct LockScreen: View {
                         .font(.title2)
                         .foregroundStyle(Color.tbTextPrimary)
                         .multilineTextAlignment(.center)
+                        .accessibilityAddTraits(.isHeader)
                     PrimaryButton(title: RecoveryCopy.unlock, action: {
                         Task { await appLock.unlock() }
                     })
@@ -23,6 +24,8 @@ struct LockScreen: View {
         .defaultScrollAnchor(.center, for: .alignment)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.tbBackground.ignoresSafeArea())
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isModal)
         .task { await appLock.unlock() }
     }
 }

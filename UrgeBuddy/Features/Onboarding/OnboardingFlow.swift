@@ -277,6 +277,7 @@ struct OnboardingFlow: View {
                 .background(selected ? Color.tbBrand : Color.tbSurfaceMuted, in: RoundedRectangle(cornerRadius: Radius.control))
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
     private var why: some View {
@@ -415,6 +416,7 @@ struct OnboardingFlow: View {
                     .background(isOn ? Color.tbBrand : Color.tbSurfaceMuted, in: RoundedRectangle(cornerRadius: Radius.control))
                 }
                 .buttonStyle(.plain)
+                .accessibilityAddTraits(isOn ? .isSelected : [])
                 .accessibilityIdentifier(AccessibilityIdentifiers.onboardingVicePreset(preset.id))
             }
         }

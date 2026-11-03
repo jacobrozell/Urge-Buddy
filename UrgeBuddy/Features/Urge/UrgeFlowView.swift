@@ -236,23 +236,27 @@ struct UrgeFlowView: View {
                     .foregroundStyle(Color.tbOnCalm)
                     .padding(.bottom, Spacing.s)
                 ForEach(1...5, id: \.self) { level in
-                    Button(RecoveryCopy.intensityLabel(level)) {
+                    Button {
                         model.intensity = level
                         persist("start urge") { try model.begin(metrics: metrics, now: Date()) }
+                    } label: {
+                        Text(RecoveryCopy.intensityLabel(level))
+                            .frame(maxWidth: .infinity, minHeight: 52)
+                            .padding(.horizontal, Spacing.l)
+                            .background(Color.tbOnCalm.opacity(model.intensity == level ? 0.2 : 0.12), in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
+                            .foregroundStyle(Color.tbOnCalm)
                     }
                     .buttonStyle(.plain)
-                    .frame(maxWidth: .infinity, minHeight: 52)
-                    .padding(.horizontal, Spacing.l)
-                    .background(Color.tbOnCalm.opacity(model.intensity == level ? 0.2 : 0.12), in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
-                    .foregroundStyle(Color.tbOnCalm)
                     .accessibilityIdentifier(AccessibilityIdentifiers.urgeIntensity(level))
                 }
-                Button(RecoveryCopy.skip) {
+                Button {
                     model.intensity = 3
                     persist("start urge") { try model.begin(metrics: metrics, now: Date()) }
+                } label: {
+                    Text(RecoveryCopy.skip)
+                        .frame(minHeight: 44)
+                        .foregroundStyle(Color.tbOnCalm)
                 }
-                .frame(minHeight: 44)
-                .foregroundStyle(Color.tbOnCalm)
                 surfingLink()
             }
         case .ride:

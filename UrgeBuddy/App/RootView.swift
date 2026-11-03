@@ -31,8 +31,9 @@ struct RootView: View {
         .background(Color.tbBackground.ignoresSafeArea())
         .tbWindowChrome()
         .preferredColorScheme(colorScheme)
+        .accessibilityHidden(showsLock)
         .overlay {
-            if onboarded && appLock.isLocked && scenePhase == .active && !appLock.isAuthenticating {
+            if showsLock {
                 LockScreen()
             }
         }
@@ -209,6 +210,11 @@ struct RootView: View {
             next = nil
         }
         if next?.id != cover?.id { cover = next }
+    }
+
+    /// The lock is covering Today. Hide that content from VoiceOver so a locked phone cannot be read aloud.
+    private var showsLock: Bool {
+        onboarded && appLock.isLocked && scenePhase == .active && !appLock.isAuthenticating
     }
 
     private var colorScheme: ColorScheme? {
