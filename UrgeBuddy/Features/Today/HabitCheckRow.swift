@@ -57,7 +57,7 @@ struct HabitCheckRow: View {
             }
             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
         .accessibilityLabel(rowLabel)
     }
 
@@ -68,7 +68,7 @@ struct HabitCheckRow: View {
                 .foregroundStyle(model.isDoneToday ? Color.tbHabit : Color.tbTextSecondary)
                 .frame(minWidth: 44, minHeight: 44)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
         .accessibilityIdentifier(AccessibilityIdentifiers.habitToggle(model.id))
         .accessibilityLabel(model.isDoneToday ? "\(model.name), done" : "\(model.name), not done")
         .sensoryFeedback(model.isDoneToday ? .success : .selection, trigger: model.isDoneToday)
@@ -90,7 +90,7 @@ struct HabitCheckRow: View {
             .frame(width: 30, height: 30)
             .frame(minWidth: 44, minHeight: 44)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
         .contextMenu {
             Button(RecoveryCopy.removeOne, systemImage: "minus") { onSetAmount(max(0, model.amount - model.step)) }
         }

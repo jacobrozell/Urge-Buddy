@@ -40,7 +40,10 @@ Use Dynamic Type text styles only (`.largeTitle`, `.title2`, `.headline`, `.body
 | Component | API sketch | Notes |
 |-----------|-----------|-------|
 | `PrimaryButton` | `PrimaryButton(title:, systemImage:, action:)` | Full width, min height 52, `Brand` fill, `OnBrand` text |
-| `SecondaryButton` | same | `SurfaceMuted` fill, `TextPrimary` text |
+| `SecondaryButton` | `SecondaryButton(title:, systemImage:, accessibilityID:, action:)` | `SurfaceMuted` fill, `TextPrimary` text |
+| `PressableStyle` | `.buttonStyle(.pressable)` | 0.8 opacity and 0.98 scale on press, 0.45 opacity when disabled, no scale under Reduce Motion. Use on every custom-drawn button. |
+| `ChoiceButton` | `ChoiceButton(title:, isSelected:, accessibilityID:, action:)` | Paired answers. Selected = `Brand` fill, `OnBrand` text, and a checkmark. Unselected = `SurfaceMuted` fill. |
+| `TBFieldStyle` | `.textFieldStyle(.tbField)` or `TBFieldStyle(fill:)` | Filled field, `Radius.control`, min height 44. Default fill is `Surface`. Use `SurfaceMuted` when the field sits on a `Surface` card. |
 | `Card` | `Card { content }` | `Surface`, `Radius.card`, padding `Spacing.l` |
 | `StatTile` | `StatTile(value:, label:, systemImage:)` | VoiceOver reads "label, value" |
 | `Chip` / `ChipGrid` | `ChipGrid(items:, selection: Binding<Set<…>>)` | Adaptive grid, min 44pt height, selected = `Brand` fill |

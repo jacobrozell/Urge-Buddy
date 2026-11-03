@@ -23,7 +23,7 @@ struct ChipGrid: View {
                 } label: {
                     chipLabel(item, isSelected: isSelected)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable)
                 .accessibilityLabel(item.title)
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
             }

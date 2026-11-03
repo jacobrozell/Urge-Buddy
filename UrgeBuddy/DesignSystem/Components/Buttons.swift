@@ -17,7 +17,7 @@ struct PrimaryButton: View {
                 .padding(.vertical, Spacing.s)
                 .background(Color.tbBrand, in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
         .accessibilityLabel(title)
         .modifier(AccessibilityIDModifier(id: accessibilityID))
     }
@@ -44,6 +44,7 @@ struct PrimaryButton: View {
 struct SecondaryButton: View {
     var title: String
     var systemImage: String? = nil
+    var accessibilityID: String? = nil
     var action: () -> Void
 
     var body: some View {
@@ -57,8 +58,9 @@ struct SecondaryButton: View {
                 .padding(.vertical, Spacing.s)
                 .background(Color.tbSurfaceMuted, in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
         .accessibilityLabel(title)
+        .modifier(AccessibilityIDModifier(id: accessibilityID))
     }
 
     @ViewBuilder

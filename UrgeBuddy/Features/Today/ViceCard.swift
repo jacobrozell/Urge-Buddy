@@ -38,7 +38,7 @@ struct ViceCard: View {
                 .padding(.vertical, Spacing.m)
                 .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(spoken(at: context.date))
             .accessibilityAddTraits(.isButton)

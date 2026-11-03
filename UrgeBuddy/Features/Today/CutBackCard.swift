@@ -36,7 +36,7 @@ struct CutBackCard: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(.pressable)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(model.accessibilityLabel)
             .accessibilityAddTraits(.isButton)

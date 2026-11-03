@@ -38,7 +38,7 @@ struct CheckInBanner: View {
             .frame(minHeight: 44)
             .background(Color.tbBrand, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)
         .accessibilityAddTraits(.isButton)
@@ -107,7 +107,7 @@ struct YesterdayPrompt: View {
                     Image(systemName: "xmark")
                         .frame(minWidth: 44, minHeight: 44)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.pressable)
                 .accessibilityLabel(RecoveryCopy.dismiss)
                 .foregroundStyle(Color.tbTextSecondary)
             }
@@ -159,7 +159,7 @@ struct UrgeSurfingRow: View {
             .frame(minHeight: 44)
             .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(RecoveryCopy.urgeSurfingTitle). \(RecoveryCopy.urgeSurfingRow)")
         .accessibilityAddTraits(.isButton)
@@ -188,7 +188,7 @@ struct SOSButton: View {
             .background(Color.tbBrand, in: Capsule())
             .shadow(color: .black.opacity(0.18), radius: 8, y: 3)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.pressable)
         .accessibilityLabel(RecoveryCopy.sosButton)
         .accessibilityIdentifier(AccessibilityIdentifiers.todaySOSButton)
     }

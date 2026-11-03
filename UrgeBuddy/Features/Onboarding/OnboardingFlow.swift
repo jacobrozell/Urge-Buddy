@@ -165,7 +165,7 @@ struct OnboardingFlow: View {
                 model.toggleVice(preset.id)
             }
             TextField(RecoveryCopy.somethingElse, text: customViceName)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.tbField)
                 .focused($keyboard)
                 .onChange(of: model.customViceName) { _, _ in model.habitOnly = false }
             Button(RecoveryCopy.habitOnlyLink) { model.chooseHabitsOnly() }
@@ -209,7 +209,7 @@ struct OnboardingFlow: View {
                 .foregroundStyle(Color.tbTextPrimary)
             TextField(RecoveryCopy.costPerDay, text: textBinding(vice.id, \.costText))
                 .keyboardType(.decimalPad)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.tbField)
                 .focused($keyboard)
             Text(RecoveryCopy.optional)
                 .font(.footnote)
@@ -232,7 +232,7 @@ struct OnboardingFlow: View {
             HStack(spacing: Spacing.s) {
                 TextField("0", text: text)
                     .keyboardType(.numberPad)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.tbField)
                     .focused($keyboard)
                 Text(unit.isEmpty ? AmountMath.defaultUnit : unit)
                     .foregroundStyle(Color.tbTextSecondary)
@@ -286,7 +286,7 @@ struct OnboardingFlow: View {
                 .foregroundStyle(Color.tbTextPrimary)
             TextField(RecoveryCopy.yourWhy, text: reasonText, axis: .vertical)
                 .lineLimit(3...6)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.tbField)
                 .focused($keyboard)
             chipRow
         }
@@ -319,7 +319,7 @@ struct OnboardingFlow: View {
                 model.toggleHabit(preset.id)
             }
             TextField(RecoveryCopy.somethingElse, text: customHabitName)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.tbField)
                 .focused($keyboard)
         }
     }

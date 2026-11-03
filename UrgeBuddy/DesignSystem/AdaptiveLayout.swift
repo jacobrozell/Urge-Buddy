@@ -64,7 +64,7 @@ private struct ReadableListMargins: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .contentMargins(.horizontal, max(0, (width - AdaptiveLayout.textColumnWidth) / 2), for: .scrollContent)
+            .contentMargins(.horizontal, max(Spacing.l, (width - AdaptiveLayout.textColumnWidth) / 2), for: .scrollContent)
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
     }
 }

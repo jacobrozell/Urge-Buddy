@@ -399,7 +399,7 @@ struct MetricDetailScreen: View {
                         reasonRow(reason, index: index)
                     }
                     TextField(RecoveryCopy.addReason, text: $newReason)
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(TBFieldStyle(fill: .tbSurfaceMuted))
                         .textInputAutocapitalization(.sentences)
                     Button(RecoveryCopy.addReason) { addReason() }
                         .font(.headline)
@@ -477,7 +477,7 @@ struct MetricDetailScreen: View {
                         .foregroundStyle(Color.tbTextSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                     TextField(RecoveryCopy.nextTimePlan, text: $planText, axis: .vertical)
-                        .textFieldStyle(.roundedBorder)
+                        .textFieldStyle(TBFieldStyle(fill: .tbSurfaceMuted))
                         .lineLimit(2...6)
                     if planDirty {
                         Button(RecoveryCopy.save) { savePlan() }
@@ -617,7 +617,7 @@ struct DayEditorSheet: View {
             MoodPicker(selection: mood) { mood = $0 }
             TextField(RecoveryCopy.noteField, text: $noteText, axis: .vertical)
                 .lineLimit(2...5)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.tbField)
                 .textInputAutocapitalization(.sentences)
             editorButton(RecoveryCopy.saveNote, id: AccessibilityIdentifiers.dayEditorSaveNote, action: saveNote)
         }

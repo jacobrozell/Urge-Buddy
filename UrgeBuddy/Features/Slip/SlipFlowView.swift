@@ -130,10 +130,10 @@ struct SlipFlowView: View {
             )
             Text(RecoveryCopy.anythingElse).font(.headline).foregroundStyle(Color.tbTextPrimary)
             TextField(RecoveryCopy.anythingElse, text: Bindable(model).note, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.tbField)
             Text(RecoveryCopy.nextTimePlan).font(.headline).foregroundStyle(Color.tbTextPrimary)
             TextField(RecoveryCopy.nextTimePlan, text: Bindable(model).plan, axis: .vertical)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.tbField)
             if let errorMessage = model.errorMessage {
                 Text(errorMessage).font(.footnote).foregroundStyle(Color.tbSlip)
             }

@@ -239,7 +239,7 @@ struct CheckInSheet: View {
             .accessibilityIdentifier(AccessibilityIdentifiers.checkInMood)
             TextField(RecoveryCopy.noteField, text: Bindable(model).noteText, axis: .vertical)
                 .lineLimit(2...5)
-                .textFieldStyle(.roundedBorder)
+                .textFieldStyle(.tbField)
                 .textInputAutocapitalization(.sentences)
                 .accessibilityIdentifier(AccessibilityIdentifiers.checkInNote)
         }
