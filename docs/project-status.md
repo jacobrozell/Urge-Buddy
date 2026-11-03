@@ -11,14 +11,14 @@
 | **Stage** | **Release prep** — never shipped |
 | **Latest submitted** | — |
 | **Latest shipped (App Store)** | — |
-| **Repo version** | 1.0.0 (7) |
+| **Repo version** | 1.0.0 (8) |
 | **Active branch** | `ui-polish` |
 | **Platform** | iOS 18+ — iPhone and iPad, portrait and landscape |
 | **Monetization** | Free, no IAP |
 
 ## Current focus
 
-**UI polish is on `ui-polish` and pushed.** Marketing screenshots for iPhone 6.9", iPad 13", and iPhone Duo were recaptured and uploaded to App Store Connect on 2026-11-02. Xcode Cloud Release build 6 is archiving 1.0.0 (7) from `ui-polish` (`ec9aa8cf-b42c-4bc5-9ca8-81aee480b3df`) and is not submitted. What's New waits until the first release is live. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
+**Build 8 is the archive candidate on `ui-polish`.** Review lanes for this pass: Bugbot ready with nits, tests pass with gaps (168/169, one iPad-only skip), store policy likely approve. The reminder sentence still says the daily check-in is the only notification. What's New waits until the first release is live. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
 
 The app has never shipped. Build 5 was archived on 2026-06-22 and never uploaded. There is no production data to migrate.
 
