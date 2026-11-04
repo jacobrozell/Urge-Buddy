@@ -327,9 +327,12 @@ enum RecoveryCopy {
     static let notNow = "Not now"
     static let keepPrivate = "Keep it private?"
     static let lockPrompt = "Lock Urge Buddy when you leave the app."
+    static func lockComesBack(_ method: String) -> String { "Coming back asks for \(method)." }
+    static let lockSwitcher = "The app switcher shows the logo, not your progress."
     static let turnOn = "Turn on"
     static let important = "Important"
     static let iUnderstand = "I understand"
+    static let introductionSaves = "Done saves the check-in time and the reminder and lock choices, and adds anything new. What you already track stays."
     static let next = "Next"
     static let back = "Back"
     static let onboardingToday = "Today"

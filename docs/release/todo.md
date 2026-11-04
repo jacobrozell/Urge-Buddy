@@ -11,7 +11,7 @@ Status legend: `[ ]` todo · `[x]` done
 | **Archive** | Xcode Cloud `Release` workflow. Push the branch first, then run [`DaRules/scripts/trigger-xcode-cloud.sh`](../../../../DaRules/scripts/trigger-xcode-cloud.sh) `start UrgeBuddy <branch>`. The build runs on the remote branch. |
 | **Status** | [`../project-status.md`](../project-status.md) |
 
-**Last updated:** 2026-11-03
+**Last updated:** 2026-11-04
 
 ---
 
@@ -26,7 +26,7 @@ Status legend: `[ ]` todo · `[x]` done
 - [x] Build 8 archived and in TestFlight (Xcode Cloud run 7)
 - [x] Commit #14 and bump to build 9. Build 8 still has the old onboarding line.
 - [ ] Push `main` and archive build 9 (`DaRules/scripts/trigger-xcode-cloud.sh`).
-- [ ] Recapture the iPhone 6.9", iPad 13", and Duo sets from build 9 (`Scripts/capture-marketing-screenshots.sh`, `Scripts/capture-duo-marketing-screenshots.sh`). The build 8 shots show the old navy urge screen, indigo habits, and the old icon — [`app-store-copy.md`](app-store-copy.md#iphone-duo-badge)
+- [x] Recapture and upload the iPhone 6.9" and iPad 13" sets (2026-11-04). Duo still needs a Device Hub pose control — [`app-store-copy.md`](app-store-copy.md#iphone-duo-badge)
 - [x] Tests for legacy backup fixtures and crisis resources.
 - [ ] Optional: Accessibility, Architecture, and Code smells lanes — [Pending lanes](../../ongoing/1.0.0-review-fixes.md#pending-lanes)
 
@@ -57,7 +57,7 @@ From [Decisions for the owner](../../ongoing/ui-polish-plan.md#decisions-for-the
 - [x] B. Brand mark reads as "sync". The icon and `BrandMark` are now the teal two circles (2026-11-03).
 - [ ] C. Drop the days from the run clock line
 - [ ] D. Collapse the urge journal behind a button
-- [ ] E. Re-upload screenshots. iPhone and iPad are done. Duo is open.
+- [x] E. Re-upload screenshots. iPhone 6.9" and iPad 13" uploaded 2026-11-04. Duo is still the earlier set.
 
 ## Submit
 

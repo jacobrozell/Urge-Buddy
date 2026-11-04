@@ -164,6 +164,20 @@ final class OnboardingViewModel {
         pageIndex = min(pages.count - 1, pageIndex + 1)
     }
 
+    /// Drafts whose name is not already tracked for that kind of metric. Matching ignores case.
+    func draftsToAdd(
+        now: Date,
+        calendar: Calendar,
+        existing: [(name: String, habitType: HabitType)]
+    ) -> [OnboardingMetricDraft] {
+        drafts(now: now, calendar: calendar).filter { draft in
+            !existing.contains { item in
+                item.habitType == draft.habitType
+                    && item.name.caseInsensitiveCompare(draft.name) == .orderedSame
+            }
+        }
+    }
+
     func drafts(now: Date, calendar: Calendar) -> [OnboardingMetricDraft] {
         var drafts: [OnboardingMetricDraft] = []
         if !habitOnly {

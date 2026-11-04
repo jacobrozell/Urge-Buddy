@@ -17,8 +17,15 @@ final class AppLock {
     }
 
     private init() {
-        isEnabled = Preferences.appLockEnabled
-        isLocked = Preferences.appLockEnabled
+        // Screenshot and UI-test launches pass -ui_testing. A leftover lock on the simulator
+        // would cover the screen with the passcode prompt.
+        if ProcessInfo.processInfo.arguments.contains("-ui_testing") {
+            isEnabled = false
+            isLocked = false
+        } else {
+            isEnabled = Preferences.appLockEnabled
+            isLocked = Preferences.appLockEnabled
+        }
     }
 
     var shouldHoldPresentations: Bool { isEnabled && isLocked }
@@ -28,14 +35,28 @@ final class AppLock {
     }
 
     var lockLabel: String {
-        let context = LAContext()
-        _ = context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
-        switch context.biometryType {
+        switch biometry {
         case .faceID: return RecoveryCopy.lockFaceID
         case .touchID: return RecoveryCopy.lockTouchID
         case .opticID: return RecoveryCopy.lockOpticID
         default: return RecoveryCopy.lockPasscode
         }
+    }
+
+    /// Symbol and spoken method for the onboarding lock preview.
+    var unlockPrompt: (symbol: String, method: String) {
+        switch biometry {
+        case .faceID: ("faceid", "Face ID")
+        case .touchID: ("touchid", "Touch ID")
+        case .opticID: ("opticid", "Optic ID")
+        default: ("lock", "your passcode")
+        }
+    }
+
+    private var biometry: LABiometryType {
+        let context = LAContext()
+        _ = context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+        return context.biometryType
     }
 
     func lockIfEnabled() {

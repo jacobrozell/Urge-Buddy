@@ -83,6 +83,20 @@ final class OnboardingViewModelTests: XCTestCase {
         XCTAssertFalse(model.vicesFull)
     }
 
+    func testReplaySkipsNamesAlreadyTracked() {
+        let model = OnboardingViewModel()
+        model.toggleVice("alcohol")
+        model.customViceName = "Sugar"
+        model.toggleHabit("walk")
+        let now = date(2026, 10, 28, 15)
+        let added = model.draftsToAdd(
+            now: now,
+            calendar: .testNY,
+            existing: [(name: "alcohol", habitType: .vice), (name: "Go for a walk", habitType: .positive)]
+        )
+        XCTAssertEqual(added.map(\.name), ["Sugar"])
+    }
+
     func testHabitOnlySkipsVicePages() {
         let model = OnboardingViewModel()
         model.chooseHabitsOnly()

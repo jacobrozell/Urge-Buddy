@@ -3,7 +3,7 @@ import SwiftUI
 
 struct OnboardingFlow: View {
     var onFinished: () -> Void
-    /// Look through the pages again. Does not save vices, habits, or preferences.
+    /// Opened from Settings. Done saves the check-in time, reminder and lock choices, and any new vices or habits. Existing tracking stays.
     var review = false
 
     @Environment(\.modelContext) private var modelContext
@@ -11,6 +11,7 @@ struct OnboardingFlow: View {
     @Environment(\.verticalSizeClass) private var verticalSizeClass
     @Environment(\.persist) private var persist
     @State private var model = OnboardingViewModel()
+    @State private var didAdoptReview = false
     @FocusState private var keyboard: Bool
 
     private var isShortHeight: Bool {
@@ -51,6 +52,13 @@ struct OnboardingFlow: View {
         }
         .onAppear {
             model.lockAvailable = appLock.isAvailable
+            if review, !didAdoptReview {
+                didAdoptReview = true
+                model.reminderHour = Preferences.reminderHour
+                model.reminderMinute = Preferences.reminderMinute
+                model.wantsReminders = Preferences.remindersEnabled
+                model.wantsLock = appLock.isEnabled
+            }
             if LaunchConfiguration.startsOnVices {
                 model.pageIndex = model.pages.firstIndex(of: .chooseVices) ?? model.pageIndex
             }
@@ -334,14 +342,47 @@ struct OnboardingFlow: View {
     }
 
     private var privacy: some View {
-        VStack(alignment: .leading, spacing: Spacing.l) {
+        let prompt = appLock.unlockPrompt
+        return VStack(alignment: .leading, spacing: Spacing.l) {
             Text(RecoveryCopy.keepPrivate)
                 .font(.title2.weight(.bold))
                 .foregroundStyle(Color.tbTextPrimary)
             Text(RecoveryCopy.lockPrompt)
                 .font(.body)
                 .foregroundStyle(Color.tbTextSecondary)
+            lockPreview
+            VStack(alignment: .leading, spacing: Spacing.m) {
+                lockPoint(prompt.symbol, RecoveryCopy.lockComesBack(prompt.method))
+                lockPoint("rectangle.on.rectangle", RecoveryCopy.lockSwitcher)
+            }
         }
+    }
+
+    /// A small version of the screen you see after leaving the app.
+    private var lockPreview: some View {
+        VStack(spacing: Spacing.m) {
+            BrandMark(size: 64)
+            Text(RecoveryCopy.lockedTitle)
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(Color.tbTextPrimary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, Spacing.xl)
+        .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+        .accessibilityElement(children: .combine)
+    }
+
+    private func lockPoint(_ symbol: String, _ text: String) -> some View {
+        HStack(alignment: .center, spacing: Spacing.m) {
+            IconBadge(systemImage: symbol, tint: .tbBrand)
+            Text(text)
+                .font(.body)
+                .foregroundStyle(Color.tbTextPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityElement(children: .combine)
     }
 
     private var disclaimer: some View {
@@ -352,26 +393,37 @@ struct OnboardingFlow: View {
             Text(RecoveryCopy.disclaimer)
                 .font(.body)
                 .foregroundStyle(Color.tbTextPrimary)
+            if review {
+                Text(RecoveryCopy.introductionSaves)
+                    .font(.body)
+                    .foregroundStyle(Color.tbTextSecondary)
+            }
         }
     }
 
     private var controls: some View {
         VStack(spacing: Spacing.s) {
-            if !review, case .reminders = model.page {
+            if case .reminders = model.page {
                 PrimaryButton(title: RecoveryCopy.turnOnReminders, accessibilityID: AccessibilityIdentifiers.onboardingNext) {
                     Task { await turnOnReminders() }
                 }
-                SecondaryButton(title: RecoveryCopy.notNow) { model.advance() }
-            } else if !review, case .privacy = model.page {
+                SecondaryButton(title: RecoveryCopy.notNow) {
+                    if !review { model.wantsReminders = false }
+                    model.advance()
+                }
+            } else if case .privacy = model.page {
                 PrimaryButton(title: RecoveryCopy.turnOn, accessibilityID: AccessibilityIdentifiers.onboardingNext) {
                     model.wantsLock = true
                     model.advance()
                 }
-                SecondaryButton(title: RecoveryCopy.notNow) { model.advance() }
+                SecondaryButton(title: RecoveryCopy.notNow) {
+                    if !review { model.wantsLock = false }
+                    model.advance()
+                }
             } else if model.isLastPage {
                 PrimaryButton(title: review ? RecoveryCopy.done : RecoveryCopy.iUnderstand, accessibilityID: AccessibilityIdentifiers.onboardingFinish) {
                     if review {
-                        onFinished()
+                        finishReview()
                     } else {
                         model.acceptedDisclaimer = true
                         finish()
@@ -471,8 +523,25 @@ struct OnboardingFlow: View {
 
     private func finish() {
         guard model.acceptedDisclaimer else { return }
+        guard save(model.drafts(now: Date(), calendar: .current)) else { return }
+        applyPreferences(refreshReminders: model.wantsReminders)
+        onFinished()
+    }
+
+    /// Adds vices and habits that are not already tracked, then stores the reminder and lock choices.
+    private func finishReview() {
+        let existing = (try? modelContext.fetch(FetchDescriptor<Metric>())) ?? []
+        let names = existing
+            .filter { !$0.isArchived }
+            .map { (name: $0.name, habitType: $0.habitType) }
+        let drafts = model.draftsToAdd(now: Date(), calendar: .current, existing: names)
+        guard save(drafts) else { return }
+        applyPreferences(refreshReminders: true)
+        onFinished()
+    }
+
+    private func save(_ drafts: [OnboardingMetricDraft]) -> Bool {
         let store = RecoveryStore(context: modelContext)
-        let drafts = model.drafts(now: Date(), calendar: .current)
         let saved: Void? = persist("finish onboarding") {
             for draft in drafts {
                 _ = try store.addMetric(
@@ -486,7 +555,10 @@ struct OnboardingFlow: View {
                 )
             }
         }
-        guard saved != nil else { return }
+        return saved != nil
+    }
+
+    private func applyPreferences(refreshReminders: Bool) {
         Preferences.reminderHour = model.reminderHour
         Preferences.reminderMinute = model.reminderMinute
         Preferences.remindersEnabled = model.wantsReminders
@@ -494,10 +566,9 @@ struct OnboardingFlow: View {
         Preferences.hasCompletedOnboarding = true
         appLock.isEnabled = model.wantsLock
         appLock.isLocked = false
-        if model.wantsReminders {
+        if refreshReminders {
             Task { await ReminderScheduler.refresh(context: modelContext) }
         }
-        onFinished()
     }
 }
 
