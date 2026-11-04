@@ -25,7 +25,7 @@ Status legend: `[ ]` todo · `[x]` done
 - [x] Export compliance: `ITSAppUsesNonExemptEncryption = NO` in `project.yml`
 - [x] Build 8 archived and in TestFlight (Xcode Cloud run 7)
 - [x] Commit #14 and bump to build 9. Build 8 still has the old onboarding line.
-- [ ] Push `main` and archive build 9 (`DaRules/scripts/trigger-xcode-cloud.sh`).
+- [x] Push `main` and archive build 9. Xcode Cloud Release run 8 (`62072743-4553-46a3-942e-54a6577e37ad`).
 - [x] Recapture and upload the iPhone 6.9" and iPad 13" sets (2026-11-04). Duo still needs a Device Hub pose control — [`app-store-copy.md`](app-store-copy.md#iphone-duo-badge)
 - [x] Tests for legacy backup fixtures and crisis resources.
 - [ ] Optional: Accessibility, Architecture, and Code smells lanes — [Pending lanes](../../ongoing/1.0.0-review-fixes.md#pending-lanes)
