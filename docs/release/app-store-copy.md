@@ -1,7 +1,7 @@
 # Urge Buddy — App Store copy (1.0)
 
-**Last updated:** 2026-11-03
-**Status:** Pasted into App Store Connect on 2026-11-02 for version 1.0 (Prepare for Submission). The reminder bullet changed on 2026-11-03 and needs to be pasted again. What's New is not accepted until the first release is live. Age rating result is still blank until the questionnaire is submitted.
+**Last updated:** 2026-11-04
+**Status:** Description pasted into App Store Connect on 2026-11-04 (the reminder bullet now mentions milestone notices). What's New is not accepted until the first release is live. Age rating result is still blank until the questionnaire is submitted.
 **Monetization:** Free. No IAP.
 
 Store copy follows the app. An urge is a wave that crests and fades. Most pass in a few minutes. Some take longer. The ride timer starts at 5 minutes, and the user can add 5. Do not cite a study, name a clinician, or promise that an urge ends in a set number of minutes.
@@ -56,7 +56,7 @@ The app does not treat, cure, or diagnose. Onboarding cannot finish until the us
 
 Presets name Alcohol, Smoking, Vaping, Cannabis, Gambling, and Porn as things to quit or cut back. The app does not sell them, does not show sexual imagery, and does not offer gambling.
 
-To see a populated app, complete onboarding, choose Alcohol, and set last use to 10 days ago. The urge tool is I'm having an urge on Today, or a long-press on the Home Screen icon. Quit or cut back is on that vice step. Lock, export, and delete are in Settings.
+To see a populated app, complete onboarding, choose Alcohol, and set last use to 10 days ago. The urge tool is I'm having an urge on Today, or a long-press on the Home Screen icon. Quit or cut back is on that vice step. Lock, export, and delete are in Settings. Settings → See the introduction can be opened again. Done saves the check-in time, the reminder and lock choices, and any new vices or habits. What is already tracked stays. Close leaves the current data alone.
 
 Minimum OS is iOS 18. iPhone and iPad.
 

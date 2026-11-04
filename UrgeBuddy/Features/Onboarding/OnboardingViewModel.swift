@@ -170,12 +170,19 @@ final class OnboardingViewModel {
         calendar: Calendar,
         existing: [(name: String, habitType: HabitType)]
     ) -> [OnboardingMetricDraft] {
-        drafts(now: now, calendar: calendar).filter { draft in
+        var kept = drafts(now: now, calendar: calendar).filter { draft in
             !existing.contains { item in
                 item.habitType == draft.habitType
                     && item.name.caseInsensitiveCompare(draft.name) == .orderedSame
             }
         }
+        let reason = reasonText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !reason.isEmpty,
+           !kept.contains(where: { $0.firstReason != nil }),
+           let index = kept.firstIndex(where: { $0.habitType == .vice }) {
+            kept[index].firstReason = reason
+        }
+        return kept
     }
 
     func drafts(now: Date, calendar: Calendar) -> [OnboardingMetricDraft] {

@@ -116,6 +116,7 @@ struct SettingsScreen: View {
             .fullScreenCover(isPresented: $showIntroduction) {
                 NavigationStack {
                     OnboardingFlow(onFinished: { showIntroduction = false }, review: true)
+                        .persistFailureAlert()
                         .toolbar {
                             ToolbarItem(placement: .cancellationAction) {
                                 Button(RecoveryCopy.close) { showIntroduction = false }

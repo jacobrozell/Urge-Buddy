@@ -338,6 +338,11 @@ struct OnboardingFlow: View {
                 .font(.body)
                 .foregroundStyle(Color.tbTextSecondary)
             DatePicker(RecoveryCopy.time, selection: reminderDate, displayedComponents: .hourAndMinute)
+            if review {
+                Text(model.wantsReminders ? RecoveryCopy.introductionRemindersOn : RecoveryCopy.introductionRemindersOff)
+                    .font(.body)
+                    .foregroundStyle(Color.tbTextSecondary)
+            }
         }
     }
 
@@ -355,6 +360,11 @@ struct OnboardingFlow: View {
                 lockPoint(prompt.symbol, RecoveryCopy.lockComesBack(prompt.method))
                 lockPoint("rectangle.on.rectangle", RecoveryCopy.lockSwitcher)
             }
+            if review {
+                Text(model.wantsLock ? RecoveryCopy.introductionLockOn : RecoveryCopy.introductionLockOff)
+                    .font(.body)
+                    .foregroundStyle(Color.tbTextSecondary)
+            }
         }
     }
 
@@ -370,7 +380,8 @@ struct OnboardingFlow: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, Spacing.xl)
         .background(Color.tbSurface, in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(RecoveryCopy.lockPreview)
     }
 
     private func lockPoint(_ symbol: String, _ text: String) -> some View {
@@ -412,7 +423,7 @@ struct OnboardingFlow: View {
                     model.advance()
                 }
             } else if case .privacy = model.page {
-                PrimaryButton(title: RecoveryCopy.turnOn, accessibilityID: AccessibilityIdentifiers.onboardingNext) {
+                PrimaryButton(title: RecoveryCopy.turnOnTheLock, accessibilityID: AccessibilityIdentifiers.onboardingNext) {
                     model.wantsLock = true
                     model.advance()
                 }
@@ -517,7 +528,12 @@ struct OnboardingFlow: View {
 
     private func turnOnReminders() async {
         let allowed = await ReminderScheduler.requestAuthorization()
-        model.wantsReminders = allowed
+        if review {
+            // A denied prompt must not switch off a reminder that is already on.
+            if allowed { model.wantsReminders = true }
+        } else {
+            model.wantsReminders = allowed
+        }
         model.advance()
     }
 
@@ -530,10 +546,11 @@ struct OnboardingFlow: View {
 
     /// Adds vices and habits that are not already tracked, then stores the reminder and lock choices.
     private func finishReview() {
-        let existing = (try? modelContext.fetch(FetchDescriptor<Metric>())) ?? []
-        let names = existing
-            .filter { !$0.isArchived }
-            .map { (name: $0.name, habitType: $0.habitType) }
+        let existing: [Metric]? = persist("load tracked metrics") {
+            try modelContext.fetch(FetchDescriptor<Metric>())
+        }
+        guard let existing else { return }
+        let names = existing.map { (name: $0.name, habitType: $0.habitType) }
         let drafts = model.draftsToAdd(now: Date(), calendar: .current, existing: names)
         guard save(drafts) else { return }
         applyPreferences(refreshReminders: true)

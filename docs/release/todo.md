@@ -6,7 +6,7 @@ Status legend: `[ ]` todo · `[x]` done
 
 | | |
 |--|--|
-| **Version** | `1.0.0` (build 9 in `project.yml`, not archived) |
+| **Version** | `1.0.0` (build 9 in `project.yml`) |
 | **Branch** | `main` |
 | **Archive** | Xcode Cloud `Release` workflow. Push the branch first, then run [`DaRules/scripts/trigger-xcode-cloud.sh`](../../../../DaRules/scripts/trigger-xcode-cloud.sh) `start UrgeBuddy <branch>`. The build runs on the remote branch. |
 | **Status** | [`../project-status.md`](../project-status.md) |
@@ -25,7 +25,8 @@ Status legend: `[ ]` todo · `[x]` done
 - [x] Export compliance: `ITSAppUsesNonExemptEncryption = NO` in `project.yml`
 - [x] Build 8 archived and in TestFlight (Xcode Cloud run 7)
 - [x] Commit #14 and bump to build 9. Build 8 still has the old onboarding line.
-- [x] Push `main` and archive build 9. Xcode Cloud Release run 8 (`62072743-4553-46a3-942e-54a6577e37ad`).
+- [x] Push `main` and archive build 9. Xcode Cloud Release run 8 (`62072743-4553-46a3-942e-54a6577e37ad`) succeeded, then the App Store export rewrote the build number to 8. TestFlight still has build 8.
+- [ ] Archive again so TestFlight gets build 9, including the introduction review fixes.
 - [x] Recapture and upload the iPhone 6.9" and iPad 13" sets (2026-11-04). Duo still needs a Device Hub pose control — [`app-store-copy.md`](app-store-copy.md#iphone-duo-badge)
 - [x] Tests for legacy backup fixtures and crisis resources.
 - [ ] Optional: Accessibility, Architecture, and Code smells lanes — [Pending lanes](../../ongoing/1.0.0-review-fixes.md#pending-lanes)
@@ -34,7 +35,7 @@ Status legend: `[ ]` todo · `[x]` done
 
 - [ ] Age-rating questionnaire. Answers are in [Age rating notes](app-store-copy.md#age-rating-notes). Record the result there.
 - [ ] App Privacy is **Data Not Collected** — [code-health 1.2](../../ongoing/code-health-plan.md)
-- [ ] Paste the updated description (reminder bullet, #14) — [`app-store-copy.md`](app-store-copy.md#description)
+- [x] Paste the updated description (reminder bullet, #14) — [`app-store-copy.md`](app-store-copy.md#description) (2026-11-04)
 - [x] iPhone 6.9" and iPad 13" screenshots replaced from build 8 (2026-11-02)
 - [ ] Upload the recaptured iPhone 6.9", iPad 13", and Duo (outer and inner) sets
 - [ ] Confirm review notes match [Review notes](app-store-copy.md#review-notes)

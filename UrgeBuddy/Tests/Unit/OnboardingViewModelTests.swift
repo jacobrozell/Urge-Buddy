@@ -97,6 +97,20 @@ final class OnboardingViewModelTests: XCTestCase {
         XCTAssertEqual(added.map(\.name), ["Sugar"])
     }
 
+    func testReplayKeepsTheWhyOnTheFirstNewVice() {
+        let model = OnboardingViewModel()
+        model.toggleVice("alcohol")
+        model.toggleVice("smoking")
+        model.reasonText = "For my health"
+        let added = model.draftsToAdd(
+            now: date(2026, 10, 28, 15),
+            calendar: .testNY,
+            existing: [(name: "Alcohol", habitType: .vice)]
+        )
+        XCTAssertEqual(added.map(\.name), ["Smoking"])
+        XCTAssertEqual(added.first?.firstReason, "For my health")
+    }
+
     func testHabitOnlySkipsVicePages() {
         let model = OnboardingViewModel()
         model.chooseHabitsOnly()
