@@ -26,7 +26,7 @@ Status legend: `[ ]` todo · `[x]` done
 - [x] Build 8 archived and in TestFlight (Xcode Cloud run 7)
 - [x] Commit #14 and bump to build 9. Build 8 still has the old onboarding line.
 - [x] Push `main` and archive build 9. Xcode Cloud Release run 8 (`62072743-4553-46a3-942e-54a6577e37ad`) succeeded, then the App Store export rewrote the build number to 8. TestFlight still has build 8.
-- [ ] Archive again so TestFlight gets build 9, including the introduction review fixes.
+- [x] Archive again so TestFlight gets build 9, including the introduction review fixes. Xcode Cloud Release run 9 (`43171651-b3e4-49ff-ac98-47acc82ba01d`).
 - [x] Recapture and upload the iPhone 6.9" and iPad 13" sets (2026-11-04). Duo still needs a Device Hub pose control — [`app-store-copy.md`](app-store-copy.md#iphone-duo-badge)
 - [x] Tests for legacy backup fixtures and crisis resources.
 - [ ] Optional: Accessibility, Architecture, and Code smells lanes — [Pending lanes](../../ongoing/1.0.0-review-fixes.md#pending-lanes)
