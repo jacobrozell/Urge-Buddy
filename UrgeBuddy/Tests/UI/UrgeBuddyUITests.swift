@@ -29,6 +29,43 @@ final class UrgeBuddyUITests: UrgeBuddyUITestCase {
         XCTAssertTrue(banner.waitForNonExistence(timeout: 6))
     }
 
+    func testVoiceOverTodayAndCheckIn() {
+        launchApp()
+        let alcohol = app.buttons.matching(
+            NSPredicate(format: "identifier BEGINSWITH 'today.viceCard.' AND label BEGINSWITH 'Alcohol'")
+        )
+        XCTAssertEqual(alcohol.count, 1)
+        let card = alcohol.firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 8))
+        XCTAssertTrue(card.label.contains("days free"), card.label)
+        XCTAssertTrue(card.label.contains("hour") || card.label.contains("minute"), card.label)
+
+        let dismiss = app.buttons["today.urgeSurfing.dismiss"]
+        XCTAssertTrue(dismiss.waitForExistence(timeout: 4))
+        XCTAssertGreaterThanOrEqual(dismiss.frame.width, 44, dismiss.debugDescription)
+        XCTAssertGreaterThanOrEqual(dismiss.frame.height, 44, dismiss.debugDescription)
+
+        let smoking = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'today.cutBackCard.'")).firstMatch
+        XCTAssertTrue(smoking.waitForExistence(timeout: 4))
+        XCTAssertGreaterThanOrEqual(smoking.frame.height, 44, smoking.debugDescription)
+
+        let toggles = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'today.habitToggle.'"))
+        XCTAssertGreaterThan(toggles.count, 0)
+        for index in 0..<toggles.count {
+            let toggle = toggles.element(boundBy: index)
+            XCTAssertGreaterThanOrEqual(toggle.frame.width, 44, toggle.debugDescription)
+            XCTAssertGreaterThanOrEqual(toggle.frame.height, 44, toggle.debugDescription)
+        }
+
+        let banner = app.buttons["today.checkInBanner"]
+        banner.tap()
+        let free = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH 'checkIn.free.'")).firstMatch
+        XCTAssertTrue(free.waitForExistence(timeout: 4))
+        XCTAssertFalse(accessibilityLine(free).contains("Selected"), accessibilityLine(free))
+        free.tap()
+        XCTAssertTrue(accessibilityLine(free).contains("Selected"), accessibilityLine(free))
+    }
+
     func testCutBackStepperLogsOneMore() {
         launchApp()
         let stepper = app.otherElements.matching(NSPredicate(format: "identifier BEGINSWITH 'today.cutBackStepper.'")).firstMatch
@@ -128,6 +165,7 @@ final class UrgeBuddyUITests: UrgeBuddyUITestCase {
         sos.tap()
         app.buttons["Alcohol"].tap()
         app.buttons["urge.intensity.3"].tap()
+        app.buttons["urge.writeItDown"].tap()
         let field = app.textFields["urge.journal"].exists ? app.textFields["urge.journal"] : app.textViews["urge.journal"]
         XCTAssertTrue(field.waitForExistence(timeout: 4))
         field.tap()
@@ -365,5 +403,10 @@ final class UrgeBuddyUITests: UrgeBuddyUITestCase {
             RunLoop.current.run(until: Date().addingTimeInterval(0.2))
         }
         XCTFail("Missing confirmation \(title)")
+    }
+
+    /// First line of the snapshot. The rest of `debugDescription` includes other elements, such as the selected tab.
+    private func accessibilityLine(_ element: XCUIElement) -> String {
+        String(element.debugDescription.split(separator: "\n", maxSplits: 1).first ?? "")
     }
 }

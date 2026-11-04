@@ -86,7 +86,7 @@ The agent proceeds with the **Default** unless the owner has written something d
 | D10 | Version | **Stays 1.0.0** (never shipped). Build number continues from **6**. | |
 | D11 | Monetization | **Free**, no IAP (existing decision) | |
 | D12 | Telemetry | **None** | |
-| D13 | Live clock granularity | **Minutes** (`12d 4h 13m`). Calmer than a seconds ticker. | |
+| D13 | Live clock granularity | **Minutes** (`4h 13m into day 13`). The day count stays on the "days free" line. Calmer than a seconds ticker. | |
 
 ---
 
@@ -127,7 +127,7 @@ Entry points into the **Urge** flow: the Today button, the home-screen quick act
 │ ┌──────────────────────────────────┐ │
 │ │ [wineglass]  Alcohol           › │ │  ViceCard; chevron means it opens
 │ │ 12 days free                     │ │  big rounded number
-│ │ 12d 4h 13m  ·  $96 saved         │ │  live (TimelineView, minute)
+│ │ 4h 13m into day 13 · $96 saved   │ │  live (TimelineView, minute)
 │ │ ● ● ● ○ ● ● ◐                    │ │  ●confirmed ○presumed ◐today ▲slip
 │ │ M T W T F S S                    │ │  weekday initials under the dots
 │ │ Next milestone: 14 days (2 days) │ │
@@ -202,6 +202,7 @@ Having an urge right now? →            (closes this sheet, opens Urge, then br
    - **Your why** card: a short quote for each reason. Swipe between them (or a list under Reduce Motion).
    - **Your plan** card, if `ifThenPlan` is set: "When I feel the urge, I will: …"
    - **Try one instead:** each habit is a row with its icon and an open circle. Tapping marks it done today (the circle fills, plus a haptic). Tap again to clear it. A field on the card adds another habit. It shows up in the list immediately and on Today. A name that is already there is not added again.
+   - **Write it down** is a button. Tapping it opens the note field and the keyboard. The field stays open once there is text.
    - Buttons: **[The urge passed]** (primary) and **[I slipped]** (secondary, plain text style). In portrait they stay pinned under the scroll view, inside the readable column, so the journal field is never covered. In landscape (short height) they stay at the end of the support column. They hide once "I slipped" opens the journal confirm step. The X in the corner asks "How did it go?" → passed / slipped / not sure.
    - When the timer hits 0: a soft haptic, the short `urge-timer-done` tone (Mixkit's unlock notification; silent switch wins), and "Still with it? You can add 5 minutes, or check in with yourself." Adding 5 minutes and letting it run out plays the tone again. It does not play when the ride opens already at 0.
 4. **Outcome**
@@ -329,7 +330,8 @@ Finish → create everything in one `RecoveryStore` transaction → land on Toda
 | Key | String |
 |-----|--------|
 | `daysFree(n)` | n == 1 ? "1 day free" : "\(n) days free" |
-| `clock(d,h,m)` | d > 0 ? "\(d)d \(h)h \(m)m" : h > 0 ? "\(h)h \(m)m" : m > 0 ? "\(m)m" : "Just started" |
+| `clock(d,h,m)` | all zero ? "Just started" : time empty ? "Into day \(d+1)" : "\(h)h \(m)m into day \(d+1)" (omit a zero hour or minute) |
+| `clockSpoken(d,h,m)` | Same sentences, with "hour"/"hours" and "minute"/"minutes". Accessibility labels only. |
 | `saved(amount)` | "\(currency) saved" (`Decimal.FormatStyle.Currency(code: Locale.current.currency?.identifier ?? "USD")`) |
 | `freeOfLast(free, counted)` | "\(free) of last \(counted) days free" |
 | `habitRun(n)` | n == 1 ? "1-day run" : "\(n)-day run" |
@@ -413,6 +415,6 @@ Custom vices use the verb phrase "do it". **Verify every SF Symbol name** in the
 
 | Field | Value |
 |-------|--------|
-| Last verified | 2026-11-02 |
+| Last verified | 2026-11-04 |
 | Commit | ui-polish |
 

@@ -13,7 +13,18 @@ struct ViceCardModel: Identifiable, Equatable {
     var history: ViceHistory
 
     func clockLine(at now: Date, calendar: Calendar) -> String {
-        let clock = RecoveryCopy.clock(RecoveryMath.currentRunClock(history, now: now, calendar: calendar))
+        line(RecoveryCopy.clock(runClock(at: now, calendar: calendar)), savedText)
+    }
+
+    func spokenClockLine(at now: Date, calendar: Calendar) -> String {
+        line(RecoveryCopy.clockSpoken(runClock(at: now, calendar: calendar)), savedText)
+    }
+
+    private func runClock(at now: Date, calendar: Calendar) -> DateComponents {
+        RecoveryMath.currentRunClock(history, now: now, calendar: calendar)
+    }
+
+    private func line(_ clock: String, _ savedText: String?) -> String {
         if let savedText { return "\(clock) · \(savedText)" }
         return clock
     }

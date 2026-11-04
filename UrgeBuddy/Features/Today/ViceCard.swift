@@ -54,7 +54,7 @@ struct ViceCard: View {
 
     /// Clock is part of the label so VoiceOver reads it on focus, not as a live region.
     private func spoken(at date: Date) -> String {
-        var parts = [model.name, RecoveryCopy.daysFree(model.daysFree), model.clockLine(at: date, calendar: calendar)]
+        var parts = [model.name, RecoveryCopy.daysFree(model.daysFree), model.spokenClockLine(at: date, calendar: calendar)]
         if let nextMilestone = model.nextMilestone { parts.append(nextMilestone) }
         return parts.joined(separator: ", ")
     }

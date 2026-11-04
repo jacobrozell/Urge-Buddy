@@ -24,6 +24,7 @@ struct UrgeFlowView: View {
     @State private var newWhyText = ""
     @State private var newInsteadText = ""
     @State private var timerPinned = false
+    @State private var journalExpanded = false
     @FocusState private var journalFocused: Bool
     @FocusState private var whyFocused: Bool
     @FocusState private var insteadFocused: Bool
@@ -179,6 +180,8 @@ struct UrgeFlowView: View {
             newWhyText = ""
             newInsteadText = ""
             timerPinned = false
+            journalExpanded = false
+            journalFocused = false
             whyFocused = false
             insteadFocused = false
         }
@@ -406,7 +409,7 @@ struct UrgeFlowView: View {
             }
             .padding(Spacing.l)
             .background(Color.tbOnCalm.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
-            journalEditor(model)
+            journalPrompt(model)
             if let plan = selectedMetric?.ifThenPlan, !plan.isEmpty {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(RecoveryCopy.yourPlanPrefix).font(.headline)
@@ -449,6 +452,33 @@ struct UrgeFlowView: View {
         }
     }
 
+    @ViewBuilder
+    private func journalPrompt(_ model: UrgeViewModel) -> some View {
+        if journalExpanded || model.hasJournal {
+            journalEditor(model)
+        } else {
+            Button {
+                journalExpanded = true
+                Task { @MainActor in journalFocused = true }
+            } label: {
+                HStack(spacing: Spacing.m) {
+                    Image(systemName: "square.and.pencil")
+                        .accessibilityHidden(true)
+                    Text(RecoveryCopy.writeItDown)
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .foregroundStyle(Color.tbOnCalm)
+                .padding(Spacing.l)
+                .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .background(Color.tbOnCalm.opacity(0.1), in: RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+            }
+            .buttonStyle(.pressable)
+            .accessibilityIdentifier(AccessibilityIdentifiers.urgeWriteItDown)
+            .accessibilityHint(RecoveryCopy.writeItDownHint)
+        }
+    }
+
     private func journalEditor(_ model: UrgeViewModel, hint: Bool = true) -> some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             Text(RecoveryCopy.writeItDown)
@@ -463,7 +493,7 @@ struct UrgeFlowView: View {
             TextField(
                 "",
                 text: Bindable(model).journalText,
-                prompt: Text(RecoveryCopy.journalPlaceholder).foregroundStyle(Color.tbOnCalm.opacity(0.55)),
+                prompt: Text(RecoveryCopy.journalPlaceholder).foregroundStyle(Color.tbOnCalm.opacity(0.75)),
                 axis: .vertical
             )
             .lineLimit(3...8)
@@ -473,6 +503,7 @@ struct UrgeFlowView: View {
             .background(Color.tbOnCalm.opacity(0.16), in: RoundedRectangle(cornerRadius: Radius.control, style: .continuous))
             .foregroundStyle(Color.tbOnCalm)
             .tint(Color.tbOnCalm)
+            .accessibilityLabel(RecoveryCopy.journalPlaceholder)
             .accessibilityIdentifier(AccessibilityIdentifiers.urgeJournal)
         }
         .padding(Spacing.l)

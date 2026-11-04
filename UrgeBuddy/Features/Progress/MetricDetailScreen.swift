@@ -53,8 +53,9 @@ struct MetricDetailScreen: View {
                 .padding(.bottom, Spacing.l)
             }
         }
-        .contentMargins(.bottom, Spacing.xl, for: .scrollContent)
-        .background(Color.tbBackground.ignoresSafeArea())
+        .verticalTabBarClearance()
+        .tabBarScrollClearance()
+        .background(Color.tbBackground, ignoresSafeAreaEdges: .all)
         .tbNavigationBarBackground()
         .navigationTitle(metric.name)
         .toolbar {
@@ -128,9 +129,11 @@ struct MetricDetailScreen: View {
                         if metric.isQuitting {
                             TimelineView(.periodic(from: .now, by: 60)) { context in
                                 let history = Snapshots.viceHistory(for: metric, entries: entries, calendar: model.calendar)
-                                Text(RecoveryCopy.clock(RecoveryMath.currentRunClock(history, now: context.date, calendar: model.calendar)))
+                                let clock = RecoveryMath.currentRunClock(history, now: context.date, calendar: model.calendar)
+                                Text(RecoveryCopy.clock(clock))
                                     .font(.subheadline)
                                     .foregroundStyle(Color.tbTextSecondary)
+                                    .accessibilityLabel(RecoveryCopy.clockSpoken(clock))
                             }
                         }
                     }

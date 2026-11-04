@@ -124,7 +124,9 @@ struct ProgressScreen: View {
             }
             .listSectionSpacing(.compact)
             .scrollContentBackground(.hidden)
-            .background(Color.tbBackground.ignoresSafeArea())
+            .verticalTabBarClearance()
+            .tabBarScrollClearance()
+            .background(Color.tbBackground, ignoresSafeAreaEdges: .all)
             .tbNavigationBarBackground()
             .navigationTitle("Progress")
             .toolbar {

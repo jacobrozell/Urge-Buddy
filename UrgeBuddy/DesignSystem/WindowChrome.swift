@@ -176,6 +176,63 @@ extension View {
     func verticalTabBarClearance() -> some View {
         modifier(VerticalTabBarClearance())
     }
+
+    /// Extra scroll inset so the last row clears a bottom tab bar.
+    /// Skipped when the bar is on top (iPad) or on the trailing edge (Duo).
+    func tabBarScrollClearance() -> some View {
+        modifier(TabBarScrollClearanceModifier())
+    }
+}
+
+private struct TabBarScrollClearanceModifier: ViewModifier {
+    @Environment(\.horizontalSizeClass) private var horizontal
+    @Environment(\.verticalSizeClass) private var vertical
+
+    func body(content: Content) -> some View {
+        if #available(iOS 27.1, *) {
+            content.modifier(TabBarScrollClearanceOn27(horizontal: horizontal, vertical: vertical))
+        } else {
+            content.contentMargins(
+                .bottom,
+                TabBarScrollClearance.bottomInset(horizontal: horizontal, vertical: vertical, sideBar: false),
+                for: .scrollContent
+            )
+        }
+    }
+}
+
+@available(iOS 27.1, *)
+private struct TabBarScrollClearanceOn27: ViewModifier {
+    @Environment(\.toolbarVerticalEdge) private var toolbarVerticalEdge
+    var horizontal: UserInterfaceSizeClass?
+    var vertical: UserInterfaceSizeClass?
+
+    func body(content: Content) -> some View {
+        content.contentMargins(
+            .bottom,
+            TabBarScrollClearance.bottomInset(
+                horizontal: horizontal,
+                vertical: vertical,
+                sideBar: toolbarVerticalEdge == .trailing
+            ),
+            for: .scrollContent
+        )
+    }
+}
+
+enum TabBarScrollClearance {
+    static let bottom: CGFloat = 64
+
+    /// 64pt under a bottom tab bar. Zero when the bar is on top or on the trailing edge.
+    static func bottomInset(
+        horizontal: UserInterfaceSizeClass?,
+        vertical: UserInterfaceSizeClass?,
+        sideBar: Bool
+    ) -> CGFloat {
+        if sideBar { return 0 }
+        if horizontal == .regular && vertical == .regular { return 0 }
+        return bottom
+    }
 }
 
 private struct VerticalTabBarClearance: ViewModifier {

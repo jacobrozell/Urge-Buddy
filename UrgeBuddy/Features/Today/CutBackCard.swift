@@ -22,6 +22,7 @@ struct CutBackCard: View {
                         .accessibilityHidden(true)
                 }
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                .background(Color.primary.opacity(0.001))
             }
             .buttonStyle(.pressable)
             .accessibilityElement(children: .ignore)

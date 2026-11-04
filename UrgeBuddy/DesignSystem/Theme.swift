@@ -59,6 +59,8 @@ struct ThemePalette {
     var calm: ThemeColor
     /// The lighter corner of the brand mark tile; the tile fades from here to `calm`.
     var markTile: ThemeColor
+    /// Circle on the home-screen icon. Dark-mode `brand` is darker, so the mark keeps this.
+    var iconBrand: ThemeColor
 
     /// Every text-on-fill pair the app draws from this palette. `WCAGContrastTests` checks each one.
     var contrastPairs: [(foreground: UInt32, background: UInt32)] {
@@ -71,13 +73,14 @@ struct ThemePalette {
     }
 
     static let teal = ThemePalette(
-        brand: ThemeColor(light: 0x0F766E, dark: 0x2DD4BF),
-        brandSoft: ThemeColor(light: 0xCCFBF1, dark: 0x134E4A),
+        brand: ThemeColor(light: 0x0F766E, dark: 0x14B8A6),
+        brandSoft: ThemeColor(light: 0xCCFBF1, dark: 0x0F3D3A),
         onBrand: ThemeColor(light: 0xFFFFFF, dark: 0x042F2E),
         habit: ThemeColor(light: 0x047857, dark: 0x34D399),
         habitSoft: ThemeColor(light: 0xD1FAE5, dark: 0x064E3B),
         calm: ThemeColor(0x0C3532),
-        markTile: ThemeColor(0x13534E)
+        markTile: ThemeColor(0x13534E),
+        iconBrand: ThemeColor(0x2DD4BF)
     )
 }
 

@@ -143,10 +143,18 @@ fi
 echo "→ Installing app…"
 xcrun simctl install "$SIM_UDID" "$APP_PATH"
 
+# seedIfEmpty keeps the first store. Cut back needs an empty store of its own.
+reset_app() {
+  xcrun simctl uninstall "$SIM_UDID" "$BUNDLE_ID" >/dev/null 2>&1 || true
+  xcrun simctl install "$SIM_UDID" "$APP_PATH"
+}
+
+reset_app
 capture_one "01-today" "${MARKETING_ARGS[@]}"
 capture_one "02-urge-ride" "${MARKETING_ARGS[@]}" -urge_ride
 capture_one "03-slip-summary" "${MARKETING_ARGS[@]}" -slip_summary
 capture_one "04-progress-detail" "${MARKETING_ARGS[@]}" -tab_progress -open_first_detail
+reset_app
 capture_one "05-cut-back" "${CUTBACK_ARGS[@]}"
 
 echo ""

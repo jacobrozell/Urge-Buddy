@@ -20,7 +20,7 @@ struct BrandMark: View {
                     )
                 )
             Circle()
-                .fill(palette.brand.darkColor)
+                .fill(palette.iconBrand.darkColor)
                 .frame(width: radius * 2, height: radius * 2)
                 .offset(x: -offset)
             Circle()

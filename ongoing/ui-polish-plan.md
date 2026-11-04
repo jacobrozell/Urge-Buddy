@@ -625,10 +625,10 @@ These came up in the review but change the brand or product. **Implementers: ski
 
 | # | Question | Notes |
 |---|----------|-------|
-| A | **Dark-mode brand is very bright.** The check-in banner and SOS button are large flat fills of `#2DD4BF` on near-black. Tone it down (for example `#14B8A6`), or use `BrandSoft` fills with `Brand` text in dark? | Palette change. Must re-run `WCAGContrastTests` and update §8.1. |
+| A | ~~**Dark-mode brand is very bright.**~~ Done 2026-11-04: dark `Brand` is `#14B8A6` and dark `BrandSoft` is `#0F3D3A`. The mark keeps `#2DD4BF` so it matches the icon. | |
 | B | ~~**Brand mark reads as "sync".**~~ Done 2026-11-03: the app icon and `BrandMark` are both the teal two overlapping circles. Re-render the icon with `Scripts/render-app-icon.sh`. | |
-| C | **Run clock repeats the days.** The card says "9 days free" and then "9d 4h 12m · $176 saved". Drop the days from the clock line ("4h 12m into day 10"), or keep it? | Copy and tests in `RecoveryCopyTests`. |
-| D | **Collapse the urge journal** behind a "Write it down" button to shorten the ride screen further. | Would change the urge journal UI tests. |
+| C | ~~**Run clock repeats the days.**~~ Done 2026-11-04: the clock line is "4h 12m into day 10". |
+| D | ~~**Collapse the urge journal** behind a "Write it down" button.~~ Done 2026-11-04. | |
 | E | **Re-upload screenshots.** Phase 10 regenerates them; uploading to App Store Connect is yours. | |
 
 ---
@@ -642,5 +642,5 @@ Implementers: add anything you noticed but didn't fix here, with file and line.
 - Reasons and plan fields on metric detail sit on a `Surface` card, so they use `TBFieldStyle(fill: .tbSurfaceMuted)`. The other fields stay `Surface` on `Background`.
 - The settings spec line (Time disabled while reminders are off) is in the onboarding/celebration commit. The settings code commit had already landed.
 - Pinning the urge buttons with `safeAreaInset` left the journal field under the bar, so the journal UI test could not focus it. The buttons sit in a `VStack` under the scroll view instead. Content does not scroll behind them.
-- Settings' last rows (Import, Delete all data) sit under the tab bar on iPhone 17.
+- Settings' last rows sat under the tab bar on iPhone 17. Fixed 2026-11-04 with `tabBarScrollClearance()` (64pt) and a background that does not expand the list into the safe area. Progress and Get help now use the same inset.
 - No launch argument opens the celebration sheet or an unanswered yesterday, so those were checked in code. Reduce Motion and VoiceOver were not run live.

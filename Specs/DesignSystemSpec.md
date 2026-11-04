@@ -23,15 +23,16 @@ Accent colors come from one hue family per theme, defined in code in `DesignSyst
 
 | Token | Light | Dark | Use |
 |-------|-------|------|-----|
-| `Brand` | `#0F766E` | `#2DD4BF` | Free state, primary buttons, tint |
-| `BrandSoft` | `#CCFBF1` | `#134E4A` | Presumed-free cells, soft fills |
+| `Brand` | `#0F766E` | `#14B8A6` | Free state, primary buttons, tint. Dark is deeper so large fills are not neon |
+| `BrandSoft` | `#CCFBF1` | `#0F3D3A` | Presumed-free cells, soft fills |
+| `IconBrand` | `#2DD4BF` | `#2DD4BF` | `BrandMark` circle only, so the mark matches the home-screen icon |
 | `OnBrand` | `#FFFFFF` | `#042F2E` | Text on `Brand` fills |
 | `Habit` | `#047857` | `#34D399` | Habit done. A neighbor of `Brand`, not a second hue |
 | `HabitSoft` | `#D1FAE5` | `#064E3B` | Habit soft fills |
 | `Calm` | `#0C3532` | `#0C3532` | Urge flow background: a deep shade of `Brand` (white text on top) |
 | `MarkTile` | `#13534E` | `#13534E` | Lighter corner of the `BrandMark` tile, fading to `Calm` |
 
-`AccentColor` (asset) = teal `Brand`. The app icon and `BrandMark` are two overlapping circles (`Brand` and `Habit` dark values, `BrandSoft` light where they cross) on a `MarkTile`→`Calm` tile, the same in both appearances. Re-render the icon with `Scripts/render-app-icon.sh`, then `Scripts/generate-app-icons.sh`. `LaunchBackground` = `Background`. Expose every token as `Color.tb…` in `Palette.swift`. Don't use any raw colors in views.
+`AccentColor` (asset) = teal `Brand`. The app icon and `BrandMark` are two overlapping circles (`IconBrand` and `Habit` dark values, `BrandSoft` light where they cross) on a `MarkTile`→`Calm` tile, the same in both appearances. Dark-mode `Brand` is `#14B8A6`, not the icon teal. Re-render the icon with `Scripts/render-app-icon.sh`, then `Scripts/generate-app-icons.sh`. `LaunchBackground` = `Background`. Expose every token as `Color.tb…` in `Palette.swift`. Don't use any raw colors in views.
 
 Cards use `cardSurface()` (or `Card`), which fills the column so cards stacked together share both edges. On a phone in landscape, `ReadableColumn` fills the width, and Today's urge button moves into the nav bar.
 
@@ -98,7 +99,7 @@ Three layout signals (see `DesignSystem/AdaptiveLayout.swift`):
 
 - The app's own windows are painted with the Background color, and screen backgrounds ignore the safe area, so the trailing status-bar edge is not white. Keyboard and input windows are left alone. If a presentation leaves the screen transparent, the content is restored after that presentation has finished.
 - On iOS 26 and later, navigation bars use `containerBackground` instead of an opaque toolbar fill. Liquid Glass would otherwise leave a white strip.
-- The Today SOS control spans the same wide column as the cards above it. On a phone in landscape it moves into the nav bar (leading, with its words). When the tab bar is vertical (`toolbarVerticalEdge == .trailing`), it spans the full content column and leaves 64pt clear of that bar. Today's content sits in the same wide readable column (text width when empty) and keeps the same 64pt clear (`verticalTabBarClearance()`), so the cards, sections, and SOS control share both edges. Size that column from the width the scroll view proposes. Do not pin it with `containerRelativeFrame`: on Duo that container includes the off-screen region and clips the leading edge. Settings and crisis lists use the same 64pt trailing clearance so rows stay off the vertical bar.
+- The Today SOS control spans the same wide column as the cards above it. On a phone in landscape it moves into the nav bar (leading, with its words). When the tab bar is vertical (`toolbarVerticalEdge == .trailing`), it spans the full content column and leaves 64pt clear of that bar. Today's content sits in the same wide readable column (text width when empty) and keeps the same 64pt clear (`verticalTabBarClearance()`), so the cards, sections, and SOS control share both edges. Size that column from the width the scroll view proposes. Do not pin it with `containerRelativeFrame`: on Duo that container includes the off-screen region and clips the leading edge. Settings, Progress, crisis, and metric detail use the same 64pt trailing clearance so rows stay off the vertical bar. Those screens add 64pt of bottom scroll margin (`tabBarScrollClearance()`) only while a bottom tab bar covers them: not on iPad, and not when the Duo bar is on the trailing edge. Their background uses `background(_:ignoresSafeAreaEdges:)` so the list does not expand under the bar.
 - The urge Close control stays leading on iPhone and moves to the trailing edge with the vertical bar.
 
 **Rules:** No `UIDevice` / `UIScreen` in app code. Keep `@State` on screen structs across layout branches. Preserve accessibility identifiers when moving controls to the toolbar.
@@ -110,6 +111,6 @@ Three layout signals (see `DesignSystem/AdaptiveLayout.swift`):
 
 | Field | Value |
 |-------|--------|
-| Last verified | 2026-11-02 |
+| Last verified | 2026-11-04 |
 | Commit | ui-polish |
 

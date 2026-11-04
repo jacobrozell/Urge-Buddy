@@ -21,12 +21,16 @@ final class RecoveryCopyTests: XCTestCase {
     }
 
     func testClockFormats() {
-        XCTAssertEqual(RecoveryCopy.clock(days: 12, hours: 4, minutes: 13), "12d 4h 13m")
-        XCTAssertEqual(RecoveryCopy.clock(days: 6, hours: 0, minutes: 0), "6d")
-        XCTAssertEqual(RecoveryCopy.clock(days: 9, hours: 0, minutes: 40), "9d 40m")
-        XCTAssertEqual(RecoveryCopy.clock(days: 0, hours: 3, minutes: 0), "3h 0m")
-        XCTAssertEqual(RecoveryCopy.clock(days: 0, hours: 0, minutes: 6), "6m")
+        XCTAssertEqual(RecoveryCopy.clock(days: 12, hours: 4, minutes: 13), "4h 13m into day 13")
+        XCTAssertEqual(RecoveryCopy.clock(days: 6, hours: 0, minutes: 0), "Into day 7")
+        XCTAssertEqual(RecoveryCopy.clock(days: 9, hours: 0, minutes: 40), "40m into day 10")
+        XCTAssertEqual(RecoveryCopy.clock(days: 0, hours: 3, minutes: 0), "3h into day 1")
+        XCTAssertEqual(RecoveryCopy.clock(days: 0, hours: 0, minutes: 6), "6m into day 1")
         XCTAssertEqual(RecoveryCopy.clock(days: 0, hours: 0, minutes: 0), "Just started")
+        XCTAssertEqual(RecoveryCopy.clockSpoken(days: 12, hours: 4, minutes: 13), "4 hours 13 minutes into day 13")
+        XCTAssertEqual(RecoveryCopy.clockSpoken(days: 12, hours: 1, minutes: 1), "1 hour 1 minute into day 13")
+        XCTAssertEqual(RecoveryCopy.clockSpoken(days: 6, hours: 0, minutes: 0), "Into day 7")
+        XCTAssertEqual(RecoveryCopy.clockSpoken(days: 0, hours: 0, minutes: 0), "Just started")
     }
 
     func testSavedFormattingUsesEnUSCurrency() {
@@ -69,7 +73,7 @@ final class RecoveryCopyTests: XCTestCase {
         components.day = 1
         components.hour = 2
         components.minute = 3
-        XCTAssertEqual(RecoveryCopy.clock(components), "1d 2h 3m")
+        XCTAssertEqual(RecoveryCopy.clock(components), "2h 3m into day 2")
     }
 
     func testSlipSummaryIncludesSavingsWhenPresent() {

@@ -15,6 +15,7 @@ struct AmountStepper: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(label)
             .accessibilityValue(RecoveryCopy.amountUnit(value, unit: unit))
+            .accessibilityAddTraits(.isButton)
             .accessibilityAdjustableAction { direction in
                 switch direction {
                 case .increment: onChange(value + step)

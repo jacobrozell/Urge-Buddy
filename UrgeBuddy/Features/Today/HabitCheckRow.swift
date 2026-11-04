@@ -58,6 +58,7 @@ struct HabitCheckRow: View {
                 }
             }
             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .background(Color.primary.opacity(0.001))
         }
         .buttonStyle(.pressable)
         .accessibilityLabel(rowLabel)
@@ -68,7 +69,10 @@ struct HabitCheckRow: View {
             Image(systemName: model.isDoneToday ? "checkmark.circle.fill" : "circle")
                 .font(.title2)
                 .foregroundStyle(model.isDoneToday ? Color.tbHabit : Color.tbTextSecondary)
-                .frame(minWidth: 44, minHeight: 44)
+                .accessibilityHidden(true)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+                .background(Color.primary.opacity(0.001))
                 .contentTransition(.symbolEffect(.replace))
                 .symbolEffect(.bounce, value: reduceMotion ? false : model.isDoneToday)
         }
@@ -90,9 +94,12 @@ struct HabitCheckRow: View {
                 Image(systemName: model.isDoneToday ? "checkmark" : "plus")
                     .font(.subheadline.weight(.bold))
                     .foregroundStyle(model.isDoneToday ? Color.tbHabit : Color.tbTextSecondary)
+                    .accessibilityHidden(true)
             }
             .frame(width: 30, height: 30)
-            .frame(minWidth: 44, minHeight: 44)
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
+            .background(Color.primary.opacity(0.001))
         }
         .buttonStyle(.pressable)
         .contextMenu {

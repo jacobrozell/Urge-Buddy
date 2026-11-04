@@ -8,17 +8,17 @@
 |-------|-------|
 | **App Store name** | Urge Buddy |
 | **Subtitle** | Quit vices. Build habits. |
-| **Stage** | **Release prep** — never shipped |
+| **Stage** | **Release prep** — version 1.0.0 ready to submit, not submitted |
 | **Latest submitted** | — |
 | **Latest shipped (App Store)** | — |
-| **Repo version** | 1.0.0 (10), Xcode Cloud run 10 |
+| **Repo version** | 1.0.0 (11). Connect still has build 10 selected until 11 finishes processing |
 | **Active branch** | `main` |
 | **Platform** | iOS 18+ — iPhone and iPad, portrait and landscape |
 | **Monetization** | Free, no IAP |
 
 ## Current focus
 
-**Xcode Cloud Release run 10 is archiving 1.0.0 (10) from `main` (`7f57f399-0aa5-40c8-9aef-d8b7c64a03c6`) and is not submitted.** Build 9 is already in TestFlight. The description in App Store Connect now mentions milestone notices. iPhone 6.9", iPad 13", and iPhone Duo screenshots were replaced on 2026-11-04. Duo inner is the portrait 2007×2853 set. Finishing See the introduction now saves the check-in time, reminder and lock choices, and any new vices or habits. What's New waits until the first release is live. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
+**Version 1.0.0 is Prepare for Submission.** Build 11 is the archive that includes the pre-submit polish: tab-bar clearance, the darker dark-mode brand, the run clock line, and the collapsed urge journal. Build 10 stays selected until 11 is processed. Age rating is 13+. Copy, screenshots, review notes, and App Privacy (Data Not Collected) are done in Connect. The physical iPhone pass is done, and the 7-day dogfood is waived for this submit. What's New waits until the first release is live. Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
 
 The app has never shipped. Build 5 was archived on 2026-06-22 and never uploaded. There is no production data to migrate.
 
@@ -31,6 +31,8 @@ The app has never shipped. Build 5 was archived on 2026-06-22 and never uploaded
 | 1.0.0 | 7 | 2026-11-02 | TestFlight | Xcode Cloud run 6. Not submitted. |
 | 1.0.0 | 8 | 2026-11-02 | TestFlight | Xcode Cloud run 7 (`e4de4fd6-f3ec-483f-9d20-19bc3b9195b0`). Not submitted. |
 | 1.0.0 | 9 | 2026-11-04 | Repo | Xcode Cloud run 8 archived this number, then the export uploaded it as build 8. Not in TestFlight as 9. |
+| 1.0.0 | 10 | 2026-11-04 | TestFlight | Xcode Cloud run 10. Selected in Connect until build 11 is processed. |
+| 1.0.0 | 11 | 2026-11-04 | Repo | Pre-submit polish. Archive in progress. |
 
 ## Key docs
 

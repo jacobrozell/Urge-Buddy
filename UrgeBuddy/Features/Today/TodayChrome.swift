@@ -26,7 +26,6 @@ struct CheckInBanner: View {
                     }
                     Text(subtitle)
                         .font(.subheadline)
-                        .opacity(0.85)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 Image(systemName: "chevron.right")
@@ -138,7 +137,10 @@ struct YesterdayPrompt: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Button(action: onDismiss) {
                     Image(systemName: "xmark")
-                        .frame(minWidth: 44, minHeight: 44)
+                        .accessibilityHidden(true)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                        .background(Color.primary.opacity(0.001))
                 }
                 .buttonStyle(.pressable)
                 .accessibilityLabel(RecoveryCopy.dismiss)
@@ -193,10 +195,14 @@ struct UrgeSurfingRow: View {
             Button(action: onDismiss) {
                 Image(systemName: "xmark")
                     .font(.subheadline.weight(.semibold))
-                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityHidden(true)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+                    .background(Color.primary.opacity(0.001))
             }
             .buttonStyle(.pressable)
             .accessibilityLabel(RecoveryCopy.dismiss)
+            .accessibilityIdentifier(AccessibilityIdentifiers.todayUrgeSurfingDismiss)
             .foregroundStyle(Color.tbTextSecondary)
             .padding(.top, Spacing.xs)
             .padding(.trailing, Spacing.xs)
@@ -220,9 +226,12 @@ struct SOSToolbarButton: View {
             }
             .font(.subheadline.weight(.semibold))
             .lineLimit(1)
+            .foregroundStyle(Color.tbOnBrand)
+            .padding(.horizontal, Spacing.m)
+            .frame(minHeight: 44)
+            .background(Color.tbBrand, in: Capsule())
         }
-        .buttonStyle(.borderedProminent)
-        .tint(Color.tbBrand)
+        .buttonStyle(.pressable)
         .accessibilityLabel(RecoveryCopy.sosButton)
         .accessibilityIdentifier(AccessibilityIdentifiers.todaySOSButton)
     }

@@ -1,7 +1,7 @@
 # Urge Buddy — App Store copy (1.0)
 
 **Last updated:** 2026-11-04
-**Status:** Description pasted into App Store Connect on 2026-11-04 (the reminder bullet now mentions milestone notices). What's New is not accepted until the first release is live. Age rating result is still blank until the questionnaire is submitted.
+**Status:** Description pasted into App Store Connect on 2026-11-04 (the reminder bullet now mentions milestone notices). What's New is not accepted until the first release is live. Age rating questionnaire submitted 2026-11-04: **13+**.
 **Monetization:** Free. No IAP.
 
 Store copy follows the app. An urge is a wave that crests and fades. Most pass in a few minutes. Some take longer. The ride timer starts at 5 minutes, and the user can add 5. Do not cite a study, name a clinician, or promise that an urge ends in a set number of minutes.
@@ -66,7 +66,7 @@ First release. Check in once a day, surf an urge when it hits, and quit or cut b
 
 ### Age rating notes
 
-Expect 13+. Answer:
+Connect result, 2026-11-04: **13+**. Answers:
 
 - Alcohol, Tobacco, or Drug Use or References: Infrequent (preset names only; no pictures of use)
 - Medical or Treatment Information: Infrequent (the withdrawal warning and crisis links)
@@ -76,8 +76,6 @@ Expect 13+. Answer:
 - Sexual Content or Nudity, and Graphic Sexual Content: None
 - Unrestricted web access, user-generated content, messaging, social, and ads: None
 
-Record the Connect result here after the questionnaire is submitted.
-
 App Privacy: Data Not Collected. The app uses no non-exempt encryption.
 
 ### Claims to avoid
@@ -86,17 +84,17 @@ Do not say "treats", "cures", or "clinically proven". Say "self-help", "track", 
 
 ## Screenshots
 
-Five light portrait scenes, no frames and no caption overlays. Capture with `Scripts/capture-marketing-screenshots.sh` and `Scripts/capture-duo-marketing-screenshots.sh`.
+Five light scenes, no frames and no caption overlays. iPhone and iPad are portrait. The Duo inner display is landscape. Capture with `Scripts/capture-marketing-screenshots.sh` and `Scripts/capture-duo-marketing-screenshots.sh`.
 
 | Slot | Pixels | Device |
 |------|--------|--------|
 | iPhone 6.9" | 1320×2868 | iPhone 17 Pro Max |
 | iPad 13" | 2064×2752 | iPad Pro 13-inch |
 | iPhone Duo outer | 1398×2034 | folded |
-| iPhone Duo inner | 2007×2853 | open, portrait |
+| iPhone Duo inner | 2853×2007 | open, landscape |
 
 Order: Today, urge ride, slip summary, progress detail, cut back.
 
 ## iPhone Duo badge
 
-Uploaded 2026-11-04. iPhone 6.9" (`APP_IPHONE_67`, 5), iPad 13" (`APP_IPAD_PRO_3GEN_129`, 5), and iPhone Duo (`APP_IPHONE_DUO`, 10) were replaced from the current UI. Duo is five outer shots at 1398×2034 and five inner shots at 2007×2853. The open display would not rotate to 2853×2007.
+Uploaded 2026-11-04, after the pre-submit polish. iPhone 6.9" (`APP_IPHONE_67`, 5), iPad 13" (`APP_IPAD_PRO_3GEN_129`, 5), and iPhone Duo (`APP_IPHONE_DUO`, 10) were replaced. Duo is five outer shots at 1398×2034 and five inner shots at 2853×2007.

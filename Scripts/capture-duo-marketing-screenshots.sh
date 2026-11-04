@@ -124,6 +124,7 @@ capture_one() {
     orientation="portrait"
     out_dir="$MARKETING_BASE/iphone-duo/outer/$APPEARANCE/portrait"
   else
+    # Open pose is the wide inner display, 2853×2007.
     display_flag="primary-1"
     expect_w="$INNER_H"
     expect_h="$INNER_W"
@@ -147,8 +148,15 @@ capture_one() {
   verify_size "$out" "$expect_w" "$expect_h"
 }
 
+# seedIfEmpty keeps the first store. Each display, and the cut-back shot, needs an empty store.
+reset_app() {
+  xcrun simctl uninstall "$SIM_UDID" "$BUNDLE_ID" >/dev/null 2>&1 || true
+  xcrun simctl install "$SIM_UDID" "$APP_PATH"
+}
+
 capture_set() {
   local display="$1"
+  reset_app
   capture_one "$display" "01-today" \
     "${MARKETING_ARGS[@]}"
   capture_one "$display" "02-urge-ride" \
@@ -157,6 +165,7 @@ capture_set() {
     "${MARKETING_ARGS[@]}" -slip_summary
   capture_one "$display" "04-progress-detail" \
     "${MARKETING_ARGS[@]}" -tab_progress -open_first_detail
+  reset_app
   capture_one "$display" "05-cut-back" \
     "${CUTBACK_ARGS[@]}"
 }
@@ -208,4 +217,4 @@ echo "Done. Duo screenshots:"
 find "$MARKETING_BASE/iphone-duo" -name '*.png' | sort
 echo ""
 echo "Upload outer PNGs to Connect → iPhone Duo (outer display) 1398×2034 portrait"
-echo "Upload inner PNGs to Connect → iPhone Duo (inner display) 2853×2007 landscape (Open pose)"
+echo "Upload inner PNGs to Connect → iPhone Duo (inner display) 2853×2007 landscape"

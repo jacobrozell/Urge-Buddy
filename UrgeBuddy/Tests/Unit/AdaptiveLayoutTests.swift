@@ -43,6 +43,13 @@ final class AdaptiveLayoutTests: XCTestCase {
         XCTAssertFalse(AdaptiveLayout.usesTwoColumns(width: 519, dynamicType: .large, minimumWidth: AdaptiveLayout.shortHeightColumnMinWidth))
     }
 
+    func testTabBarBottomInsetSkipsTopAndSideBars() {
+        XCTAssertEqual(TabBarScrollClearance.bottomInset(horizontal: .compact, vertical: .regular, sideBar: false), 64)
+        XCTAssertEqual(TabBarScrollClearance.bottomInset(horizontal: .regular, vertical: .compact, sideBar: false), 64)
+        XCTAssertEqual(TabBarScrollClearance.bottomInset(horizontal: .regular, vertical: .regular, sideBar: false), 0)
+        XCTAssertEqual(TabBarScrollClearance.bottomInset(horizontal: .compact, vertical: .regular, sideBar: true), 0)
+    }
+
     func testBreathingDiameter() {
         XCTAssertEqual(AdaptiveLayout.breathingDiameter(vertical: .compact), 180)
         XCTAssertEqual(AdaptiveLayout.breathingDiameter(vertical: .regular), 280)

@@ -9,20 +9,38 @@ enum RecoveryCopy {
         count == 1 ? "day" : "days"
     }
 
+    /// Hours and minutes into the current day. The day count already shows as "N days free".
     static func clock(days: Int, hours: Int, minutes: Int) -> String {
-        if days > 0 {
-            var parts = ["\(days)d"]
-            if hours > 0 { parts.append("\(hours)h") }
-            if minutes > 0 { parts.append("\(minutes)m") }
-            return parts.joined(separator: " ")
-        }
-        if hours > 0 { return "\(hours)h \(minutes)m" }
-        if minutes > 0 { return "\(minutes)m" }
-        return "Just started"
+        if days == 0 && hours == 0 && minutes == 0 { return "Just started" }
+        let intoDay = days + 1
+        var parts: [String] = []
+        if hours > 0 { parts.append("\(hours)h") }
+        if minutes > 0 { parts.append("\(minutes)m") }
+        let time = parts.joined(separator: " ")
+        if time.isEmpty { return "Into day \(intoDay)" }
+        return "\(time) into day \(intoDay)"
+    }
+
+    /// Same meaning as `clock`, with hours and minutes spelled out for VoiceOver.
+    static func clockSpoken(days: Int, hours: Int, minutes: Int) -> String {
+        if days == 0 && hours == 0 && minutes == 0 { return "Just started" }
+        let intoDay = days + 1
+        var parts: [String] = []
+        if hours == 1 { parts.append("1 hour") }
+        else if hours > 0 { parts.append("\(hours) hours") }
+        if minutes == 1 { parts.append("1 minute") }
+        else if minutes > 0 { parts.append("\(minutes) minutes") }
+        let time = parts.joined(separator: " ")
+        if time.isEmpty { return "Into day \(intoDay)" }
+        return "\(time) into day \(intoDay)"
     }
 
     static func clock(_ components: DateComponents) -> String {
         clock(days: components.day ?? 0, hours: components.hour ?? 0, minutes: components.minute ?? 0)
+    }
+
+    static func clockSpoken(_ components: DateComponents) -> String {
+        clockSpoken(days: components.day ?? 0, hours: components.hour ?? 0, minutes: components.minute ?? 0)
     }
 
     static func money(_ amount: Decimal, locale: Locale = .current) -> String {
