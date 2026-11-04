@@ -63,6 +63,7 @@ struct RootView: View {
                 dismissCoverForLock()
             }
             guard phase == .active else { return }
+            appLock.refreshCapabilities()
             do {
                 try RecoveryStore(context: modelContext).resolveAbandonedUrges()
             } catch {

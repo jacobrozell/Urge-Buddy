@@ -1,6 +1,14 @@
 import Foundation
 import Observation
 
+enum MetricNames {
+    /// Same comparison the urge sheet uses when it checks for a name already saved.
+    static func same(_ existing: String, _ candidate: String) -> Bool {
+        existing.trimmingCharacters(in: .whitespacesAndNewlines)
+            .localizedCaseInsensitiveCompare(candidate.trimmingCharacters(in: .whitespacesAndNewlines)) == .orderedSame
+    }
+}
+
 struct OnboardingChoice: Identifiable, Equatable {
     var id: String
     var name: String
@@ -62,19 +70,37 @@ final class OnboardingViewModel {
     var acceptedDisclaimer = false
     var pageIndex = 0
     var lockAvailable = true
+    /// Names already saved, including archived ones. Review mode sets this so quit-date pages are skipped.
+    var trackedNames: [(name: String, habitType: HabitType)] = []
 
     private let maxChoices = 3
 
     var pages: [Page] {
         var result: [Page] = [.welcome, .urgeSurfing, .chooseVices]
         if !habitOnly {
-            result.append(contentsOf: viceChoices.map { .viceWhen($0.id) })
-            result.append(.why)
+            let asking = vicesToAsk
+            result.append(contentsOf: asking.map { .viceWhen($0.id) })
+            // First run still includes the why page before a vice is picked. Review drops it when every picked name is already tracked.
+            if trackedNames.isEmpty || !asking.isEmpty { result.append(.why) }
         }
         result.append(contentsOf: [.habits, .reminders])
         if lockAvailable { result.append(.privacy) }
         result.append(.disclaimer)
         return result
+    }
+
+    /// Vices the quit-date, cost, and cut-back pages still apply to. A name already tracked is left alone.
+    var vicesToAsk: [OnboardingChoice] {
+        viceChoices.filter { !isAlreadyTracked($0.name, habitType: .vice) }
+    }
+
+    func isAlreadyTracked(_ name: String, habitType: HabitType) -> Bool {
+        trackedNames.contains { $0.habitType == habitType && MetricNames.same($0.name, name) }
+    }
+
+    /// Every saved row, including archived ones. Done uses this list and does not add a second copy.
+    static func namesToMatch(_ metrics: [Metric]) -> [(name: String, habitType: HabitType)] {
+        metrics.map { (name: $0.name, habitType: $0.habitType) }
     }
 
     var page: Page { pages[min(pageIndex, pages.count - 1)] }
@@ -164,7 +190,8 @@ final class OnboardingViewModel {
         pageIndex = min(pages.count - 1, pageIndex + 1)
     }
 
-    /// Drafts whose name is not already tracked for that kind of metric. Matching ignores case.
+    /// Drafts whose name is not already tracked for that kind of metric.
+    /// Matching trims and uses the same comparison as the urge sheet. An archived name still counts.
     func draftsToAdd(
         now: Date,
         calendar: Calendar,
@@ -172,8 +199,7 @@ final class OnboardingViewModel {
     ) -> [OnboardingMetricDraft] {
         var kept = drafts(now: now, calendar: calendar).filter { draft in
             !existing.contains { item in
-                item.habitType == draft.habitType
-                    && item.name.caseInsensitiveCompare(draft.name) == .orderedSame
+                item.habitType == draft.habitType && MetricNames.same(item.name, draft.name)
             }
         }
         let reason = reasonText.trimmingCharacters(in: .whitespacesAndNewlines)

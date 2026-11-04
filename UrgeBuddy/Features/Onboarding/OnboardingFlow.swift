@@ -58,6 +58,7 @@ struct OnboardingFlow: View {
                 model.reminderMinute = Preferences.reminderMinute
                 model.wantsReminders = Preferences.remindersEnabled
                 model.wantsLock = appLock.isEnabled
+                model.trackedNames = trackedNames()
             }
             if LaunchConfiguration.startsOnVices {
                 model.pageIndex = model.pages.firstIndex(of: .chooseVices) ?? model.pageIndex
@@ -222,7 +223,7 @@ struct OnboardingFlow: View {
     }
 
     private var whyTitle: String {
-        guard let first = model.viceChoices.first else { return RecoveryCopy.whyQuitNamed("") }
+        guard let first = model.vicesToAsk.first else { return RecoveryCopy.whyQuitNamed("") }
         return model.detail(for: first.id, now: Date()).mode == .cutBack
             ? RecoveryCopy.whyCutBackNamed(first.name)
             : RecoveryCopy.whyQuitNamed(first.name)
@@ -544,13 +545,21 @@ struct OnboardingFlow: View {
         onFinished()
     }
 
+    /// Names already saved, including archived rows. A failed fetch leaves the list empty so the pages stay.
+    private func trackedNames() -> [(name: String, habitType: HabitType)] {
+        let existing: [Metric]? = persist("load tracked metrics") {
+            try modelContext.fetch(FetchDescriptor<Metric>())
+        }
+        return OnboardingViewModel.namesToMatch(existing ?? [])
+    }
+
     /// Adds vices and habits that are not already tracked, then stores the reminder and lock choices.
     private func finishReview() {
         let existing: [Metric]? = persist("load tracked metrics") {
             try modelContext.fetch(FetchDescriptor<Metric>())
         }
         guard let existing else { return }
-        let names = existing.map { (name: $0.name, habitType: $0.habitType) }
+        let names = OnboardingViewModel.namesToMatch(existing)
         let drafts = model.draftsToAdd(now: Date(), calendar: .current, existing: names)
         guard save(drafts) else { return }
         applyPreferences(refreshReminders: true)

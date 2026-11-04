@@ -838,7 +838,7 @@ struct UrgeFlowView: View {
         let text = newInsteadText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         let alreadyThere = metrics.contains {
-            $0.habitType == .positive && !$0.isArchived && $0.name.localizedCaseInsensitiveCompare(text) == .orderedSame
+            $0.habitType == .positive && !$0.isArchived && MetricNames.same($0.name, text)
         }
         if alreadyThere {
             newInsteadText = ""

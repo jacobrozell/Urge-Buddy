@@ -8,6 +8,8 @@ final class AppLock {
 
     var isLocked: Bool
     var isAuthenticating = false
+    private var biometry: LABiometryType = .none
+    private var ownerAuthenticationAvailable = false
 
     var isEnabled: Bool {
         didSet {
@@ -26,13 +28,19 @@ final class AppLock {
             isEnabled = Preferences.appLockEnabled
             isLocked = Preferences.appLockEnabled
         }
+        refreshCapabilities()
+    }
+
+    /// Reads Face ID, Touch ID, or passcode once. The privacy page and Settings only read the stored result.
+    func refreshCapabilities() {
+        let context = LAContext()
+        ownerAuthenticationAvailable = context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
+        biometry = context.biometryType
     }
 
     var shouldHoldPresentations: Bool { isEnabled && isLocked }
 
-    var isAvailable: Bool {
-        LAContext().canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
-    }
+    var isAvailable: Bool { ownerAuthenticationAvailable }
 
     var lockLabel: String {
         switch biometry {
@@ -46,17 +54,11 @@ final class AppLock {
     /// Symbol and spoken method for the onboarding lock preview.
     var unlockPrompt: (symbol: String, method: String) {
         switch biometry {
-        case .faceID: ("faceid", "Face ID")
-        case .touchID: ("touchid", "Touch ID")
-        case .opticID: ("opticid", "Optic ID")
-        default: ("lock", "your passcode")
+        case .faceID: ("faceid", RecoveryCopy.lockMethodFaceID)
+        case .touchID: ("touchid", RecoveryCopy.lockMethodTouchID)
+        case .opticID: ("opticid", RecoveryCopy.lockMethodOpticID)
+        default: ("lock", RecoveryCopy.lockMethodPasscode)
         }
-    }
-
-    private var biometry: LABiometryType {
-        let context = LAContext()
-        _ = context.canEvaluatePolicy(.deviceOwnerAuthentication, error: nil)
-        return context.biometryType
     }
 
     func lockIfEnabled() {

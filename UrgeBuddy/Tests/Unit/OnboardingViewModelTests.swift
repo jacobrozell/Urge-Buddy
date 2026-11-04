@@ -1,3 +1,4 @@
+import SwiftData
 import XCTest
 @testable import UrgeBuddy
 
@@ -109,6 +110,66 @@ final class OnboardingViewModelTests: XCTestCase {
         )
         XCTAssertEqual(added.map(\.name), ["Smoking"])
         XCTAssertEqual(added.first?.firstReason, "For my health")
+    }
+
+    func testReplaySkipsQuitPagesForANameAlreadyTracked() {
+        let model = OnboardingViewModel()
+        model.trackedNames = [(name: "  alcohol ", habitType: .vice)]
+        model.toggleVice("alcohol")
+        model.toggleVice("smoking")
+        XCTAssertEqual(model.vicesToAsk.map(\.name), ["Smoking"])
+        XCTAssertFalse(model.pages.contains(.viceWhen("alcohol")))
+        XCTAssertTrue(model.pages.contains(.viceWhen("smoking")))
+        XCTAssertTrue(model.pages.contains(.why))
+    }
+
+    func testReplaySkipsTheWhyWhenEveryViceIsAlreadyTracked() {
+        let model = OnboardingViewModel()
+        model.trackedNames = [(name: "Alcohol", habitType: .vice)]
+        model.toggleVice("alcohol")
+        XCTAssertTrue(model.vicesToAsk.isEmpty)
+        XCTAssertFalse(model.pages.contains(.why))
+        XCTAssertFalse(model.pages.contains { if case .viceWhen = $0 { true } else { false } })
+    }
+
+    func testReplayKeepsQuitPagesWhenTheSameNameIsTheOtherKind() {
+        let model = OnboardingViewModel()
+        model.trackedNames = [(name: "Alcohol", habitType: .positive)]
+        model.toggleVice("alcohol")
+        XCTAssertTrue(model.pages.contains(.viceWhen("alcohol")))
+        XCTAssertTrue(model.pages.contains(.why))
+    }
+
+    func testReplaySkipsAnArchivedNameAndKeepsTheOtherKind() throws {
+        let harness = try TestHarness()
+        let alcohol = try harness.store.addMetric(
+            name: "  Alcohol ",
+            habitType: .vice,
+            iconName: "wineglass",
+            startedAt: date(2026, 10, 1),
+            costPerDay: nil,
+            firstReason: nil
+        )
+        try harness.store.setArchived(alcohol, true)
+        _ = try harness.store.addMetric(
+            name: "Sugar",
+            habitType: .positive,
+            iconName: "circle.dashed",
+            startedAt: date(2026, 10, 1),
+            costPerDay: nil,
+            firstReason: nil
+        )
+        let metrics = try harness.store.context.fetch(FetchDescriptor<Metric>())
+        let model = OnboardingViewModel()
+        model.toggleVice("alcohol")
+        model.customViceName = "Sugar"
+        model.toggleHabit("walk")
+        let added = model.draftsToAdd(
+            now: date(2026, 10, 28, 15),
+            calendar: .testNY,
+            existing: OnboardingViewModel.namesToMatch(metrics)
+        )
+        XCTAssertEqual(added.map(\.name), ["Sugar", "Go for a walk"])
     }
 
     func testHabitOnlySkipsVicePages() {

@@ -55,6 +55,8 @@ final class RecoveryCopyTests: XCTestCase {
         XCTAssertEqual(AppLinks.urgeSurfingPractice.scheme, "https")
         XCTAssertEqual(AppLinks.urgeSurfingOrigin.scheme, "https")
         XCTAssertTrue(RecoveryCopy.welcomeLine2.contains("surf"))
+        XCTAssertEqual(RecoveryCopy.lockComesBack(RecoveryCopy.lockMethodFaceID), "Coming back asks for Face ID.")
+        XCTAssertEqual(RecoveryCopy.lockComesBack(RecoveryCopy.lockMethodPasscode), "Coming back asks for your passcode.")
         XCTAssertEqual(RecoveryCopy.slipTitle, "Thanks for being honest.")
         XCTAssertEqual(RecoveryCopy.slipSummaryTitle, "Your free clock restarts from here.")
         XCTAssertEqual(RecoveryCopy.milestoneVice(1, name: "Alcohol"), "Your first day free from Alcohol.")

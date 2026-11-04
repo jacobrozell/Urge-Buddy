@@ -295,7 +295,7 @@ Finish → create everything in one `RecoveryStore` transaction → land on Toda
 | Privacy | Lock with Face ID / Touch ID / Passcode (label adapts to `LAContext.biometryType`) |
 | Appearance | System / Light / Dark (segmented) |
 | Your data | Export backup (.json) · Import backup · Delete all data (destructive, double-confirm) |
-| Support | **See the introduction** (replays onboarding; Done saves the check-in time, reminder and lock choices, and any new vices or habits; existing tracking stays) · **What is urge surfing?** (→ `UrgeSurfingExplainer`) · **Get help now** (→ `CrisisResourcesView`) · Contact support (`AppLinks.support`) · Privacy policy (`AppLinks.privacy`) · Rate Urge Buddy |
+| Support | **See the introduction** (replays onboarding; Done saves the check-in time, reminder and lock choices, and any new vices or habits; a name already tracked, including an archived one, skips the quit date, cost, reason, and cut-back pages; existing tracking stays) · **What is urge surfing?** (→ `UrgeSurfingExplainer`) · **Get help now** (→ `CrisisResourcesView`) · Contact support (`AppLinks.support`) · Privacy policy (`AppLinks.privacy`) · Rate Urge Buddy |
 | About | Version (build) · Disclaimer text · Accessibility statement (`AppLinks.accessibility`) |
 | Debug (DEBUG builds only, `ProductSurface.showsDebugTools`) | Seed demo data · Clear data · Reset onboarding · Fire test milestone · Schedule test reminder in 10s |
 
