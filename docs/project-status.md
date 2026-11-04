@@ -11,14 +11,14 @@
 | **Stage** | **Release prep** — never shipped |
 | **Latest submitted** | — |
 | **Latest shipped (App Store)** | — |
-| **Repo version** | 1.0.0 (9), Xcode Cloud run 9 |
+| **Repo version** | 1.0.0 (10). Build 9 is in TestFlight. |
 | **Active branch** | `main` |
 | **Platform** | iOS 18+ — iPhone and iPad, portrait and landscape |
 | **Monetization** | Free, no IAP |
 
 ## Current focus
 
-**Xcode Cloud Release run 9 is archiving 1.0.0 (9) from `main` (`43171651-b3e4-49ff-ac98-47acc82ba01d`) and is not submitted.** The description in App Store Connect now mentions milestone notices. Run 8 archived the same build number, then the App Store export rewrote it to 8, so TestFlight still has build 8 until run 9 uploads. iPhone 6.9" and iPad 13" screenshots were replaced on 2026-11-04. The Duo set is still the earlier capture because Device Hub has no pose buttons. Finishing See the introduction now saves the check-in time, reminder and lock choices, and any new vices or habits. What's New waits until the first release is live. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
+**Build 9 is in TestFlight. The next archive is 1.0.0 (10) from `main`, and it is not submitted.** The description in App Store Connect now mentions milestone notices. iPhone 6.9", iPad 13", and iPhone Duo screenshots were replaced on 2026-11-04. Duo inner is the portrait 2007×2853 set. Finishing See the introduction now saves the check-in time, reminder and lock choices, and any new vices or habits. What's New waits until the first release is live. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
 
 The app has never shipped. Build 5 was archived on 2026-06-22 and never uploaded. There is no production data to migrate.
 

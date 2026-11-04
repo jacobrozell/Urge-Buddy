@@ -93,10 +93,10 @@ Five light portrait scenes, no frames and no caption overlays. Capture with `Scr
 | iPhone 6.9" | 1320×2868 | iPhone 17 Pro Max |
 | iPad 13" | 2064×2752 | iPad Pro 13-inch |
 | iPhone Duo outer | 1398×2034 | folded |
-| iPhone Duo inner | 2853×2007 | open |
+| iPhone Duo inner | 2007×2853 | open, portrait |
 
 Order: Today, urge ride, slip summary, progress detail, cut back.
 
 ## iPhone Duo badge
 
-Uploaded 2026-11-04. iPhone 6.9" (`APP_IPHONE_67`, 5) and iPad 13" (`APP_IPAD_PRO_3GEN_129`, 5) were replaced from the current UI. The `APP_IPHONE_DUO` set is still the earlier five outer (1398×2034) and five inner (2853×2007). Device Hub has no Closed or Open button, and the inner display is black, so those were not recaptured. The product page shows the iPhone Duo badge once Connect has both sizes.
+Uploaded 2026-11-04. iPhone 6.9" (`APP_IPHONE_67`, 5), iPad 13" (`APP_IPAD_PRO_3GEN_129`, 5), and iPhone Duo (`APP_IPHONE_DUO`, 10) were replaced from the current UI. Duo is five outer shots at 1398×2034 and five inner shots at 2007×2853. The open display would not rotate to 2853×2007.
