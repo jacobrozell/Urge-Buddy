@@ -29,8 +29,9 @@ Accent colors come from one hue family per theme, defined in code in `DesignSyst
 | `Habit` | `#047857` | `#34D399` | Habit done. A neighbor of `Brand`, not a second hue |
 | `HabitSoft` | `#D1FAE5` | `#064E3B` | Habit soft fills |
 | `Calm` | `#0C3532` | `#0C3532` | Urge flow background: a deep shade of `Brand` (white text on top) |
+| `MarkTile` | `#13534E` | `#13534E` | Lighter corner of the `BrandMark` tile, fading to `Calm` |
 
-`AccentColor` (asset) = teal `Brand`. `LaunchBackground` = `Background`. Expose every token as `Color.tb…` in `Palette.swift`. Don't use any raw colors in views.
+`AccentColor` (asset) = teal `Brand`. The app icon and `BrandMark` are two overlapping circles (`Brand` and `Habit` dark values, `BrandSoft` light where they cross) on a `MarkTile`→`Calm` tile, the same in both appearances. Re-render the icon with `Scripts/render-app-icon.sh`, then `Scripts/generate-app-icons.sh`. `LaunchBackground` = `Background`. Expose every token as `Color.tb…` in `Palette.swift`. Don't use any raw colors in views.
 
 Cards use `cardSurface()` (or `Card`), which fills the column so cards stacked together share both edges. On a phone in landscape, `ReadableColumn` fills the width, and Today's urge button moves into the nav bar.
 

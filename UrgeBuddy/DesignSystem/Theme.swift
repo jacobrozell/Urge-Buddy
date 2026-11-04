@@ -38,6 +38,11 @@ struct ThemeColor {
             UIColor(hex: traits.userInterfaceStyle == .dark ? dark : light)
         })
     }
+
+    /// The light value in every appearance.
+    var lightColor: Color { Color(uiColor: UIColor(hex: light)) }
+    /// The dark value in every appearance. The brand mark uses these so it matches the app icon.
+    var darkColor: Color { Color(uiColor: UIColor(hex: dark)) }
 }
 
 struct ThemePalette {
@@ -52,6 +57,8 @@ struct ThemePalette {
     var habitSoft: ThemeColor
     /// The urge flow background: a deep shade of `brand` with white text in both appearances.
     var calm: ThemeColor
+    /// The lighter corner of the brand mark tile; the tile fades from here to `calm`.
+    var markTile: ThemeColor
 
     /// Every text-on-fill pair the app draws from this palette. `WCAGContrastTests` checks each one.
     var contrastPairs: [(foreground: UInt32, background: UInt32)] {
@@ -69,7 +76,8 @@ struct ThemePalette {
         onBrand: ThemeColor(light: 0xFFFFFF, dark: 0x042F2E),
         habit: ThemeColor(light: 0x047857, dark: 0x34D399),
         habitSoft: ThemeColor(light: 0xD1FAE5, dark: 0x064E3B),
-        calm: ThemeColor(0x0C3532)
+        calm: ThemeColor(0x0C3532),
+        markTile: ThemeColor(0x13534E)
     )
 }
 

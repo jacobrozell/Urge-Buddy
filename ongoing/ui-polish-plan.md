@@ -626,7 +626,7 @@ These came up in the review but change the brand or product. **Implementers: ski
 | # | Question | Notes |
 |---|----------|-------|
 | A | **Dark-mode brand is very bright.** The check-in banner and SOS button are large flat fills of `#2DD4BF` on near-black. Tone it down (for example `#14B8A6`), or use `BrandSoft` fills with `Brand` text in dark? | Palette change. Must re-run `WCAGContrastTests` and update §8.1. |
-| B | **Brand mark reads as "sync".** The two-arrow circle on onboarding and the lock screen looks like a refresh icon. | Icon/brand decision. |
+| B | ~~**Brand mark reads as "sync".**~~ Done 2026-11-03: the app icon and `BrandMark` are both the teal two overlapping circles. Re-render the icon with `Scripts/render-app-icon.sh`. | |
 | C | **Run clock repeats the days.** The card says "9 days free" and then "9d 4h 12m · $176 saved". Drop the days from the clock line ("4h 12m into day 10"), or keep it? | Copy and tests in `RecoveryCopyTests`. |
 | D | **Collapse the urge journal** behind a "Write it down" button to shorten the ride screen further. | Would change the urge journal UI tests. |
 | E | **Re-upload screenshots.** Phase 10 regenerates them; uploading to App Store Connect is yours. | |
