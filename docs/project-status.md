@@ -32,7 +32,7 @@ The app has never shipped. Build 5 was archived on 2026-06-22 and never uploaded
 | 1.0.0 | 8 | 2026-11-02 | TestFlight | Xcode Cloud run 7 (`e4de4fd6-f3ec-483f-9d20-19bc3b9195b0`). Not submitted. |
 | 1.0.0 | 9 | 2026-11-04 | Repo | Xcode Cloud run 8 archived this number, then the export uploaded it as build 8. Not in TestFlight as 9. |
 | 1.0.0 | 10 | 2026-11-04 | TestFlight | Xcode Cloud run 10. Selected in Connect until build 11 is processed. |
-| 1.0.0 | 11 | 2026-11-04 | Repo | Pre-submit polish. Archive in progress. |
+| 1.0.0 | 11 | 2026-11-04 | Repo | Pre-submit polish. Xcode Cloud Release run 11 (`598eda42-1913-46bd-bfdc-7032394dedd2`). |
 
 ## Key docs
 

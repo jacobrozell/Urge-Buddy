@@ -29,6 +29,7 @@ Status legend: `[ ]` todo · `[x]` done
 - [x] Archive again so TestFlight gets build 9, including the introduction review fixes. Xcode Cloud Release run 9 (`43171651-b3e4-49ff-ac98-47acc82ba01d`). Build 9 is in TestFlight.
 - [x] Recapture and upload the iPhone 6.9", iPad 13", and Duo sets (2026-11-04). Duo inner is landscape 2853×2007 — [`app-store-copy.md`](app-store-copy.md#iphone-duo-badge)
 - [x] Bump to build 10. Build 9 is already in TestFlight. Xcode Cloud Release run 10 (`7f57f399-0aa5-40c8-9aef-d8b7c64a03c6`).
+- [x] Bump to build 11 for the pre-submit polish. Xcode Cloud Release run 11 (`598eda42-1913-46bd-bfdc-7032394dedd2`).
 - [x] Tests for legacy backup fixtures and crisis resources.
 - [ ] Optional: Accessibility, Architecture, and Code smells lanes — [Pending lanes](../../ongoing/1.0.0-review-fixes.md#pending-lanes)
 
