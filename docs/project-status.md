@@ -11,14 +11,14 @@
 | **Stage** | **Release prep** — never shipped |
 | **Latest submitted** | — |
 | **Latest shipped (App Store)** | — |
-| **Repo version** | 1.0.0 (10). Build 9 is in TestFlight. |
+| **Repo version** | 1.0.0 (10), Xcode Cloud run 10 |
 | **Active branch** | `main` |
 | **Platform** | iOS 18+ — iPhone and iPad, portrait and landscape |
 | **Monetization** | Free, no IAP |
 
 ## Current focus
 
-**Build 9 is in TestFlight. The next archive is 1.0.0 (10) from `main`, and it is not submitted.** The description in App Store Connect now mentions milestone notices. iPhone 6.9", iPad 13", and iPhone Duo screenshots were replaced on 2026-11-04. Duo inner is the portrait 2007×2853 set. Finishing See the introduction now saves the check-in time, reminder and lock choices, and any new vices or habits. What's New waits until the first release is live. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
+**Xcode Cloud Release run 10 is archiving 1.0.0 (10) from `main` (`7f57f399-0aa5-40c8-9aef-d8b7c64a03c6`) and is not submitted.** Build 9 is already in TestFlight. The description in App Store Connect now mentions milestone notices. iPhone 6.9", iPad 13", and iPhone Duo screenshots were replaced on 2026-11-04. Duo inner is the portrait 2007×2853 set. Finishing See the introduction now saves the check-in time, reminder and lock choices, and any new vices or habits. What's New waits until the first release is live. Submit still waits on the age-rating questionnaire, App Privacy confirmation, the open device-QA rows, and the 7-day dogfood (or a waiver). Post-launch order is in `FutureIdeas/backlog.md` (App Intents first).
 
 The app has never shipped. Build 5 was archived on 2026-06-22 and never uploaded. There is no production data to migrate.
 
